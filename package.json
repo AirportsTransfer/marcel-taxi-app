@@ -1,0 +1,54 @@
+{
+  "name": "taxi-app-boekingssysteem",
+  "version": "1.0.0",
+  "description": "Professional taxi booking system with multi-tenant support",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "demo": "node demo-server.js",
+    "test": "jest",
+    "lint": "eslint .",
+    "db:migrate": "knex migrate:latest",
+    "db:seed": "knex seed:run"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "express-rate-limit": "^6.7.0",
+    "jsonwebtoken": "^9.0.0",
+    "bcryptjs": "^2.4.3",
+    "knex": "^2.4.2",
+    "pg": "^8.11.0",
+    "redis": "^4.6.7",
+    "socket.io": "^4.6.2",
+    "twilio": "^4.11.1",
+    "stripe": "^12.9.0",
+    "@mollie/api-client": "^3.7.0",
+    "nodemailer": "^6.9.3",
+    "joi": "^17.9.2",
+    "dotenv": "^16.1.4",
+    "uuid": "^9.0.0",
+    "moment": "^2.29.4",
+    "winston": "^3.9.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22",
+    "jest": "^29.5.0",
+    "eslint": "^8.42.0",
+    "supertest": "^6.3.3"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "keywords": [
+    "taxi",
+    "booking",
+    "real-time",
+    "multi-tenant",
+    "api"
+  ],
+  "author": "Marcel",
+  "license": "ISC"
+}

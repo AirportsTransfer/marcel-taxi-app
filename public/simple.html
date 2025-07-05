@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marcel's Taxi Service - WERKT!</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+            padding: 20px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { text-align: center; margin-bottom: 30px; font-size: 2.5rem; }
+        .section { 
+            background: rgba(255,255,255,0.1); 
+            padding: 30px; 
+            border-radius: 15px; 
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            background: white;
+            color: #667eea;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .hidden { display: none; }
+        .notification {
+            background: #28a745;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .error { background: #dc3545; }
+        .response {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚗 Marcel's Taxi Service</h1>
+        
+        <!-- Status -->
+        <div class="section">
+            <h2>Server Status</h2>
+            <button onclick="checkServer()" class="btn">Test Server</button>
+            <div id="serverStatus"></div>
+        </div>
+
+        <!-- Login Section -->
+        <div class="section">
+            <h2>Inloggen</h2>
+            <div class="form-group">
+                <input type="email" id="loginEmail" placeholder="Email (bijv: marcel@taxi.com)" value="marcel@taxi.com">
+            </div>
+            <div class="form-group">
+                <input type="password" id="loginPassword" placeholder="Wachtwoord (elk wachtwoord werkt)" value="test123">
+            </div>
+            <button onclick="login()" class="btn">Inloggen</button>
+            <div id="loginResult"></div>
+        </div>
+
+        <!-- Register Section -->
+        <div class="section">
+            <h2>Registreren</h2>
+            <div class="form-group">
+                <input type="text" id="regName" placeholder="Naam" value="Test Gebruiker">
+            </div>
+            <div class="form-group">
+                <input type="email" id="regEmail" placeholder="Email" value="test@example.com">
+            </div>
+            <div class="form-group">
+                <input type="tel" id="regPhone" placeholder="Telefoon" value="+31612345678">
+            </div>
+            <div class="form-group">
+                <select id="regRole">
+                    <option value="customer">Klant</option>
+                    <option value="driver">Chauffeur</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <button onclick="register()" class="btn">Registreren</button>
+            <div id="registerResult"></div>
+        </div>
+
+        <!-- Booking Section -->
+        <div class="section" id="bookingSection">
+            <h2>🚗 Rit Boeken</h2>
+            
+            <h3>📍 Route</h3>
+            <div class="form-group">
+                <input type="text" id="pickup" placeholder="Ophaaladres" value="Dam 1, Amsterdam">
+            </div>
+            <div class="form-group">
+                <input type="text" id="destination" placeholder="Bestemmingsadres" value="Schiphol Airport">
+            </div>
+            <div class="form-group">
+                <input type="datetime-local" id="scheduledTime" placeholder="Gewenste vertrek tijd (optioneel)">
+            </div>
+
+            <h3>🚙 Voertuig Type</h3>
+            <div class="form-group">
+                <select id="vehicleType">
+                    <option value="standard">Standaard (4 personen) - €0</option>
+                    <option value="comfort">Comfort (4 personen, luxe) - €5 extra</option>
+                    <option value="minivan">Minivan (7 personen) - €15 extra</option>
+                    <option value="luxury">Luxury (4 personen, premium) - €20 extra</option>
+                    <option value="wheelchair">Rolstoel toegankelijk - €10 extra</option>
+                </select>
+            </div>
+
+            <h3>👥 Passagiers</h3>
+            <div class="form-group">
+                <label>Aantal volwassenen:</label>
+                <input type="number" id="adults" value="2" min="1" max="8">
+            </div>
+            <div class="form-group">
+                <label>Aantal kinderen (0-12 jaar):</label>
+                <input type="number" id="children" value="0" min="0" max="4">
+            </div>
+
+            <h3>👶 Kinderzitjes</h3>
+            <div class="form-group">
+                <label>Baby zitjes (0-15 maanden):</label>
+                <input type="number" id="babySeats" value="0" min="0" max="3">
+                <small>€5 per zitje</small>
+            </div>
+            <div class="form-group">
+                <label>Peuter zitjes (9 maanden - 4 jaar):</label>
+                <input type="number" id="toddlerSeats" value="0" min="0" max="3">
+                <small>€5 per zitje</small>
+            </div>
+            <div class="form-group">
+                <label>Kinder zitjes (4-12 jaar):</label>
+                <input type="number" id="childSeats" value="0" min="0" max="3">
+                <small>€3 per zitje</small>
+            </div>
+
+            <h3>🧳 Bagage</h3>
+            <div class="form-group">
+                <label>Handbagage stukken:</label>
+                <input type="number" id="handLuggage" value="2" min="0" max="10">
+                <small>Gratis tot 2 stuks</small>
+            </div>
+            <div class="form-group">
+                <label>Grote koffers:</label>
+                <input type="number" id="largeLuggage" value="0" min="0" max="6">
+                <small>€2 per koffer boven de 2</small>
+            </div>
+            <div class="form-group">
+                <label>Extra grote bagage (ski's, golf, etc.):</label>
+                <input type="number" id="extraLuggage" value="0" min="0" max="3">
+                <small>€10 per stuk</small>
+            </div>
+
+            <h3>🛑 Extra Stops</h3>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="extraStops"> Extra stops onderweg
+                </label>
+                <small>€5 per stop + wachttijd</small>
+            </div>
+            <div class="form-group" id="extraStopsDetails" style="display:none;">
+                <textarea id="stopsDescription" placeholder="Beschrijf je extra stops..."></textarea>
+            </div>
+
+            <h3>🔧 Speciale Verzoeken</h3>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="wheelchair"> Rolstoel toegankelijk
+                </label>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="quietRide"> Stille rit (geen gesprek)
+                </label>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="aircon"> Airconditioning verplicht
+                </label>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="petFriendly"> Huisdier vriendelijk
+                </label>
+                <small>€8 extra</small>
+            </div>
+            <div class="form-group">
+                <textarea id="specialRequests" placeholder="Andere speciale verzoeken..."></textarea>
+            </div>
+
+            <h3>💳 Betaling</h3>
+            <div class="form-group">
+                <select id="paymentMethod">
+                    <option value="cash">Contant betalen + bankkaartwaarborg</option>
+                    <option value="card_in_taxi">Pinnen in taxi + bankkaartwaarborg</option>
+                    <option value="bank_transfer">Vooraf overgemaakt</option>
+                    <option value="online">Online betaling</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;">
+                <h3>💰 Prijs Overzicht</h3>
+                <div id="priceBreakdown">
+                    <div>Basis tarief: €<span id="baseFare">2.50</span></div>
+                    <div>Geschatte afstand: €<span id="distanceFare">15.00</span></div>
+                    <div>Voertuig toeslag: €<span id="vehicleFee">0.00</span></div>
+                    <div>Kinderzitjes: €<span id="childSeatsFee">0.00</span></div>
+                    <div>Bagage toeslag: €<span id="luggageFee">0.00</span></div>
+                    <div>Extra opties: €<span id="extrasFee">0.00</span></div>
+                    <hr style="margin: 10px 0;">
+                    <div><strong>Totaal: €<span id="totalFare">17.50</span></strong></div>
+                </div>
+            </div>
+
+            <button onclick="calculatePrice()" class="btn" style="background: #28a745;">🧮 Bereken Prijs</button>
+            <button onclick="bookRide()" class="btn">📱 Boek Rit</button>
+            <div id="bookingResult"></div>
+        </div>
+
+        <!-- Current User -->
+        <div class="section">
+            <h2>Huidige Gebruiker</h2>
+            <div id="currentUser">Niet ingelogd</div>
+            <button onclick="logout()" class="btn">Uitloggen</button>
+        </div>
+    </div>
+
+    <script>
+        let authToken = null;
+        let currentUser = null;
+
+        // Check server
+        async function checkServer() {
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                document.getElementById('serverStatus').innerHTML = 
+                    '<div class="notification">✅ Server werkt! ' + data.message + '</div>';
+            } catch (error) {
+                document.getElementById('serverStatus').innerHTML = 
+                    '<div class="notification error">❌ Server fout: ' + error.message + '</div>';
+            }
+        }
+
+        // Login
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    authToken = data.token;
+                    currentUser = data.user;
+                    document.getElementById('loginResult').innerHTML = 
+                        '<div class="notification">✅ Ingelogd als ' + data.user.name + ' (' + data.user.role + ')</div>';
+                    updateCurrentUser();
+                } else {
+                    document.getElementById('loginResult').innerHTML = 
+                        '<div class="notification error">❌ ' + data.error + '</div>';
+                }
+            } catch (error) {
+                document.getElementById('loginResult').innerHTML = 
+                    '<div class="notification error">❌ Login fout: ' + error.message + '</div>';
+            }
+        }
+
+        // Register
+        async function register() {
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const phone = document.getElementById('regPhone').value;
+            const role = document.getElementById('regRole').value;
+
+            try {
+                const response = await fetch('/api/v1/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, phone, role, password: 'test123' })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('registerResult').innerHTML = 
+                        '<div class="notification">✅ Geregistreerd! Nu kun je inloggen met ' + email + '</div>';
+                    // Auto-fill login form
+                    document.getElementById('loginEmail').value = email;
+                } else {
+                    document.getElementById('registerResult').innerHTML = 
+                        '<div class="notification error">❌ ' + data.error + '</div>';
+                }
+            } catch (error) {
+                document.getElementById('registerResult').innerHTML = 
+                    '<div class="notification error">❌ Registratie fout: ' + error.message + '</div>';
+            }
+        }
+
+        // Book ride
+        async function bookRide() {
+            if (!authToken) {
+                document.getElementById('bookingResult').innerHTML = 
+                    '<div class="notification error">❌ Log eerst in!</div>';
+                return;
+            }
+
+            const pickup = document.getElementById('pickup').value;
+            const destination = document.getElementById('destination').value;
+            const passengers = document.getElementById('passengers').value;
+            const paymentMethod = document.getElementById('paymentMethod').value;
+
+            try {
+                const response = await fetch('/api/v1/rides', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + authToken 
+                    },
+                    body: JSON.stringify({
+                        pickupLocation: { address: pickup, latitude: 52.3702, longitude: 4.8952 },
+                        dropoffLocation: { address: destination, latitude: 52.3105, longitude: 4.7683 },
+                        passengers: parseInt(passengers),
+                        paymentMethod: paymentMethod
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    const ride = data.data.ride;
+                    document.getElementById('bookingResult').innerHTML = 
+                        '<div class="notification">✅ Rit geboekt!<br>' +
+                        'Van: ' + ride.pickup_address + '<br>' +
+                        'Naar: ' + ride.destination_address + '<br>' +
+                        'Prijs: €' + ride.total_fare + '<br>' +
+                        'Status: ' + ride.status + '</div>';
+                } else {
+                    document.getElementById('bookingResult').innerHTML = 
+                        '<div class="notification error">❌ ' + data.error + '</div>';
+                }
+            } catch (error) {
+                document.getElementById('bookingResult').innerHTML = 
+                    '<div class="notification error">❌ Booking fout: ' + error.message + '</div>';
+            }
+        }
+
+        // Logout
+        function logout() {
+            authToken = null;
+            currentUser = null;
+            updateCurrentUser();
+            document.getElementById('loginResult').innerHTML = '';
+            document.getElementById('bookingResult').innerHTML = '';
+        }
+
+        // Update current user display
+        function updateCurrentUser() {
+            if (currentUser) {
+                document.getElementById('currentUser').innerHTML = 
+                    '✅ Ingelogd als: <strong>' + currentUser.name + '</strong><br>' +
+                    'Role: ' + currentUser.role + '<br>' +
+                    'Email: ' + currentUser.email;
+            } else {
+                document.getElementById('currentUser').innerHTML = '❌ Niet ingelogd';
+            }
+        }
+
+        // Extra stops functionality
+        document.getElementById('extraStops').addEventListener('change', function() {
+            const details = document.getElementById('extraStopsDetails');
+            details.style.display = this.checked ? 'block' : 'none';
+        });
+
+        // Auto calculate price when inputs change
+        ['vehicleType', 'adults', 'children', 'babySeats', 'toddlerSeats', 'childSeats', 
+         'handLuggage', 'largeLuggage', 'extraLuggage', 'petFriendly', 'extraStops'].forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('change', calculatePrice);
+                element.addEventListener('input', calculatePrice);
+            }
+        });
+
+        // Calculate price function
+        function calculatePrice() {
+            const baseFare = 2.50;
+            const distanceFare = 15.00; // Estimated
+            
+            // Vehicle fee
+            const vehicleType = document.getElementById('vehicleType').value;
+            const vehicleFees = {
+                'standard': 0,
+                'comfort': 5,
+                'minivan': 15,
+                'luxury': 20,
+                'wheelchair': 10
+            };
+            const vehicleFee = vehicleFees[vehicleType] || 0;
+
+            // Child seats fee
+            const babySeats = parseInt(document.getElementById('babySeats').value) || 0;
+            const toddlerSeats = parseInt(document.getElementById('toddlerSeats').value) || 0;
+            const childSeats = parseInt(document.getElementById('childSeats').value) || 0;
+            const childSeatsFee = (babySeats + toddlerSeats) * 5 + childSeats * 3;
+
+            // Luggage fee
+            const handLuggage = parseInt(document.getElementById('handLuggage').value) || 0;
+            const largeLuggage = parseInt(document.getElementById('largeLuggage').value) || 0;
+            const extraLuggage = parseInt(document.getElementById('extraLuggage').value) || 0;
+            const luggageFee = Math.max(0, largeLuggage - 2) * 2 + extraLuggage * 10;
+
+            // Extras fee
+            let extrasFee = 0;
+            if (document.getElementById('petFriendly').checked) extrasFee += 8;
+            if (document.getElementById('extraStops').checked) extrasFee += 5;
+
+            // Calculate total
+            const totalFare = baseFare + distanceFare + vehicleFee + childSeatsFee + luggageFee + extrasFee;
+
+            // Update display
+            document.getElementById('baseFare').textContent = baseFare.toFixed(2);
+            document.getElementById('distanceFare').textContent = distanceFare.toFixed(2);
+            document.getElementById('vehicleFee').textContent = vehicleFee.toFixed(2);
+            document.getElementById('childSeatsFee').textContent = childSeatsFee.toFixed(2);
+            document.getElementById('luggageFee').textContent = luggageFee.toFixed(2);
+            document.getElementById('extrasFee').textContent = extrasFee.toFixed(2);
+            document.getElementById('totalFare').textContent = totalFare.toFixed(2);
+
+            return totalFare;
+        }
+
+        // Check server on load
+        checkServer();
+        calculatePrice();
+    </script>
+</body>
+</html>
