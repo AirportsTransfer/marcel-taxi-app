@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💰 Prijs Calculator - Marcel's Taxi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff8c00 0%, #ff6b00 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            min-height: 600px;
+        }
+
+        .calculator-section {
+            padding: 40px;
+            background: #f8f9fa;
+        }
+
+        .results-section {
+            padding: 40px;
+            background: white;
+            border-left: 1px solid #e9ecef;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #ff8c00;
+            box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
+        }
+
+        .route-inputs {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 16px;
+            align-items: end;
+        }
+
+        .swap-btn {
+            width: 48px;
+            height: 48px;
+            border: 2px solid #e9ecef;
+            background: white;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s;
+        }
+
+        .swap-btn:hover {
+            border-color: #ff8c00;
+            background: #ff8c00;
+            color: white;
+            transform: rotate(180deg);
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .option-card {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            background: white;
+        }
+
+        .option-card:hover {
+            border-color: #ff8c00;
+            background: #fff8f0;
+        }
+
+        .option-card.active {
+            border-color: #ff8c00;
+            background: #ff8c00;
+            color: white;
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #ff8c00 0%, #ff6b00 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 24px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 140, 0, 0.3);
+        }
+
+        .price-card {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .price-amount {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .price-label {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .breakdown {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .breakdown-item:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 18px;
+            color: #ff8c00;
+        }
+
+        .vehicle-options {
+            display: grid;
+            gap: 16px;
+        }
+
+        .vehicle-option {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .vehicle-option:hover {
+            border-color: #ff8c00;
+            background: #fff8f0;
+        }
+
+        .vehicle-option.selected {
+            border-color: #ff8c00;
+            background: #ff8c00;
+            color: white;
+        }
+
+        .vehicle-info h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .vehicle-info p {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .vehicle-price {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .distance-info {
+            background: #e7f3ff;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .surcharge-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+            
+            .route-inputs {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .swap-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 Taxi Prijs Calculator</h1>
+            <p>Bereken direct de kosten voor uw taxi rit - transparant en eerlijk</p>
+        </div>
+
+        <div class="content">
+            <!-- Calculator Section -->
+            <div class="calculator-section">
+                <h3 style="margin-bottom: 30px; font-size: 24px;">📍 Uw Route</h3>
+
+                <div class="form-group">
+                    <div class="route-inputs">
+                        <div>
+                            <label class="form-label">Van</label>
+                            <input type="text" class="form-input" id="fromLocation" placeholder="📍 Vertrekpunt (bijv. Amsterdam Centraal)">
+                        </div>
+                        <button class="swap-btn" onclick="swapLocations()" title="Wissel van en naar">
+                            🔄
+                        </button>
+                        <div>
+                            <label class="form-label">Naar</label>
+                            <input type="text" class="form-input" id="toLocation" placeholder="📍 Bestemming (bijv. Schiphol Airport)">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">🕐 Wanneer?</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <input type="date" class="form-input" id="travelDate">
+                        <input type="time" class="form-input" id="travelTime">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">⚙️ Extra Opties</label>
+                    <div class="options-grid">
+                        <div class="option-card" id="viaOption" onclick="toggleOption('via')">
+                            <div>🛣️</div>
+                            <div>Extra Stop</div>
+                        </div>
+                        <div class="option-card" id="returnOption" onclick="toggleOption('return')">
+                            <div>🔄</div>
+                            <div>Retour Rit</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="calculate-btn" onclick="calculatePrices()">
+                    💰 Bereken Prijzen
+                </button>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section">
+                <h3 style="margin-bottom: 30px; font-size: 24px;">🚗 Beschikbare Voertuigen</h3>
+
+                <div id="resultsArea">
+                    <div style="text-align: center; padding: 60px 20px; color: #6c757d;">
+                        <div style="font-size: 64px; margin-bottom: 20px;">🚕</div>
+                        <h4>Vul uw route in</h4>
+                        <p>Klik "Bereken Prijzen" om beschikbare voertuigen en prijzen te zien</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let hasVia = false;
+        let hasReturn = false;
+        let selectedVehicle = null;
+
+        // Initialize with today's date and current time + 1 hour
+        function initializeDateTime() {
+            const now = new Date();
+            const tomorrow = new Date(now);
+            tomorrow.setHours(now.getHours() + 1);
+
+            document.getElementById('travelDate').value = now.toISOString().split('T')[0];
+            document.getElementById('travelTime').value = tomorrow.toTimeString().slice(0, 5);
+        }
+
+        function swapLocations() {
+            const from = document.getElementById('fromLocation').value;
+            const to = document.getElementById('toLocation').value;
+            
+            document.getElementById('fromLocation').value = to;
+            document.getElementById('toLocation').value = from;
+        }
+
+        function toggleOption(type) {
+            if (type === 'via') {
+                hasVia = !hasVia;
+                const element = document.getElementById('viaOption');
+                element.classList.toggle('active');
+            } else if (type === 'return') {
+                hasReturn = !hasReturn;
+                const element = document.getElementById('returnOption');
+                element.classList.toggle('active');
+            }
+        }
+
+        function calculateDistance(from, to) {
+            // Nederlandse steden afstanden (km)
+            const distances = {
+                'amsterdam': { 
+                    'rotterdam': 60, 'utrecht': 35, 'den haag': 55, 'eindhoven': 120,
+                    'schiphol': 15, 'zaandam': 15, 'haarlem': 20, 'almere': 25
+                },
+                'rotterdam': { 
+                    'amsterdam': 60, 'utrecht': 65, 'den haag': 25, 'eindhoven': 110,
+                    'dordrecht': 25, 'delft': 15, 'gouda': 25
+                },
+                'utrecht': { 
+                    'amsterdam': 35, 'rotterdam': 65, 'den haag': 45, 'eindhoven': 85,
+                    'amersfoort': 20, 'nieuwegein': 10, 'zeist': 15
+                },
+                'schiphol': { 
+                    'amsterdam': 15, 'rotterdam': 70, 'utrecht': 45, 'den haag': 65,
+                    'haarlem': 25, 'leiden': 35
+                }
+            };
+
+            const fromKey = from.toLowerCase().replace(/[^a-z]/g, '');
+            const toKey = to.toLowerCase().replace(/[^a-z]/g, '');
+
+            // Check exact matches
+            if (distances[fromKey] && distances[fromKey][toKey]) {
+                return distances[fromKey][toKey];
+            }
+
+            // Check partial matches
+            for (const city in distances) {
+                if (fromKey.includes(city) || city.includes(fromKey)) {
+                    for (const dest in distances[city]) {
+                        if (toKey.includes(dest) || dest.includes(toKey)) {
+                            return distances[city][dest];
+                        }
+                    }
+                }
+            }
+
+            // Default calculation based on string similarity
+            return Math.floor(Math.random() * 80) + 20; // 20-100km
+        }
+
+        function calculatePrice(vehicleType, distance, dateTime) {
+            // Basis tarieven per voertuigtype (per km)
+            const baseRates = {
+                'Economy': 1.85,
+                'Standard': 2.25,
+                'Premium': 3.50,
+                'Business': 3.20,
+                'Luxury': 4.80,
+                'Minivan': 2.90
+            };
+
+            const rate = baseRates[vehicleType] || baseRates.Standard;
+            let price = distance * rate;
+
+            // Minimum tarief
+            price = Math.max(price, 18);
+
+            // Extra kosten
+            if (hasVia) price += 12; // Tussenstop
+            if (hasReturn) price *= 1.85; // Retour rit
+
+            // Tijd gebaseerde toeslagen
+            const hour = new Date(dateTime).getHours();
+            const dayOfWeek = new Date(dateTime).getDay();
+            
+            const isNight = hour < 6 || hour > 22;
+            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+            const isRushHour = (hour >= 7 && hour <= 9) || (hour >= 17 && hour <= 19);
+
+            if (isNight) price *= 1.30; // 30% nachttoeslag
+            if (isWeekend) price *= 1.20; // 20% weekendtoeslag
+            if (isRushHour) price *= 1.15; // 15% spitsuurtoeslag
+
+            return Math.round(price * 2) / 2; // Rond af op 50 cent
+        }
+
+        function getAvailableVehicles() {
+            // Probeer voertuigen uit localStorage te laden
+            const adminVehicles = JSON.parse(localStorage.getItem('taxiVehicles') || '[]');
+            const bookingVehicles = JSON.parse(localStorage.getItem('bookingSystemVehicles') || '[]');
+
+            if (adminVehicles.length > 0) {
+                return adminVehicles.filter(v => v.active);
+            }
+
+            if (bookingVehicles.length > 0) {
+                return bookingVehicles;
+            }
+
+            // Fallback voertuigen
+            return [
+                { name: 'Economy', capacity: { passengers: 4 }, image: null },
+                { name: 'Standard', capacity: { passengers: 4 }, image: null },
+                { name: 'Premium', capacity: { passengers: 4 }, image: null },
+                { name: 'Business', capacity: { passengers: 4 }, image: null },
+                { name: 'Minivan', capacity: { passengers: 8 }, image: null }
+            ];
+        }
+
+        function calculatePrices() {
+            const from = document.getElementById('fromLocation').value.trim();
+            const to = document.getElementById('toLocation').value.trim();
+            const date = document.getElementById('travelDate').value;
+            const time = document.getElementById('travelTime').value;
+
+            if (!from || !to) {
+                alert('Vul beide locaties in om prijzen te berekenen');
+                return;
+            }
+
+            const distance = calculateDistance(from, to);
+            const dateTime = new Date(`${date}T${time}`);
+            const vehicles = getAvailableVehicles();
+
+            let resultsHTML = `
+                <div class="distance-info">
+                    <strong>📏 Afstand:</strong> ${distance} km<br>
+                    <strong>⏱️ Geschatte rijtijd:</strong> ${Math.round(distance * 1.5)} minuten
+                </div>
+            `;
+
+            // Toon toeslagen info
+            const hour = dateTime.getHours();
+            const dayOfWeek = dateTime.getDay();
+            const isNight = hour < 6 || hour > 22;
+            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+            const isRushHour = (hour >= 7 && hour <= 9) || (hour >= 17 && hour <= 19);
+
+            if (isNight || isWeekend || isRushHour || hasVia || hasReturn) {
+                let surcharges = [];
+                if (isNight) surcharges.push('Nachttoeslag (+30%)');
+                if (isWeekend) surcharges.push('Weekendtoeslag (+20%)');
+                if (isRushHour) surcharges.push('Spitsuurtoeslag (+15%)');
+                if (hasVia) surcharges.push('Extra stop (+€12)');
+                if (hasReturn) surcharges.push('Retour rit (+85%)');
+
+                resultsHTML += `
+                    <div class="surcharge-info">
+                        <strong>⚠️ Toeslagen:</strong> ${surcharges.join(', ')}
+                    </div>
+                `;
+            }
+
+            resultsHTML += '<div class="vehicle-options">';
+
+            vehicles.forEach(vehicle => {
+                const price = calculatePrice(vehicle.name, distance, dateTime);
+                
+                resultsHTML += `
+                    <div class="vehicle-option" onclick="selectVehicle('${vehicle.name}', ${price})">
+                        <div class="vehicle-info">
+                            <h4>${vehicle.name}</h4>
+                            <p>👤 ${vehicle.capacity?.passengers || 4} passagiers ${vehicle.capacity?.luggage ? '• 🧳 ' + vehicle.capacity.luggage + ' koffers' : ''}</p>
+                        </div>
+                        <div class="vehicle-price">€${price.toFixed(2)}</div>
+                    </div>
+                `;
+            });
+
+            resultsHTML += '</div>';
+
+            // Voeg booking knop toe
+            resultsHTML += `
+                <button class="calculate-btn" onclick="goToBooking()" style="margin-top: 30px;">
+                    🚕 Boek Nu
+                </button>
+            `;
+
+            document.getElementById('resultsArea').innerHTML = resultsHTML;
+        }
+
+        function selectVehicle(vehicleName, price) {
+            selectedVehicle = { name: vehicleName, price: price };
+            
+            // Update visual selection
+            document.querySelectorAll('.vehicle-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+        }
+
+        function goToBooking() {
+            if (!selectedVehicle) {
+                alert('Selecteer eerst een voertuig om door te gaan');
+                return;
+            }
+
+            // Sla trip data op voor booking systeem
+            const tripData = {
+                from: document.getElementById('fromLocation').value,
+                to: document.getElementById('toLocation').value,
+                date: document.getElementById('travelDate').value,
+                time: document.getElementById('travelTime').value,
+                hasVia: hasVia,
+                hasReturn: hasReturn,
+                selectedVehicle: selectedVehicle,
+                calculatedAt: new Date().toISOString()
+            };
+
+            localStorage.setItem('currentTripData', JSON.stringify(tripData));
+            
+            // Ga naar booking systeem
+            window.open('/booking-exact.html?fromCalculator=true', '_blank');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDateTime();
+            console.log('💰 Prijs calculator geladen');
+        });
+    </script>
+</body>
+</html>

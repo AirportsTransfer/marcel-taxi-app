@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Taxi Booking - Marcel's Service</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            color: #212529;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: white;
+            transition: width 0.3s ease;
+            width: 25%;
+        }
+
+        .content {
+            padding: 30px 25px;
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .location-input {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .location-input input {
+            width: 100%;
+            padding: 15px 45px 15px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .location-input input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .location-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            color: #6c757d;
+        }
+
+        .swap-btn {
+            position: absolute;
+            right: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #667eea;
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            z-index: 10;
+        }
+
+        .trip-options {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .trip-option {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .trip-option.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .datetime-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .datetime-input {
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .vehicle-card {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .vehicle-card:hover {
+            border-color: #667eea;
+        }
+
+        .vehicle-card.selected {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .vehicle-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .vehicle-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #212529;
+        }
+
+        .vehicle-price {
+            font-size: 16px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .vehicle-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 14px;
+            color: #6c757d;
+            margin: 10px 0;
+        }
+
+        .vehicle-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .child-seats {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .child-seats h4 {
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #495057;
+        }
+
+        .seat-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .seat-option {
+            flex: 1;
+            min-width: 80px;
+            text-align: center;
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .seat-option.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .seat-counter {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .counter-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .counter-value {
+            font-weight: 600;
+            padding: 0 15px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            background: #5a67d8;
+        }
+
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .price-summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .price-total {
+            font-weight: 600;
+            font-size: 18px;
+            color: #667eea;
+            border-top: 1px solid #dee2e6;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification.error {
+            background: #dc3545;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        .extra-stops {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px dashed #dee2e6;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .extra-stops.active {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .payment-options {
+            display: grid;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .payment-option {
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .payment-option:hover {
+            border-color: #667eea;
+        }
+
+        .payment-option.selected {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .payment-option div {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .payment-option small {
+            color: #6c757d;
+            font-size: 12px;
+        }
+
+        .service-option {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+        }
+
+        .service-option label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .service-option input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+
+        .phone-input-container {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .country-selector {
+            width: 100px;
+            padding: 12px 8px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        .country-selector:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .phone-input-container input[type="tel"] {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .phone-help {
+            color: #6c757d;
+            font-size: 12px;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .baggage-section, .child-seats-section {
+            margin: 15px 0;
+        }
+
+        .extra-stops-section {
+            margin: 20px 0;
+        }
+
+        .extra-stop-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .extra-stop-item input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+        }
+
+        .remove-stop {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+            }
+            
+            .datetime-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <button class="back-btn" onclick="goBack()" id="backBtn" style="display: none;">← Terug</button>
+            <h1>Professional Taxi</h1>
+            <p>Betrouwbaar & Comfortabel</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Step 1: Location & Date -->
+            <div class="step active" id="step1">
+                <h2 style="margin-bottom: 25px;">Waar gaan we naartoe?</h2>
+                
+                <div class="location-input">
+                    <input type="text" id="pickup" placeholder="Ophaaladres" value="Dam 1, Amsterdam">
+                    <span class="location-icon">📍</span>
+                </div>
+
+                <div style="position: relative;">
+                    <div class="location-input">
+                        <input type="text" id="destination" placeholder="Bestemmingsadres" value="Schiphol Airport">
+                        <span class="location-icon">🎯</span>
+                    </div>
+                    <button class="swap-btn" onclick="swapLocations()">⇅</button>
+                </div>
+
+                <div class="datetime-group">
+                    <div>
+                        <label>Datum</label>
+                        <input type="date" id="pickupDate" class="datetime-input">
+                    </div>
+                    <div>
+                        <label>Tijd</label>
+                        <input type="time" id="pickupTime" class="datetime-input">
+                    </div>
+                </div>
+
+                <div class="trip-options">
+                    <div class="trip-option active" onclick="selectTripType('oneway')">
+                        <div>🡺</div>
+                        <div>Enkele reis</div>
+                    </div>
+                    <div class="trip-option" onclick="selectTripType('return')">
+                        <div>⇄</div>
+                        <div>Retour</div>
+                    </div>
+                </div>
+
+                <div class="extra-stops-section">
+                    <div class="extra-stops" onclick="addExtraStop()">
+                        <div>+ Extra stop toevoegen</div>
+                        <small>€5 per extra stop</small>
+                    </div>
+                    <div id="extraStopsList"></div>
+                </div>
+
+                <div id="returnDateTime" style="display: none;">
+                    <h4 style="margin: 20px 0 10px 0;">Terugkomst</h4>
+                    <div class="datetime-group">
+                        <div>
+                            <label>Datum</label>
+                            <input type="date" id="returnDate" class="datetime-input">
+                        </div>
+                        <div>
+                            <label>Tijd</label>
+                            <input type="time" id="returnTime" class="datetime-input">
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="nextStep()">Volgende: Voertuig Kiezen</button>
+            </div>
+
+            <!-- Step 2: Vehicle Selection -->
+            <div class="step" id="step2">
+                <h2 style="margin-bottom: 25px;">Kies je voertuig</h2>
+
+                <!-- Saloon -->
+                <div class="vehicle-card" onclick="selectVehicle('saloon')">
+                    <div class="vehicle-icon">🚗</div>
+                    <div class="vehicle-header">
+                        <div class="vehicle-name">Saloon</div>
+                        <div class="vehicle-price">€25</div>
+                    </div>
+                    <div class="vehicle-info">
+                        <div>👥 3 personen</div>
+                        <div>🧳 2 grote + 2 kleine</div>
+                    </div>
+                    <small>Perfect voor kleine groepen</small>
+                </div>
+
+                <!-- Estate -->
+                <div class="vehicle-card" onclick="selectVehicle('estate')">
+                    <div class="vehicle-icon">🚙</div>
+                    <div class="vehicle-header">
+                        <div class="vehicle-name">Estate</div>
+                        <div class="vehicle-price">€30</div>
+                    </div>
+                    <div class="vehicle-info">
+                        <div>👥 4 personen</div>
+                        <div>🧳 3 grote + 3 kleine</div>
+                    </div>
+                    <small>Extra ruimte voor bagage</small>
+                </div>
+
+                <!-- Minivan A -->
+                <div class="vehicle-card" onclick="selectVehicle('minivan_a')">
+                    <div class="vehicle-icon">🚐</div>
+                    <div class="vehicle-header">
+                        <div class="vehicle-name">Minivan A</div>
+                        <div class="vehicle-price">€45</div>
+                    </div>
+                    <div class="vehicle-info">
+                        <div>👥 6 personen</div>
+                        <div>🧳 6 grote + 6 kleine</div>
+                    </div>
+                    <small>Ideaal voor families met kinderzitjes</small>
+                    
+                    <div class="child-seats" id="childSeats_a" style="display: none;">
+                        <h4>👶 Kinderzitjes (optioneel)</h4>
+                        <div class="seat-counter">
+                            <span>Maxi Cosi (0-15 mnd)</span>
+                            <div>
+                                <button class="counter-btn" onclick="updateChildSeat('maxi_cosi', -1)">-</button>
+                                <span class="counter-value" id="maxi_cosi_count">0</span>
+                                <button class="counter-btn" onclick="updateChildSeat('maxi_cosi', 1)">+</button>
+                            </div>
+                        </div>
+                        <div class="seat-counter">
+                            <span>Baby zitje (9mnd-4jr)</span>
+                            <div>
+                                <button class="counter-btn" onclick="updateChildSeat('baby_seat', -1)">-</button>
+                                <span class="counter-value" id="baby_seat_count">0</span>
+                                <button class="counter-btn" onclick="updateChildSeat('baby_seat', 1)">+</button>
+                            </div>
+                        </div>
+                        <div class="seat-counter">
+                            <span>Verhoogstoel (4-12jr)</span>
+                            <div>
+                                <button class="counter-btn" onclick="updateChildSeat('booster_seat', -1)">-</button>
+                                <span class="counter-value" id="booster_seat_count">0</span>
+                                <button class="counter-btn" onclick="updateChildSeat('booster_seat', 1)">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Minivan B -->
+                <div class="vehicle-card" onclick="selectVehicle('minivan_b')">
+                    <div class="vehicle-icon">🚌</div>
+                    <div class="vehicle-header">
+                        <div class="vehicle-name">Minivan B</div>
+                        <div class="vehicle-price">€65</div>
+                    </div>
+                    <div class="vehicle-info">
+                        <div>👥 8 personen</div>
+                        <div>🧳 8 grote + 8 kleine</div>
+                    </div>
+                    <small>Voor grote groepen</small>
+                </div>
+
+                <button class="btn" onclick="nextStep()" id="vehicleNextBtn" disabled>Volgende: Klantgegevens</button>
+            </div>
+
+            <!-- Step 3: Customer Details & Baggage -->
+            <div class="step" id="step3">
+                <h2 style="margin-bottom: 25px;">Klantgegevens & Bagage</h2>
+
+                <h3 style="margin-bottom: 15px;">👤 Persoonlijke gegevens</h3>
+                <div class="form-group">
+                    <label>Voornaam *</label>
+                    <input type="text" id="firstName" placeholder="Voornaam" required>
+                </div>
+                <div class="form-group">
+                    <label>Achternaam *</label>
+                    <input type="text" id="lastName" placeholder="Achternaam" required>
+                </div>
+                <div class="form-group">
+                    <label>GSM-nummer *</label>
+                    <div class="phone-input-container">
+                        <select id="countryCode" class="country-selector">
+                            <option value="+31" data-country="NL">🇳🇱 +31</option>
+                            <option value="+32" data-country="BE">🇧🇪 +32</option>
+                            <option value="+49" data-country="DE">🇩🇪 +49</option>
+                            <option value="+33" data-country="FR">🇫🇷 +33</option>
+                            <option value="+44" data-country="GB">🇬🇧 +44</option>
+                            <option value="+34" data-country="ES">🇪🇸 +34</option>
+                            <option value="+39" data-country="IT">🇮🇹 +39</option>
+                            <option value="+41" data-country="CH">🇨🇭 +41</option>
+                            <option value="+43" data-country="AT">🇦🇹 +43</option>
+                            <option value="+45" data-country="DK">🇩🇰 +45</option>
+                            <option value="+46" data-country="SE">🇸🇪 +46</option>
+                            <option value="+47" data-country="NO">🇳🇴 +47</option>
+                            <option value="+48" data-country="PL">🇵🇱 +48</option>
+                            <option value="+420" data-country="CZ">🇨🇿 +420</option>
+                            <option value="+421" data-country="SK">🇸🇰 +421</option>
+                            <option value="+36" data-country="HU">🇭🇺 +36</option>
+                            <option value="+40" data-country="RO">🇷🇴 +40</option>
+                            <option value="+359" data-country="BG">🇧🇬 +359</option>
+                            <option value="+385" data-country="HR">🇭🇷 +385</option>
+                            <option value="+386" data-country="SI">🇸🇮 +386</option>
+                            <option value="+370" data-country="LT">🇱🇹 +370</option>
+                            <option value="+371" data-country="LV">🇱🇻 +371</option>
+                            <option value="+372" data-country="EE">🇪🇪 +372</option>
+                            <option value="+353" data-country="IE">🇮🇪 +353</option>
+                            <option value="+351" data-country="PT">🇵🇹 +351</option>
+                            <option value="+30" data-country="GR">🇬🇷 +30</option>
+                            <option value="+90" data-country="TR">🇹🇷 +90</option>
+                            <option value="+1" data-country="US">🇺🇸 +1</option>
+                            <option value="+1" data-country="CA">🇨🇦 +1</option>
+                            <option value="+7" data-country="RU">🇷🇺 +7</option>
+                            <option value="+86" data-country="CN">🇨🇳 +86</option>
+                            <option value="+81" data-country="JP">🇯🇵 +81</option>
+                            <option value="+82" data-country="KR">🇰🇷 +82</option>
+                            <option value="+91" data-country="IN">🇮🇳 +91</option>
+                            <option value="+55" data-country="BR">🇧🇷 +55</option>
+                            <option value="+54" data-country="AR">🇦🇷 +54</option>
+                            <option value="+52" data-country="MX">🇲🇽 +52</option>
+                            <option value="+61" data-country="AU">🇦🇺 +61</option>
+                            <option value="+64" data-country="NZ">🇳🇿 +64</option>
+                            <option value="+27" data-country="ZA">🇿🇦 +27</option>
+                            <option value="+20" data-country="EG">🇪🇬 +20</option>
+                            <option value="+971" data-country="AE">🇦🇪 +971</option>
+                            <option value="+966" data-country="SA">🇸🇦 +966</option>
+                            <option value="+60" data-country="MY">🇲🇾 +60</option>
+                            <option value="+65" data-country="SG">🇸🇬 +65</option>
+                            <option value="+66" data-country="TH">🇹🇭 +66</option>
+                            <option value="+84" data-country="VN">🇻🇳 +84</option>
+                            <option value="+62" data-country="ID">🇮🇩 +62</option>
+                            <option value="+63" data-country="PH">🇵🇭 +63</option>
+                        </select>
+                        <input type="tel" id="phoneNumber" placeholder="6 12 34 56 78" required>
+                    </div>
+                    <small class="phone-help" id="phoneHelp">Vul uw telefoonnummer in zonder landcode</small>
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" id="email" placeholder="email@example.com" required>
+                </div>
+
+                <h3 style="margin: 25px 0 15px 0;">🧳 Bagage</h3>
+                <div class="baggage-section">
+                    <div class="seat-counter">
+                        <span>Grote koffers</span>
+                        <div>
+                            <button type="button" class="counter-btn" onclick="updateBaggage('large', -1)">-</button>
+                            <span class="counter-value" id="large_baggage_count">0</span>
+                            <button type="button" class="counter-btn" onclick="updateBaggage('large', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="seat-counter">
+                        <span>Kleine koffers</span>
+                        <div>
+                            <button type="button" class="counter-btn" onclick="updateBaggage('small', -1)">-</button>
+                            <span class="counter-value" id="small_baggage_count">0</span>
+                            <button type="button" class="counter-btn" onclick="updateBaggage('small', 1)">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 style="margin: 25px 0 15px 0;">👶 Kinderzitjes</h3>
+                <div class="child-seats-section">
+                    <div class="seat-counter">
+                        <span>Maxi Cosi (0-15 mnd) - €5</span>
+                        <div>
+                            <button type="button" class="counter-btn" onclick="updateChildSeat('maxi_cosi', -1)">-</button>
+                            <span class="counter-value" id="maxi_cosi_count">0</span>
+                            <button type="button" class="counter-btn" onclick="updateChildSeat('maxi_cosi', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="seat-counter">
+                        <span>Baby zitje (9mnd-4jr) - €5</span>
+                        <div>
+                            <button type="button" class="counter-btn" onclick="updateChildSeat('baby_seat', -1)">-</button>
+                            <span class="counter-value" id="baby_seat_count">0</span>
+                            <button type="button" class="counter-btn" onclick="updateChildSeat('baby_seat', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="seat-counter">
+                        <span>Verhoogstoel (4-12jr) - €3</span>
+                        <div>
+                            <button type="button" class="counter-btn" onclick="updateChildSeat('booster_seat', -1)">-</button>
+                            <span class="counter-value" id="booster_seat_count">0</span>
+                            <button type="button" class="counter-btn" onclick="updateChildSeat('booster_seat', 1)">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 style="margin: 25px 0 15px 0;">🍼 Extra Services</h3>
+                <div class="extra-services">
+                    <div class="service-option">
+                        <label>
+                            <input type="checkbox" id="water_service"> 
+                            <span>Water (gratis)</span>
+                        </label>
+                    </div>
+                    <div class="service-option">
+                        <label>
+                            <input type="checkbox" id="wifi_service"> 
+                            <span>WiFi in voertuig (gratis)</span>
+                        </label>
+                    </div>
+                    <div class="service-option">
+                        <label>
+                            <input type="checkbox" id="newspapers"> 
+                            <span>Kranten/tijdschriften (gratis)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <h3 style="margin: 25px 0 15px 0;">💳 Betaalmethode</h3>
+                <div class="payment-options">
+                    <div class="payment-option" onclick="selectPayment('cash')">
+                        <div>💵 Contant + Bankkaartwaarborg</div>
+                        <small>Betaal contant, bankkaart als waarborg</small>
+                    </div>
+                    <div class="payment-option" onclick="selectPayment('card')">
+                        <div>💳 Pinnen in taxi + Waarborg</div>
+                        <small>Pinnen in de taxi, bankkaart als waarborg</small>
+                    </div>
+                    <div class="payment-option" onclick="selectPayment('online')">
+                        <div>🌐 Online betaling</div>
+                        <small>Direct online betalen (meest populair)</small>
+                    </div>
+                    <div class="payment-option" onclick="selectPayment('transfer')">
+                        <div>🏦 Vooraf overgemaakt</div>
+                        <small>Bankoverschrijving vooraf</small>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="nextStep()" id="detailsNextBtn">Volgende: Bevestigen</button>
+            </div>
+
+            <!-- Step 4: Confirmation -->
+            <div class="step" id="step4">
+                <h2 style="margin-bottom: 25px;">Bevestig je boeking</h2>
+
+                <div class="price-summary">
+                    <h3 style="margin-bottom: 15px;">Rit Overzicht</h3>
+                    
+                    <div class="price-row">
+                        <span>Van:</span>
+                        <span id="summaryPickup">-</span>
+                    </div>
+                    <div class="price-row">
+                        <span>Naar:</span>
+                        <span id="summaryDestination">-</span>
+                    </div>
+                    <div class="price-row">
+                        <span>Datum & Tijd:</span>
+                        <span id="summaryDateTime">-</span>
+                    </div>
+                    <div class="price-row">
+                        <span>Voertuig:</span>
+                        <span id="summaryVehicle">-</span>
+                    </div>
+                    
+                    <div id="childSeatsSummary" style="display: none;">
+                        <div class="price-row">
+                            <span>Kinderzitjes:</span>
+                            <span id="summaryChildSeats">-</span>
+                        </div>
+                    </div>
+
+                    <div class="price-total">
+                        <div class="price-row">
+                            <span>Totaal:</span>
+                            <span id="summaryTotal">€0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Betaalmethode</label>
+                    <select id="paymentMethod" style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px;">
+                        <option value="cash">Contant + Bankkaartwaarborg</option>
+                        <option value="card">Pinnen in taxi + Waarborg</option>
+                        <option value="online">Online betaling</option>
+                        <option value="transfer">Vooraf overgemaakt</option>
+                    </select>
+                </div>
+
+                <button class="btn" onclick="confirmBooking()">✅ Bevestig Boeking</button>
+            </div>
+
+            <!-- Step 5: Success -->
+            <div class="step" id="step5">
+                <div style="text-align: center; padding: 40px 20px;">
+                    <div style="font-size: 60px; margin-bottom: 20px;">✅</div>
+                    <h2>Boeking Bevestigd!</h2>
+                    <p style="margin: 20px 0; color: #6c757d;">Je rit is succesvol geboekt. Je ontvangt een bevestiging per email en SMS.</p>
+                    
+                    <div id="bookingDetails" style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin: 20px 0; text-align: left;">
+                        <!-- Booking details will be filled here -->
+                    </div>
+
+                    <button class="btn" onclick="newBooking()">Nieuwe Boeking</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentStep = 1;
+        let selectedVehicle = null;
+        let tripType = 'oneway';
+        let extraStops = [];
+        let selectedPayment = null;
+        let baggage = {
+            large: 0,
+            small: 0
+        };
+        let childSeats = {
+            maxi_cosi: 0,
+            baby_seat: 0,
+            booster_seat: 0
+        };
+
+        // Vehicle configurations (admin can modify these)
+        const vehicleConfig = {
+            saloon: { 
+                name: 'Saloon', 
+                passengers: 3, 
+                largeLuggage: 2, 
+                smallLuggage: 2, 
+                basePrice: 25,
+                childSeats: false 
+            },
+            estate: { 
+                name: 'Estate', 
+                passengers: 4, 
+                largeLuggage: 3, 
+                smallLuggage: 3, 
+                basePrice: 30,
+                childSeats: false 
+            },
+            minivan_a: { 
+                name: 'Minivan A', 
+                passengers: 6, 
+                largeLuggage: 6, 
+                smallLuggage: 6, 
+                basePrice: 45,
+                childSeats: true 
+            },
+            minivan_b: { 
+                name: 'Minivan B', 
+                passengers: 8, 
+                largeLuggage: 8, 
+                smallLuggage: 8, 
+                basePrice: 65,
+                childSeats: false 
+            }
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default date and time
+            const now = new Date();
+            const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+            
+            document.getElementById('pickupDate').value = tomorrow.toISOString().split('T')[0];
+            document.getElementById('pickupTime').value = '09:00';
+            
+            updateProgress();
+            
+            // Add event listeners for customer details validation
+            ['firstName', 'lastName', 'phoneNumber', 'email'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('input', updateDetailsNextBtn);
+                    element.addEventListener('blur', updateDetailsNextBtn);
+                }
+            });
+            
+            // Add event listener for country code selector
+            const countrySelector = document.getElementById('countryCode');
+            if (countrySelector) {
+                countrySelector.addEventListener('change', function() {
+                    updatePhoneHelp();
+                    updateDetailsNextBtn();
+                });
+                // Initialize phone help
+                updatePhoneHelp();
+            }
+            
+            // Initialize button states
+            document.getElementById('detailsNextBtn').disabled = true;
+            document.getElementById('detailsNextBtn').style.opacity = '0.6';
+        });
+
+        function swapLocations() {
+            const pickup = document.getElementById('pickup');
+            const destination = document.getElementById('destination');
+            const temp = pickup.value;
+            pickup.value = destination.value;
+            destination.value = temp;
+        }
+
+        function selectTripType(type) {
+            tripType = type;
+            document.querySelectorAll('.trip-option').forEach(el => el.classList.remove('active'));
+            event.target.closest('.trip-option').classList.add('active');
+            
+            const returnDiv = document.getElementById('returnDateTime');
+            if (type === 'return') {
+                returnDiv.style.display = 'block';
+                const pickupDate = document.getElementById('pickupDate').value;
+                if (pickupDate) {
+                    document.getElementById('returnDate').value = pickupDate;
+                    document.getElementById('returnTime').value = '18:00';
+                }
+            } else {
+                returnDiv.style.display = 'none';
+            }
+        }
+
+        function addExtraStop() {
+            const stopNumber = extraStops.length + 1;
+            const stopId = 'stop_' + Date.now();
+            
+            extraStops.push({
+                id: stopId,
+                address: ''
+            });
+            
+            const stopItem = document.createElement('div');
+            stopItem.className = 'extra-stop-item';
+            stopItem.id = stopId;
+            stopItem.innerHTML = `
+                <span>Stop ${stopNumber}:</span>
+                <input type="text" placeholder="Adres van extra stop" onchange="updateExtraStop('${stopId}', this.value)">
+                <button class="remove-stop" onclick="removeExtraStop('${stopId}')">Verwijder</button>
+            `;
+            
+            document.getElementById('extraStopsList').appendChild(stopItem);
+            updatePricing();
+        }
+
+        function removeExtraStop(stopId) {
+            extraStops = extraStops.filter(stop => stop.id !== stopId);
+            document.getElementById(stopId).remove();
+            
+            // Renumber remaining stops
+            const remainingStops = document.querySelectorAll('.extra-stop-item');
+            remainingStops.forEach((item, index) => {
+                item.querySelector('span').textContent = `Stop ${index + 1}:`;
+            });
+            
+            updatePricing();
+        }
+
+        function updateExtraStop(stopId, address) {
+            const stop = extraStops.find(s => s.id === stopId);
+            if (stop) {
+                stop.address = address;
+            }
+        }
+
+        function selectVehicle(vehicleType) {
+            selectedVehicle = vehicleType;
+            document.querySelectorAll('.vehicle-card').forEach(el => el.classList.remove('selected'));
+            event.target.closest('.vehicle-card').classList.add('selected');
+            
+            // Show/hide child seats for Minivan A
+            document.querySelectorAll('[id^="childSeats_"]').forEach(el => el.style.display = 'none');
+            if (vehicleType === 'minivan_a') {
+                document.getElementById('childSeats_a').style.display = 'block';
+            }
+            
+            document.getElementById('vehicleNextBtn').disabled = false;
+            updatePricing();
+        }
+
+        function updateChildSeat(type, change) {
+            childSeats[type] = Math.max(0, Math.min(3, childSeats[type] + change));
+            document.getElementById(type + '_count').textContent = childSeats[type];
+            updatePricing();
+        }
+
+        function updateBaggage(type, change) {
+            baggage[type] = Math.max(0, baggage[type] + change);
+            document.getElementById(type + '_baggage_count').textContent = baggage[type];
+            updatePricing();
+        }
+
+        function selectPayment(paymentType) {
+            selectedPayment = paymentType;
+            document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
+            event.target.closest('.payment-option').classList.add('selected');
+            
+            // Update the next button state
+            updateDetailsNextBtn();
+        }
+
+        function updateDetailsNextBtn() {
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const phoneNumber = document.getElementById('phoneNumber').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const hasPayment = selectedPayment !== null;
+            
+            const btn = document.getElementById('detailsNextBtn');
+            if (firstName && lastName && phoneNumber && email && hasPayment) {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            } else {
+                btn.disabled = true;
+                btn.style.opacity = '0.6';
+                btn.style.cursor = 'not-allowed';
+            }
+        }
+
+        function isValidPhoneNumber(fullNumber, countryCode) {
+            // Remove all spaces and special characters except +
+            const cleanNumber = fullNumber.replace(/[\s\-\(\)]/g, '');
+            
+            // Country-specific validation patterns
+            const phonePatterns = {
+                '+31': /^\+31[6-9][0-9]{8}$/, // Netherlands
+                '+32': /^\+32[4-9][0-9]{8}$/, // Belgium
+                '+49': /^\+49[1-9][0-9]{10,11}$/, // Germany
+                '+33': /^\+33[6-7][0-9]{8}$/, // France
+                '+44': /^\+44[7][0-9]{9}$/, // UK
+                '+34': /^\+34[6-9][0-9]{8}$/, // Spain
+                '+39': /^\+39[3][0-9]{9}$/, // Italy
+                '+41': /^\+41[7][0-9]{8}$/, // Switzerland
+                '+43': /^\+43[6-9][0-9]{8,10}$/, // Austria
+                '+45': /^\+45[2-9][0-9]{7}$/, // Denmark
+                '+46': /^\+46[7][0-9]{8}$/, // Sweden
+                '+47': /^\+47[4-9][0-9]{7}$/, // Norway
+                '+48': /^\+48[5-9][0-9]{8}$/, // Poland
+                '+420': /^\+420[6-9][0-9]{8}$/, // Czech Republic
+                '+421': /^\+421[9][0-9]{8}$/, // Slovakia
+                '+36': /^\+36[2-7][0-9]{8}$/, // Hungary
+                '+40': /^\+40[7][0-9]{8}$/, // Romania
+                '+359': /^\+359[8-9][0-9]{8}$/, // Bulgaria
+                '+385': /^\+385[9][0-9]{8}$/, // Croatia
+                '+386': /^\+386[3-9][0-9]{7}$/, // Slovenia
+                '+370': /^\+370[6][0-9]{7}$/, // Lithuania
+                '+371': /^\+371[2][0-9]{7}$/, // Latvia
+                '+372': /^\+372[5][0-9]{7}$/, // Estonia
+                '+353': /^\+353[8-9][0-9]{8}$/, // Ireland
+                '+351': /^\+351[9][0-9]{8}$/, // Portugal
+                '+30': /^\+30[6-9][0-9]{9}$/, // Greece
+                '+90': /^\+90[5][0-9]{9}$/, // Turkey
+                '+1': /^\+1[2-9][0-9]{9}$/, // US/Canada
+                '+7': /^\+7[9][0-9]{9}$/, // Russia
+                '+86': /^\+86[1][0-9]{10}$/, // China
+                '+81': /^\+81[7-9][0-9]{8,9}$/, // Japan
+                '+82': /^\+82[1][0-9]{8,9}$/, // South Korea
+                '+91': /^\+91[6-9][0-9]{9}$/, // India
+                '+55': /^\+55[1-9][1-9][0-9]{8}$/, // Brazil
+                '+54': /^\+54[9][0-9]{8,10}$/, // Argentina
+                '+52': /^\+52[1][0-9]{10}$/, // Mexico
+                '+61': /^\+61[4][0-9]{8}$/, // Australia
+                '+64': /^\+64[2][0-9]{7,9}$/, // New Zealand
+                '+27': /^\+27[6-8][0-9]{8}$/, // South Africa
+                '+20': /^\+20[1][0-9]{9}$/, // Egypt
+                '+971': /^\+971[5][0-9]{8}$/, // UAE
+                '+966': /^\+966[5][0-9]{8}$/, // Saudi Arabia
+                '+60': /^\+60[1][0-9]{8,9}$/, // Malaysia
+                '+65': /^\+65[8-9][0-9]{7}$/, // Singapore
+                '+66': /^\+66[6-9][0-9]{8}$/, // Thailand
+                '+84': /^\+84[3-9][0-9]{8}$/, // Vietnam
+                '+62': /^\+62[8][0-9]{8,10}$/, // Indonesia
+                '+63': /^\+63[9][0-9]{9}$/ // Philippines
+            };
+            
+            const pattern = phonePatterns[countryCode];
+            if (!pattern) {
+                // If no specific pattern, do basic length validation
+                return cleanNumber.length >= 10 && cleanNumber.length <= 15;
+            }
+            
+            return pattern.test(cleanNumber);
+        }
+
+        function updatePhoneHelp() {
+            const countryCode = document.getElementById('countryCode').value;
+            const helpElement = document.getElementById('phoneHelp');
+            
+            const examples = {
+                '+31': 'Voorbeeld: 6 12 34 56 78',
+                '+32': 'Voorbeeld: 4 12 34 56 78',
+                '+49': 'Voorbeeld: 172 123 4567',
+                '+33': 'Voorbeeld: 6 12 34 56 78',
+                '+44': 'Voorbeeld: 7 123 456 789',
+                '+34': 'Voorbeeld: 6 12 34 56 78',
+                '+39': 'Voorbeeld: 3 12 345 6789',
+                '+41': 'Voorbeeld: 7 12 34 56 78',
+                '+1': 'Voorbeeld: 555 123 4567',
+                '+86': 'Voorbeeld: 138 0013 8000',
+                '+91': 'Voorbeeld: 9876 543 210'
+            };
+            
+            helpElement.textContent = examples[countryCode] || 'Vul uw telefoonnummer in zonder landcode';
+        }
+
+        function updatePricing() {
+            if (!selectedVehicle) return;
+            
+            const config = vehicleConfig[selectedVehicle];
+            let totalPrice = config.basePrice;
+            
+            // Add child seat fees
+            const childSeatFee = (childSeats.maxi_cosi + childSeats.baby_seat) * 5 + childSeats.booster_seat * 3;
+            totalPrice += childSeatFee;
+            
+            // Add extra stops fee
+            totalPrice += extraStops.length * 5;
+            
+            // Return trip doubles the price
+            if (tripType === 'return') {
+                totalPrice *= 2;
+            }
+            
+            // Update vehicle card price
+            const vehicleCard = document.querySelector('.vehicle-card.selected .vehicle-price');
+            if (vehicleCard) {
+                vehicleCard.textContent = '€' + totalPrice;
+            }
+        }
+
+        function nextStep() {
+            if (currentStep === 1) {
+                // Validate step 1
+                const pickup = document.getElementById('pickup').value;
+                const destination = document.getElementById('destination').value;
+                const date = document.getElementById('pickupDate').value;
+                const time = document.getElementById('pickupTime').value;
+                
+                if (!pickup || !destination || !date || !time) {
+                    showNotification('Vul alle verplichte velden in', 'error');
+                    return;
+                }
+            }
+            
+            if (currentStep === 2) {
+                if (!selectedVehicle) {
+                    showNotification('Selecteer een voertuig', 'error');
+                    return;
+                }
+                updateSummary();
+            }
+            
+            if (currentStep === 3) {
+                // Validate step 3 - Customer details
+                const firstName = document.getElementById('firstName').value.trim();
+                const lastName = document.getElementById('lastName').value.trim();
+                const phoneNumber = document.getElementById('phoneNumber').value.trim();
+                const email = document.getElementById('email').value.trim();
+                
+                if (!firstName || !lastName || !phoneNumber || !email) {
+                    showNotification('Vul alle verplichte klantgegevens in', 'error');
+                    return;
+                }
+                
+                // Validate email format
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    showNotification('Vul een geldig emailadres in', 'error');
+                    return;
+                }
+                
+                // Validate phone number (international format)
+                const countryCode = document.getElementById('countryCode').value;
+                const fullPhoneNumber = countryCode + phoneNumber.replace(/\s/g, '');
+                
+                if (!isValidPhoneNumber(fullPhoneNumber, countryCode)) {
+                    showNotification('Vul een geldig telefoonnummer in voor het geselecteerde land', 'error');
+                    return;
+                }
+                
+                // Check if payment method is selected
+                const selectedPayment = document.querySelector('.payment-option.selected');
+                if (!selectedPayment) {
+                    showNotification('Selecteer een betaalmethode', 'error');
+                    return;
+                }
+                
+                updateSummary();
+            }
+            
+            currentStep++;
+            showStep(currentStep);
+            updateProgress();
+        }
+
+        function goBack() {
+            if (currentStep > 1) {
+                currentStep--;
+                showStep(currentStep);
+                updateProgress();
+            }
+        }
+
+        function showStep(step) {
+            document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+            document.getElementById('step' + step).classList.add('active');
+            
+            const backBtn = document.getElementById('backBtn');
+            backBtn.style.display = step > 1 ? 'block' : 'none';
+        }
+
+        function updateProgress() {
+            const progress = (currentStep / 4) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        function updateSummary() {
+            const pickup = document.getElementById('pickup').value;
+            const destination = document.getElementById('destination').value;
+            const date = document.getElementById('pickupDate').value;
+            const time = document.getElementById('pickupTime').value;
+            
+            document.getElementById('summaryPickup').textContent = pickup;
+            document.getElementById('summaryDestination').textContent = destination;
+            document.getElementById('summaryDateTime').textContent = new Date(date + 'T' + time).toLocaleString('nl-NL');
+            document.getElementById('summaryVehicle').textContent = vehicleConfig[selectedVehicle].name;
+            
+            // Add customer details
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const countryCode = document.getElementById('countryCode').value;
+            const email = document.getElementById('email').value;
+            
+            // Update summary with customer details
+            if (firstName && lastName) {
+                document.getElementById('summaryCustomer').textContent = `${firstName} ${lastName}`;
+            }
+            if (phoneNumber && countryCode) {
+                document.getElementById('summaryPhone').textContent = `${countryCode} ${phoneNumber}`;
+            }
+            if (email) {
+                document.getElementById('summaryEmail').textContent = email;
+            }
+            
+            // Show payment method
+            if (selectedPayment) {
+                const paymentMethods = {
+                    'cash': '💵 Contant + Bankkaartwaarborg',
+                    'card': '💳 Pinnen in taxi + Waarborg',
+                    'online': '🌐 Online betaling',
+                    'transfer': '🏦 Vooraf overgemaakt'
+                };
+                document.getElementById('summaryPayment').textContent = paymentMethods[selectedPayment];
+            }
+            
+            // Calculate total price
+            let totalPrice = vehicleConfig[selectedVehicle].basePrice;
+            const childSeatFee = (childSeats.maxi_cosi + childSeats.baby_seat) * 5 + childSeats.booster_seat * 3;
+            totalPrice += childSeatFee;
+            totalPrice += extraStops.length * 5; // Fixed extraStops reference
+            if (tripType === 'return') totalPrice *= 2;
+            
+            // Show child seats if any
+            if (childSeatFee > 0) {
+                const seats = [];
+                if (childSeats.maxi_cosi > 0) seats.push(`${childSeats.maxi_cosi}x Maxi Cosi`);
+                if (childSeats.baby_seat > 0) seats.push(`${childSeats.baby_seat}x Baby zitje`);
+                if (childSeats.booster_seat > 0) seats.push(`${childSeats.booster_seat}x Verhoogstoel`);
+                
+                document.getElementById('summaryChildSeats').textContent = seats.join(', ');
+                document.getElementById('childSeatsSummary').style.display = 'block';
+            }
+            
+            // Show baggage if any
+            if (baggage.large > 0 || baggage.small > 0) {
+                const baggageText = [];
+                if (baggage.large > 0) baggageText.push(`${baggage.large}x Grote koffer`);
+                if (baggage.small > 0) baggageText.push(`${baggage.small}x Kleine koffer`);
+                
+                document.getElementById('summaryBaggage').textContent = baggageText.join(', ');
+                document.getElementById('baggageSummary').style.display = 'block';
+            }
+            
+            document.getElementById('summaryTotal').textContent = '€' + totalPrice;
+        }
+
+        function confirmBooking() {
+            // Here you would normally send the booking to your backend
+            const bookingData = {
+                pickup: document.getElementById('pickup').value,
+                destination: document.getElementById('destination').value,
+                date: document.getElementById('pickupDate').value,
+                time: document.getElementById('pickupTime').value,
+                vehicle: selectedVehicle,
+                tripType: tripType,
+                childSeats: childSeats,
+                extraStops: hasExtraStops,
+                paymentMethod: document.getElementById('paymentMethod').value
+            };
+            
+            // Simulate booking
+            setTimeout(() => {
+                showBookingConfirmation(bookingData);
+                nextStep();
+            }, 1000);
+        }
+
+        function showBookingConfirmation(data) {
+            const config = vehicleConfig[data.vehicle];
+            let totalPrice = config.basePrice;
+            const childSeatFee = (data.childSeats.maxi_cosi + data.childSeats.baby_seat) * 5 + data.childSeats.booster_seat * 3;
+            totalPrice += childSeatFee;
+            if (data.extraStops) totalPrice += 5;
+            if (data.tripType === 'return') totalPrice *= 2;
+            
+            document.getElementById('bookingDetails').innerHTML = `
+                <div style="margin-bottom: 10px;"><strong>Boeking #TX${Date.now().toString().slice(-6)}</strong></div>
+                <div>📍 ${data.pickup}</div>
+                <div>🎯 ${data.destination}</div>
+                <div>📅 ${new Date(data.date + 'T' + data.time).toLocaleString('nl-NL')}</div>
+                <div>🚗 ${config.name}</div>
+                <div>💰 €${totalPrice}</div>
+                <div style="margin-top: 15px; font-size: 14px; color: #6c757d;">
+                    Je chauffeur neemt 15 minuten voor vertrek contact op.
+                </div>
+            `;
+        }
+
+        function newBooking() {
+            currentStep = 1;
+            selectedVehicle = null;
+            tripType = 'oneway';
+            hasExtraStops = false;
+            childSeats = { maxi_cosi: 0, baby_seat: 0, booster_seat: 0 };
+            
+            // Reset form
+            document.getElementById('pickup').value = '';
+            document.getElementById('destination').value = '';
+            document.querySelectorAll('.trip-option').forEach(el => el.classList.remove('active'));
+            document.querySelector('.trip-option').classList.add('active');
+            document.querySelector('.extra-stops').classList.remove('active');
+            document.getElementById('vehicleNextBtn').disabled = true;
+            
+            showStep(1);
+            updateProgress();
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

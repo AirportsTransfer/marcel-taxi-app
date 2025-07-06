@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Voertuig Configuratie</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            color: #212529;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+
+        .vehicle-config {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .vehicle-config h3 {
+            margin-bottom: 20px;
+            color: #667eea;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .form-group input[type="number"],
+        .form-group input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #5a67d8;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .save-all {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .preview {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .preview h4 {
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← Terug naar Booking App</a>
+        
+        <div class="header">
+            <h1>🔧 Admin - Voertuig Configuratie</h1>
+            <p>Beheer voertuig capaciteiten en prijzen</p>
+        </div>
+
+        <div class="config-grid">
+            <!-- Saloon Configuration -->
+            <div class="vehicle-config">
+                <h3>🚗 Saloon</h3>
+                <div class="form-group">
+                    <label>Naam</label>
+                    <input type="text" id="saloon_name" value="Saloon">
+                </div>
+                <div class="form-group">
+                    <label>Max passagiers</label>
+                    <input type="number" id="saloon_passengers" value="3" min="1" max="8">
+                </div>
+                <div class="form-group">
+                    <label>Grote koffers</label>
+                    <input type="number" id="saloon_large" value="2" min="0" max="10">
+                </div>
+                <div class="form-group">
+                    <label>Kleine koffers</label>
+                    <input type="number" id="saloon_small" value="2" min="0" max="10">
+                </div>
+                <div class="form-group">
+                    <label>Basis prijs (€)</label>
+                    <input type="number" id="saloon_price" value="25" min="0" step="5">
+                </div>
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="saloon_childseats">
+                        <label for="saloon_childseats">Kinderzitjes beschikbaar</label>
+                    </div>
+                </div>
+                <button class="btn" onclick="updateVehicle('saloon')">Opslaan</button>
+                
+                <div class="preview">
+                    <h4>Preview</h4>
+                    <div id="saloon_preview">Wordt automatisch bijgewerkt...</div>
+                </div>
+            </div>
+
+            <!-- Estate Configuration -->
+            <div class="vehicle-config">
+                <h3>🚙 Estate</h3>
+                <div class="form-group">
+                    <label>Naam</label>
+                    <input type="text" id="estate_name" value="Estate">
+                </div>
+                <div class="form-group">
+                    <label>Max passagiers</label>
+                    <input type="number" id="estate_passengers" value="4" min="1" max="8">
+                </div>
+                <div class="form-group">
+                    <label>Grote koffers</label>
+                    <input type="number" id="estate_large" value="3" min="0" max="10">
+                </div>
+                <div class="form-group">
+                    <label>Kleine koffers</label>
+                    <input type="number" id="estate_small" value="3" min="0" max="10">
+                </div>
+                <div class="form-group">
+                    <label>Basis prijs (€)</label>
+                    <input type="number" id="estate_price" value="30" min="0" step="5">
+                </div>
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="estate_childseats">
+                        <label for="estate_childseats">Kinderzitjes beschikbaar</label>
+                    </div>
+                </div>
+                <button class="btn" onclick="updateVehicle('estate')">Opslaan</button>
+                
+                <div class="preview">
+                    <h4>Preview</h4>
+                    <div id="estate_preview">Wordt automatisch bijgewerkt...</div>
+                </div>
+            </div>
+
+            <!-- Minivan A Configuration -->
+            <div class="vehicle-config">
+                <h3>🚐 Minivan A</h3>
+                <div class="form-group">
+                    <label>Naam</label>
+                    <input type="text" id="minivan_a_name" value="Minivan A">
+                </div>
+                <div class="form-group">
+                    <label>Max passagiers</label>
+                    <input type="number" id="minivan_a_passengers" value="6" min="1" max="8">
+                </div>
+                <div class="form-group">
+                    <label>Grote koffers</label>
+                    <input type="number" id="minivan_a_large" value="6" min="0" max="10">
+                </div>
+                <div class="form-group">
+                    <label>Kleine koffers</label>
+                    <input type="number" id="minivan_a_small" value="6" min="0" max="10">
+                </div>
+                <div class="form-group">
+                    <label>Basis prijs (€)</label>
+                    <input type="number" id="minivan_a_price" value="45" min="0" step="5">
+                </div>
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="minivan_a_childseats" checked>
+                        <label for="minivan_a_childseats">Kinderzitjes beschikbaar</label>
+                    </div>
+                </div>
+                <button class="btn" onclick="updateVehicle('minivan_a')">Opslaan</button>
+                
+                <div class="preview">
+                    <h4>Preview</h4>
+                    <div id="minivan_a_preview">Wordt automatisch bijgewerkt...</div>
+                </div>
+            </div>
+
+            <!-- Minivan B Configuration -->
+            <div class="vehicle-config">
+                <h3>🚌 Minivan B</h3>
+                <div class="form-group">
+                    <label>Naam</label>
+                    <input type="text" id="minivan_b_name" value="Minivan B">
+                </div>
+                <div class="form-group">
+                    <label>Max passagiers</label>
+                    <input type="number" id="minivan_b_passengers" value="8" min="1" max="12">
+                </div>
+                <div class="form-group">
+                    <label>Grote koffers</label>
+                    <input type="number" id="minivan_b_large" value="8" min="0" max="15">
+                </div>
+                <div class="form-group">
+                    <label>Kleine koffers</label>
+                    <input type="number" id="minivan_b_small" value="8" min="0" max="15">
+                </div>
+                <div class="form-group">
+                    <label>Basis prijs (€)</label>
+                    <input type="number" id="minivan_b_price" value="65" min="0" step="5">
+                </div>
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="minivan_b_childseats">
+                        <label for="minivan_b_childseats">Kinderzitjes beschikbaar</label>
+                    </div>
+                </div>
+                <button class="btn" onclick="updateVehicle('minivan_b')">Opslaan</button>
+                
+                <div class="preview">
+                    <h4>Preview</h4>
+                    <div id="minivan_b_preview">Wordt automatisch bijgewerkt...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="save-all">
+            <button class="btn btn-success" onclick="saveAllConfigs()" style="font-size: 16px; padding: 15px 30px;">
+                💾 Alle Wijzigingen Opslaan
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Vehicle configurations
+        let vehicleConfigs = {
+            saloon: { name: 'Saloon', passengers: 3, largeLuggage: 2, smallLuggage: 2, basePrice: 25, childSeats: false },
+            estate: { name: 'Estate', passengers: 4, largeLuggage: 3, smallLuggage: 3, basePrice: 30, childSeats: false },
+            minivan_a: { name: 'Minivan A', passengers: 6, largeLuggage: 6, smallLuggage: 6, basePrice: 45, childSeats: true },
+            minivan_b: { name: 'Minivan B', passengers: 8, largeLuggage: 8, smallLuggage: 8, basePrice: 65, childSeats: false }
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load saved configs from localStorage
+            const saved = localStorage.getItem('vehicleConfigs');
+            if (saved) {
+                vehicleConfigs = JSON.parse(saved);
+                loadConfigs();
+            }
+            
+            updateAllPreviews();
+            
+            // Add event listeners for live preview
+            document.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', updateAllPreviews);
+            });
+        });
+
+        function loadConfigs() {
+            Object.keys(vehicleConfigs).forEach(vehicleType => {
+                const config = vehicleConfigs[vehicleType];
+                document.getElementById(vehicleType + '_name').value = config.name;
+                document.getElementById(vehicleType + '_passengers').value = config.passengers;
+                document.getElementById(vehicleType + '_large').value = config.largeLuggage;
+                document.getElementById(vehicleType + '_small').value = config.smallLuggage;
+                document.getElementById(vehicleType + '_price').value = config.basePrice;
+                document.getElementById(vehicleType + '_childseats').checked = config.childSeats;
+            });
+        }
+
+        function updateVehicle(vehicleType) {
+            const config = {
+                name: document.getElementById(vehicleType + '_name').value,
+                passengers: parseInt(document.getElementById(vehicleType + '_passengers').value),
+                largeLuggage: parseInt(document.getElementById(vehicleType + '_large').value),
+                smallLuggage: parseInt(document.getElementById(vehicleType + '_small').value),
+                basePrice: parseInt(document.getElementById(vehicleType + '_price').value),
+                childSeats: document.getElementById(vehicleType + '_childseats').checked
+            };
+            
+            vehicleConfigs[vehicleType] = config;
+            updatePreview(vehicleType);
+            showNotification(`${config.name} configuratie bijgewerkt!`);
+        }
+
+        function updatePreview(vehicleType) {
+            const config = vehicleConfigs[vehicleType];
+            const preview = document.getElementById(vehicleType + '_preview');
+            
+            preview.innerHTML = `
+                <div><strong>${config.name}</strong> - €${config.basePrice}</div>
+                <div>👥 ${config.passengers} personen</div>
+                <div>🧳 ${config.largeLuggage} grote + ${config.smallLuggage} kleine koffers</div>
+                <div>👶 Kinderzitjes: ${config.childSeats ? 'Beschikbaar' : 'Niet beschikbaar'}</div>
+            `;
+        }
+
+        function updateAllPreviews() {
+            Object.keys(vehicleConfigs).forEach(vehicleType => {
+                // Update config from current form values
+                const config = {
+                    name: document.getElementById(vehicleType + '_name').value,
+                    passengers: parseInt(document.getElementById(vehicleType + '_passengers').value) || 0,
+                    largeLuggage: parseInt(document.getElementById(vehicleType + '_large').value) || 0,
+                    smallLuggage: parseInt(document.getElementById(vehicleType + '_small').value) || 0,
+                    basePrice: parseInt(document.getElementById(vehicleType + '_price').value) || 0,
+                    childSeats: document.getElementById(vehicleType + '_childseats').checked
+                };
+                
+                // Update preview
+                const preview = document.getElementById(vehicleType + '_preview');
+                preview.innerHTML = `
+                    <div><strong>${config.name}</strong> - €${config.basePrice}</div>
+                    <div>👥 ${config.passengers} personen</div>
+                    <div>🧳 ${config.largeLuggage} grote + ${config.smallLuggage} kleine koffers</div>
+                    <div>👶 Kinderzitjes: ${config.childSeats ? 'Beschikbaar' : 'Niet beschikbaar'}</div>
+                `;
+            });
+        }
+
+        function saveAllConfigs() {
+            // Update all configs
+            Object.keys(vehicleConfigs).forEach(vehicleType => {
+                updateVehicle(vehicleType);
+            });
+            
+            // Save to localStorage
+            localStorage.setItem('vehicleConfigs', JSON.stringify(vehicleConfigs));
+            
+            // In a real app, you would also send this to your backend
+            // fetch('/api/v1/admin/vehicle-config', { method: 'POST', body: JSON.stringify(vehicleConfigs) });
+            
+            showNotification('Alle configuraties opgeslagen! 🎉', 'success');
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Export function for main app
+        function getVehicleConfigs() {
+            return vehicleConfigs;
+        }
+
+        // Make it globally available
+        window.getVehicleConfigs = getVehicleConfigs;
+    </script>
+</body>
+</html>

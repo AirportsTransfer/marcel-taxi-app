@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Admin - Marcel's Taxi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .vehicles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+        }
+
+        .vehicle-admin-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 2px solid #e8ecf3;
+            transition: all 0.3s ease;
+        }
+
+        .vehicle-admin-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .vehicle-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e8ecf3;
+        }
+
+        .vehicle-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .vehicle-price {
+            font-size: 20px;
+            font-weight: 600;
+            color: #27ae60;
+        }
+
+        .current-image {
+            width: 100%;
+            height: 200px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 2px dashed #e8ecf3;
+        }
+
+        .current-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 13px;
+        }
+
+        .no-image {
+            color: #95a5a6;
+            font-size: 48px;
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border: 2px dashed #95a5a6;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            border-color: #667eea;
+            background: #f0f3ff;
+        }
+
+        .upload-section.dragover {
+            border-color: #667eea;
+            background: #e8ecf3;
+            transform: scale(1.02);
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .vehicle-specs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .spec-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .spec-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .spec-value {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .spec-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .description-section {
+            margin-top: 20px;
+        }
+
+        .description-label {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .description-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e8ecf3;
+            border-radius: 12px;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 80px;
+            transition: border-color 0.3s ease;
+        }
+
+        .description-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .save-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .save-btn:hover {
+            background: #219a52;
+            transform: translateY(-1px);
+        }
+
+        .remove-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .remove-btn:hover {
+            background: #c0392b;
+        }
+
+        .preview-section {
+            background: #e8f5e8;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .preview-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #27ae60;
+        }
+
+        .preview-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .preview-btn:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+
+        .upload-instructions {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 1px solid #c3e6cb;
+            display: none;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 1px solid #f5c6cb;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .vehicles-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .vehicle-specs {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="header">
+            <h1>🚗 Vehicle Management</h1>
+            <p>Upload en beheer foto's voor uw voertuigen</p>
+        </div>
+
+        <div class="vehicles-grid" id="vehiclesGrid">
+            <!-- Vehicle cards will be generated here -->
+        </div>
+
+        <div class="preview-section">
+            <div class="preview-title">📱 Preview Booking System</div>
+            <p>Bekijk hoe uw voertuigen eruitzien in het boekingssysteem</p>
+            <a href="professional-redesign.html" class="preview-btn" target="_blank">
+                Open Booking System
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Vehicle configurations
+        let vehicleConfig = {
+            economy: {
+                name: 'Economy',
+                passengers: 4,
+                largeBags: 2,
+                smallBags: 3,
+                basePrice: 25,
+                description: 'Comfortabel en betaalbaar voor dagelijks gebruik',
+                image: null
+            },
+            business: {
+                name: 'Business Class',
+                passengers: 4,
+                largeBags: 3,
+                smallBags: 4,
+                basePrice: 35,
+                description: 'Luxe en professioneel voor zakelijke ritten',
+                image: null
+            },
+            minivan: {
+                name: 'Minivan',
+                passengers: 8,
+                largeBags: 6,
+                smallBags: 8,
+                basePrice: 55,
+                description: 'Perfect voor groepen en families',
+                image: null
+            },
+            premium: {
+                name: 'Premium',
+                passengers: 4,
+                largeBags: 4,
+                smallBags: 4,
+                basePrice: 65,
+                description: 'Ultieme luxe ervaring met topservice',
+                image: null
+            }
+        };
+
+        // Load saved configuration
+        function loadSavedConfig() {
+            const saved = localStorage.getItem('vehicleConfig');
+            if (saved) {
+                const savedConfig = JSON.parse(saved);
+                Object.keys(savedConfig).forEach(key => {
+                    if (vehicleConfig[key]) {
+                        vehicleConfig[key] = { ...vehicleConfig[key], ...savedConfig[key] };
+                    }
+                });
+            }
+        }
+
+        // Save configuration
+        function saveConfig() {
+            localStorage.setItem('vehicleConfig', JSON.stringify(vehicleConfig));
+        }
+
+        // Create vehicle admin card
+        function createVehicleCard(key, vehicle) {
+            const card = document.createElement('div');
+            card.className = 'vehicle-admin-card';
+            
+            card.innerHTML = `
+                <div class="vehicle-header">
+                    <div class="vehicle-name">${vehicle.name}</div>
+                    <div class="vehicle-price">€${vehicle.basePrice}</div>
+                </div>
+                
+                <div class="current-image" id="current-image-${key}">
+                    ${vehicle.image ? 
+                        `<img src="${vehicle.image}" alt="${vehicle.name}">` : 
+                        `<div class="no-image">📷</div>`
+                    }
+                </div>
+                
+                ${vehicle.image ? `
+                    <button class="remove-btn" onclick="removeImage('${key}')">
+                        🗑️ Verwijder Foto
+                    </button>
+                ` : ''}
+                
+                <div class="upload-section" 
+                     ondrop="handleDrop(event, '${key}')" 
+                     ondragover="handleDragOver(event)"
+                     ondragleave="handleDragLeave(event)"
+                     onclick="document.getElementById('file-${key}').click()">
+                    
+                    <div class="upload-instructions">
+                        📁 Sleep een foto hierheen of klik om te uploaden
+                        <br><small>Ondersteunde formaten: JPG, PNG, WebP (max 5MB)</small>
+                    </div>
+                    
+                    <button class="upload-btn" type="button">
+                        📎 Selecteer Foto
+                    </button>
+                    
+                    <input type="file" 
+                           id="file-${key}" 
+                           class="file-input" 
+                           accept="image/*" 
+                           onchange="handleFileSelect(event, '${key}')">
+                </div>
+                
+                <div class="vehicle-specs">
+                    <div class="spec-item">
+                        <div class="spec-icon">👥</div>
+                        <div class="spec-value">${vehicle.passengers}</div>
+                        <div class="spec-label">Personen</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-icon">🧳</div>
+                        <div class="spec-value">${vehicle.largeBags}</div>
+                        <div class="spec-label">Grote Koffers</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-icon">👝</div>
+                        <div class="spec-value">${vehicle.smallBags}</div>
+                        <div class="spec-label">Kleine Koffers</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-icon">💰</div>
+                        <div class="spec-value">€${vehicle.basePrice}</div>
+                        <div class="spec-label">Basisprijs</div>
+                    </div>
+                </div>
+                
+                <div class="description-section">
+                    <div class="description-label">📝 Beschrijving:</div>
+                    <textarea class="description-input" 
+                              id="desc-${key}" 
+                              placeholder="Voer een beschrijving in voor dit voertuig..."
+                              onchange="updateDescription('${key}', this.value)">${vehicle.description || ''}</textarea>
+                    <button class="save-btn" onclick="saveDescription('${key}')">
+                        💾 Opslaan
+                    </button>
+                </div>
+                
+                <div class="success-message" id="success-${key}">
+                    ✅ Succesvol opgeslagen!
+                </div>
+                
+                <div class="error-message" id="error-${key}">
+                    ❌ Er is een fout opgetreden!
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // Load vehicles into grid
+        function loadVehicles() {
+            const grid = document.getElementById('vehiclesGrid');
+            grid.innerHTML = '';
+            
+            Object.keys(vehicleConfig).forEach(key => {
+                const vehicle = vehicleConfig[key];
+                const card = createVehicleCard(key, vehicle);
+                grid.appendChild(card);
+            });
+        }
+
+        // Handle file selection
+        function handleFileSelect(event, vehicleKey) {
+            const file = event.target.files[0];
+            if (file) {
+                uploadImage(file, vehicleKey);
+            }
+        }
+
+        // Handle drag and drop
+        function handleDrop(event, vehicleKey) {
+            event.preventDefault();
+            event.target.closest('.upload-section').classList.remove('dragover');
+            
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                uploadImage(files[0], vehicleKey);
+            }
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.target.closest('.upload-section').classList.add('dragover');
+        }
+
+        function handleDragLeave(event) {
+            event.target.closest('.upload-section').classList.remove('dragover');
+        }
+
+        // Upload image
+        function uploadImage(file, vehicleKey) {
+            // Validate file
+            if (!file.type.startsWith('image/')) {
+                showMessage('error', vehicleKey, 'Selecteer een geldige afbeelding (JPG, PNG, WebP)');
+                return;
+            }
+            
+            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                showMessage('error', vehicleKey, 'Bestand is te groot. Maximaal 5MB toegestaan.');
+                return;
+            }
+            
+            // Read file and convert to base64
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Update vehicle config
+                vehicleConfig[vehicleKey].image = e.target.result;
+                
+                // Update UI
+                updateImageDisplay(vehicleKey, e.target.result);
+                
+                // Save to localStorage
+                saveConfig();
+                
+                // Show success message
+                showMessage('success', vehicleKey, 'Foto succesvol geüpload!');
+                
+                // Reload the card to show remove button
+                setTimeout(() => {
+                    loadVehicles();
+                }, 1000);
+            };
+            
+            reader.onerror = function() {
+                showMessage('error', vehicleKey, 'Fout bij het lezen van het bestand');
+            };
+            
+            reader.readAsDataURL(file);
+        }
+
+        // Update image display
+        function updateImageDisplay(vehicleKey, imageSrc) {
+            const imageContainer = document.getElementById(`current-image-${vehicleKey}`);
+            if (imageContainer) {
+                imageContainer.innerHTML = `<img src="${imageSrc}" alt="${vehicleConfig[vehicleKey].name}">`;
+            }
+        }
+
+        // Remove image
+        function removeImage(vehicleKey) {
+            if (confirm('Weet je zeker dat je deze foto wilt verwijderen?')) {
+                vehicleConfig[vehicleKey].image = null;
+                saveConfig();
+                loadVehicles();
+                showMessage('success', vehicleKey, 'Foto verwijderd');
+            }
+        }
+
+        // Update description
+        function updateDescription(vehicleKey, description) {
+            vehicleConfig[vehicleKey].description = description;
+        }
+
+        // Save description
+        function saveDescription(vehicleKey) {
+            const description = document.getElementById(`desc-${vehicleKey}`).value;
+            vehicleConfig[vehicleKey].description = description;
+            saveConfig();
+            showMessage('success', vehicleKey, 'Beschrijving opgeslagen!');
+        }
+
+        // Show success/error message
+        function showMessage(type, vehicleKey, message) {
+            const messageElement = document.getElementById(`${type}-${vehicleKey}`);
+            if (messageElement) {
+                messageElement.textContent = message;
+                messageElement.style.display = 'block';
+                
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    messageElement.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSavedConfig();
+            loadVehicles();
+        });
+
+        // Prevent default drag behaviors
+        document.addEventListener('dragenter', e => e.preventDefault());
+        document.addEventListener('dragover', e => e.preventDefault());
+        document.addEventListener('dragleave', e => e.preventDefault());
+        document.addEventListener('drop', e => e.preventDefault());
+    </script>
+</body>
+</html>

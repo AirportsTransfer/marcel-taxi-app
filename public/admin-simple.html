@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marcel's Taxi - Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: #2c3e50;
+            color: white;
+            padding: 0;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: #34495e;
+            border-bottom: 1px solid #2c3e50;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+        }
+
+        .nav-item {
+            border-bottom: 1px solid #34495e;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 15px 20px;
+            color: #bdc3c7;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover {
+            background: #34495e;
+            color: white;
+        }
+
+        .nav-submenu {
+            background: #1a252f;
+            display: none;
+        }
+
+        .nav-submenu.show {
+            display: block;
+        }
+
+        .nav-submenu .nav-link {
+            padding: 12px 20px 12px 52px;
+            font-size: 14px;
+        }
+
+        .main-content {
+            flex: 1;
+            background: #f5f7fa;
+        }
+
+        .header {
+            background: white;
+            padding: 15px 30px;
+            border-bottom: 1px solid #e1e8ed;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .content-area {
+            padding: 30px;
+        }
+
+        .content-section {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .test-area {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 2px dashed #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>🚗 Marcel's Taxi Pro</h2>
+                <p>Professional Admin Panel</p>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showSection('dispatch')">
+                        🚨 Dispatch
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" onclick="toggleMenu('bookings')">
+                        📋 Bookings
+                    </a>
+                    <ul class="nav-submenu" id="bookings-menu">
+                        <li><a class="nav-link" onclick="showSection('next-24h')">Next 24h</a></li>
+                        <li><a class="nav-link" onclick="showSection('latest')">Latest</a></li>
+                        <li><a class="nav-link" onclick="showSection('unconfirmed')">Unconfirmed</a></li>
+                        <li><a class="nav-link" onclick="showSection('completed')">Completed</a></li>
+                        <li><a class="nav-link" onclick="showSection('cancelled')">Cancelled</a></li>
+                        <li><a class="nav-link" onclick="showSection('all-bookings')">All</a></li>
+                        <li><a class="nav-link" onclick="showSection('trash')">Trash</a></li>
+                        <li><a class="nav-link" onclick="showSection('calendar')">Calendar</a></li>
+                        <li><a class="nav-link" onclick="showSection('add-new')">Add New</a></li>
+                    </ul>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" onclick="toggleMenu('reports')">
+                        📈 Reports
+                    </a>
+                    <ul class="nav-submenu" id="reports-menu">
+                        <li><a class="nav-link" onclick="showSection('driver-report')">Driver Report</a></li>
+                        <li><a class="nav-link" onclick="showSection('payment-report')">Payment Report</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showSection('users')">
+                        👥 Users
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showSection('feedback')">
+                        💬 Feedback
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" onclick="toggleMenu('settings')">
+                        ⚙️ Settings
+                    </a>
+                    <ul class="nav-submenu" id="settings-menu">
+                        <li><a class="nav-link" onclick="showSection('general')">⚙️ General Settings</a></li>
+                        <li><a class="nav-link" onclick="showSection('types-of-vehicles')">🚗 Types of Vehicles</a></li>
+                        <li><a class="nav-link" onclick="showSection('payment-methods')">💳 Payment Methods</a></li>
+                        <li><a class="nav-link" onclick="showSection('notifications')">🔔 Notifications</a></li>
+                        <li><a class="nav-link" onclick="showSection('mail')">📧 Email Settings</a></li>
+                        <li><a class="nav-link" onclick="showSection('booking-settings')">📋 Booking Settings</a></li>
+                        <li><a class="nav-link" onclick="showSection('locations')">📍 Locations</a></li>
+                        <li><a class="nav-link" onclick="showSection('services')">🎯 Services</a></li>
+                        <li><a class="nav-link" onclick="showSection('users-settings')">👥 User Management</a></li>
+                    </ul>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" onclick="toggleMenu('pricing')">
+                        💰 Pricing
+                    </a>
+                    <ul class="nav-submenu" id="pricing-menu">
+                        <li><a class="nav-link" onclick="showSection('deposit-payments')">Deposit Payments</a></li>
+                        <li><a class="nav-link" onclick="showSection('distance-time')">Distance & Time</a></li>
+                        <li><a class="nav-link" onclick="showSection('distance-modifier')">Distance Modifier</a></li>
+                        <li><a class="nav-link" onclick="showSection('driver-income')">Driver Income</a></li>
+                        <li><a class="nav-link" onclick="showSection('fixed-prices')">Fixed Prices</a></li>
+                        <li><a class="nav-link" onclick="showSection('holiday-surcharge')">Holiday Surcharge</a></li>
+                        <li><a class="nav-link" onclick="showSection('item-surcharge')">Item Surcharge</a></li>
+                        <li><a class="nav-link" onclick="showSection('location-surcharge')">Location Surcharge</a></li>
+                        <li><a class="nav-link" onclick="showSection('night-surcharge')">Night Surcharge</a></li>
+                        <li><a class="nav-link" onclick="showSection('other-discounts')">Other Discounts</a></li>
+                        <li><a class="nav-link" onclick="showSection('tax')">Tax</a></li>
+                        <li><a class="nav-link" onclick="showSection('voucher-discounts')">Voucher Discounts</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showSection('knowledge-base')">
+                        📚 Knowledge Base
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showSection('updates')">
+                        🔄 Updates
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showSection('profile')">
+                        👤 Profile
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" onclick="logout()">
+                        🚪 Sign Out
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h1 id="pageTitle">Dispatch</h1>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-success" onclick="window.open('/booking-exact.html', '_blank')">👀 View Booking System</button>
+                </div>
+            </div>
+
+            <div class="content-area">
+
+                <!-- Dispatch Section -->
+                <div id="dispatch-section" class="content-section active">
+                    <h2>🚨 Dispatch Center</h2>
+                    <p>Manual taxi booking and dispatch system</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px;">
+                        <div>
+                            <h3>Booking Form</h3>
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                                <p>Pickup Location: <input type="text" placeholder="Enter address" style="width: 100%; padding: 8px; margin: 5px 0;"></p>
+                                <p>Destination: <input type="text" placeholder="Enter destination" style="width: 100%; padding: 8px; margin: 5px 0;"></p>
+                                <p>Date & Time: <input type="datetime-local" style="width: 100%; padding: 8px; margin: 5px 0;"></p>
+                                <button class="btn btn-success" style="width: 100%; margin-top: 10px;">📞 Create Booking</button>
+                            </div>
+                        </div>
+                        <div>
+                            <h3>Live Map</h3>
+                            <div style="background: #e9ecef; height: 200px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                🗺️ Interactive Map Area
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Section -->
+                <div id="general-section" class="content-section">
+                    <h2>⚙️ General Settings</h2>
+                    <p>Configure general system settings</p>
+                </div>
+
+                <div id="types-of-vehicles-section" class="content-section">
+                    <h2>🚗 Types of Vehicles</h2>
+                    <p>Manage your vehicle fleet and specifications</p>
+                    <button class="btn btn-primary" onclick="window.open('/admin-vehicles.html', '_blank')">🚗 Open Vehicle Manager</button>
+                </div>
+
+                <!-- Bookings Sections -->
+                <div id="next-24h-section" class="content-section">
+                    <h2>📋 Next 24 Hours</h2>
+                    <p>Upcoming bookings in the next 24 hours</p>
+                </div>
+
+                <div id="latest-section" class="content-section">
+                    <h2>📋 Latest Bookings</h2>
+                    <p>Most recent booking requests</p>
+                </div>
+
+                <!-- Pricing Sections -->
+                <div id="distance-time-section" class="content-section">
+                    <h2>💰 Distance & Time Pricing</h2>
+                    <p>Configure pricing for each vehicle type - prices will be used in the booking system</p>
+                    
+                    <div style="margin: 20px 0; display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn btn-primary" onclick="loadVehiclePricing()">🔄 Load Vehicle Pricing</button>
+                        <button class="btn btn-success" onclick="saveAllPricing()">💾 Save All Changes</button>
+                        <button class="btn" style="background: #6c757d; color: white;" onclick="resetToDefaults()">🔄 Reset to Defaults</button>
+                    </div>
+                    
+                    <div id="vehiclePricingContainer" style="margin-top: 30px;">
+                        <div style="text-align: center; padding: 40px; color: #6c757d; border: 2px dashed #dee2e6; border-radius: 8px;">
+                            <h3>🚗 Loading vehicles from Types of Vehicles...</h3>
+                            <p>Vehicle pricing cards will appear here automatically</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="deposit-payments-section" class="content-section">
+                    <h2>💰 Deposit Payments</h2>
+                    <p>Configure security deposit settings</p>
+                </div>
+
+                <!-- Other sections -->
+                <div id="users-section" class="content-section">
+                    <h2>👥 Users</h2>
+                    <p>Manage users, drivers, and administrators</p>
+                </div>
+
+                <div id="feedback-section" class="content-section">
+                    <h2>💬 Customer Feedback</h2>
+                    <p>View and manage customer feedback</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('🚀 Admin panel JavaScript loaded');
+
+        function showSection(sectionName) {
+            console.log('📍 Showing section:', sectionName);
+            
+            // Hide all sections
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show target section
+            const targetSection = document.getElementById(sectionName + '-section');
+            if (targetSection) {
+                targetSection.classList.add('active');
+                document.getElementById('pageTitle').textContent = sectionName.charAt(0).toUpperCase() + sectionName.slice(1);
+                console.log('✅ Section shown:', sectionName);
+                
+                // If showing distance-time section, load vehicle pricing
+                if (sectionName === 'distance-time') {
+                    console.log('🚗 Loading Distance & Time pricing section...');
+                    updateTestResults('🚗 Opening Distance & Time pricing...');
+                    setTimeout(() => {
+                        loadVehiclePricing(); // Load dynamic pricing from Types of Vehicles
+                    }, 200);
+                }
+                
+                // Update test results
+                updateTestResults('✅ Section "' + sectionName + '" successfully loaded');
+            } else {
+                console.error('❌ Section not found:', sectionName + '-section');
+                updateTestResults('❌ Section "' + sectionName + '" not found');
+            }
+        }
+
+        function toggleMenu(menuName) {
+            console.log('🔧 Toggling menu:', menuName);
+            
+            const menu = document.getElementById(menuName + '-menu');
+            if (!menu) {
+                console.error('❌ Menu not found:', menuName + '-menu');
+                updateTestResults('❌ Menu "' + menuName + '" not found');
+                return;
+            }
+            
+            // Close other menus
+            const allMenus = document.querySelectorAll('.nav-submenu');
+            allMenus.forEach(m => {
+                if (m.id !== menuName + '-menu') {
+                    m.classList.remove('show');
+                }
+            });
+            
+            // Toggle current menu
+            const isVisible = menu.classList.contains('show');
+            if (isVisible) {
+                menu.classList.remove('show');
+                console.log('❌ Menu hidden:', menuName);
+                updateTestResults('❌ Menu "' + menuName + '" hidden');
+            } else {
+                menu.classList.add('show');
+                console.log('✅ Menu shown:', menuName);
+                updateTestResults('✅ Menu "' + menuName + '" shown');
+            }
+        }
+
+        function updateTestResults(message) {
+            const results = document.getElementById('testResults');
+            if (results) {
+                const timestamp = new Date().toLocaleTimeString();
+                results.innerHTML = `[${timestamp}] ${message}<br>${results.innerHTML}`;
+            }
+        }
+
+
+        function logout() {
+            if (confirm('Are you sure you want to sign out?')) {
+                window.location.href = '/';
+            }
+        }
+
+        // Vehicle Pricing System Functions
+        function loadVehiclePricing() {
+            console.log('🔄 Loading vehicle pricing from Types of Vehicles...');
+            updateTestResults('🔄 Loading vehicles from Types of Vehicles...');
+            
+            // Load vehicles from Types of Vehicles admin panel
+            const savedVehicles = localStorage.getItem('taxiVehicles');
+            let vehicles = [];
+            
+            if (savedVehicles) {
+                try {
+                    vehicles = JSON.parse(savedVehicles);
+                    console.log('✅ Loaded', vehicles.length, 'vehicles from Types of Vehicles');
+                    updateTestResults(`✅ Found ${vehicles.length} vehicles in Types of Vehicles`);
+                } catch (e) {
+                    console.error('❌ Error parsing saved vehicles:', e);
+                    updateTestResults('❌ Error loading vehicles from Types of Vehicles');
+                }
+            }
+            
+            // If no vehicles found, show message to add vehicles first
+            if (vehicles.length === 0) {
+                updateTestResults('⚠️ No vehicles found - need to add vehicles first');
+                const container = document.getElementById('vehiclePricingContainer');
+                if (container) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 60px 40px; border: 2px dashed #dee2e6; border-radius: 12px; background: #f8f9fa;">
+                            <div style="font-size: 48px; margin-bottom: 20px;">🚗</div>
+                            <h3 style="color: #495057; margin-bottom: 15px;">Geen voertuigen gevonden</h3>
+                            <p style="color: #6c757d; margin-bottom: 25px; font-size: 16px;">
+                                Je moet eerst voertuigen toevoegen in <strong>Types of Vehicles</strong><br>
+                                voordat je prijzen kunt instellen.
+                            </p>
+                            <button class="btn btn-primary" onclick="showSection('types-of-vehicles')" style="margin-right: 10px;">
+                                🚗 Ga naar Types of Vehicles
+                            </button>
+                            <button class="btn" style="background: #6c757d; color: white;" onclick="window.open('/admin-vehicles.html', '_blank')">
+                                🔧 Open Vehicle Manager
+                            </button>
+                        </div>
+                    `;
+                }
+                return;
+            }
+            
+            // Load saved pricing data
+            const savedPricing = localStorage.getItem('vehiclePricing');
+            const pricingData = savedPricing ? JSON.parse(savedPricing) : {};
+            
+            const container = document.getElementById('vehiclePricingContainer');
+            if (!container) {
+                console.error('❌ Container not found!');
+                return;
+            }
+            
+            // Create dynamic pricing cards based on actual vehicles from Types of Vehicles
+            let htmlContent = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px;">';
+            
+            vehicles.forEach(vehicle => {
+                // Get existing pricing or set defaults
+                const pricing = pricingData[vehicle.id] || { minimumPrice: 15.00, pricePerKm: 1.50 };
+                
+                // Determine vehicle image source - NEVER overwrite custom uploads
+                let vehicleImage = '🚗'; // fallback emoji
+                if (vehicle.image) {
+                    if (vehicle.image.startsWith('data:')) {
+                        // Base64 image uploaded from laptop - PROTECTED!
+                        vehicleImage = `<img src="${vehicle.image}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;" alt="${vehicle.name}">`;
+                        updateTestResults(`📷 PROTECTED: Using custom uploaded image for ${vehicle.name}`);
+                    } else if (vehicle.image.startsWith('http') && !vehicle.image.includes('unsplash')) {
+                        // Custom external URL image - not default
+                        vehicleImage = `<img src="${vehicle.image}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;" alt="${vehicle.name}">`;
+                        updateTestResults(`🌐 Using custom external image for ${vehicle.name}`);
+                    } else if (vehicle.image.includes('unsplash')) {
+                        // Skip default unsplash images - use emoji instead
+                        vehicleImage = '🚗';
+                        updateTestResults(`⚠️ Skipping default image for ${vehicle.name} - using emoji`);
+                    }
+                } else {
+                    updateTestResults(`📷 No image set for ${vehicle.name} - using emoji`);
+                }
+                
+                htmlContent += `
+                    <div style="background: white; border: 1px solid #e9ecef; border-radius: 12px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+                        <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                            <div style="width: 60px; height: 40px; background: #f8f9fa; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 15px; overflow: hidden;">
+                                ${vehicleImage}
+                            </div>
+                            <div>
+                                <h4 style="margin: 0; font-size: 16px; font-weight: 600; color: #2c3e50;">${vehicle.name}</h4>
+                                <p style="margin: 0; font-size: 12px; color: #6c757d;">${vehicle.description || 'Professional taxi service'}</p>
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div>
+                                <label style="display: block; font-size: 13px; font-weight: 500; color: #6c757d; margin-bottom: 8px;">Minimum prijs</label>
+                                <div style="display: flex; align-items: center; border: 1px solid #e9ecef; border-radius: 8px; overflow: hidden;">
+                                    <button type="button" onclick="adjustDynamicPrice('${vehicle.id}', 'minimum', -0.50)" 
+                                            style="background: #f8f9fa; border: none; padding: 8px 12px; cursor: pointer; color: #6c757d;">-</button>
+                                    <input type="number" id="minimum_${vehicle.id}" value="${pricing.minimumPrice.toFixed(2)}" 
+                                           step="0.50" min="0" 
+                                           style="border: none; text-align: center; padding: 8px; width: 100%; outline: none; font-weight: 500;"
+                                           onchange="updateDynamicPricing('${vehicle.id}', 'minimum', this.value)">
+                                    <button type="button" onclick="adjustDynamicPrice('${vehicle.id}', 'minimum', 0.50)" 
+                                            style="background: #f8f9fa; border: none; padding: 8px 12px; cursor: pointer; color: #6c757d;">+</button>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label style="display: block; font-size: 13px; font-weight: 500; color: #6c757d; margin-bottom: 8px;">Prijs per km</label>
+                                <div style="display: flex; align-items: center; border: 1px solid #e9ecef; border-radius: 8px; overflow: hidden;">
+                                    <button type="button" onclick="adjustDynamicPrice('${vehicle.id}', 'perKm', -0.10)" 
+                                            style="background: #f8f9fa; border: none; padding: 8px 12px; cursor: pointer; color: #6c757d;">-</button>
+                                    <input type="number" id="perKm_${vehicle.id}" value="${pricing.pricePerKm.toFixed(2)}" 
+                                           step="0.10" min="0" 
+                                           style="border: none; text-align: center; padding: 8px; width: 100%; outline: none; font-weight: 500;"
+                                           onchange="updateDynamicPricing('${vehicle.id}', 'perKm', this.value)">
+                                    <button type="button" onclick="adjustDynamicPrice('${vehicle.id}', 'perKm', 0.10)" 
+                                            style="background: #f8f9fa; border: none; padding: 8px 12px; cursor: pointer; color: #6c757d;">+</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #f1f3f4; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 12px; color: #6c757d;">
+                                Capaciteit: ${vehicle.capacity?.passengers || 4} personen
+                            </span>
+                            <span style="font-size: 12px; color: ${vehicle.active ? '#28a745' : '#dc3545'}; font-weight: 500;">
+                                ${vehicle.active ? '✅ Actief' : '❌ Inactief'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            htmlContent += '</div>';
+            container.innerHTML = htmlContent;
+            
+            console.log(`✅ Created pricing cards for ${vehicles.length} vehicles from Types of Vehicles`);
+            updateTestResults(`✅ Pricing loaded for ${vehicles.length} vehicles from Types of Vehicles`);
+        }
+        
+        function adjustDynamicPrice(vehicleId, type, amount) {
+            const inputId = type === 'minimum' ? `minimum_${vehicleId}` : `perKm_${vehicleId}`;
+            const input = document.getElementById(inputId);
+            if (input) {
+                const currentValue = parseFloat(input.value) || 0;
+                const newValue = Math.max(0, currentValue + amount);
+                input.value = newValue.toFixed(2);
+                updateDynamicPricing(vehicleId, type, newValue);
+                
+                // Get vehicle name for display
+                const vehicles = JSON.parse(localStorage.getItem('taxiVehicles') || '[]');
+                const vehicle = vehicles.find(v => v.id === vehicleId);
+                const vehicleName = vehicle ? vehicle.name : vehicleId;
+                
+                updateTestResults(`💰 ${vehicleName} ${type} price: €${newValue.toFixed(2)}`);
+            }
+        }
+        
+        function updateDynamicPricing(vehicleId, type, value) {
+            // Load current pricing data
+            const savedPricing = localStorage.getItem('vehiclePricing');
+            let pricingData = savedPricing ? JSON.parse(savedPricing) : {};
+            
+            // Initialize vehicle pricing if not exists
+            if (!pricingData[vehicleId]) {
+                pricingData[vehicleId] = { minimumPrice: 15.00, pricePerKm: 1.50 };
+            }
+            
+            // Update the specific price
+            if (type === 'minimum') {
+                pricingData[vehicleId].minimumPrice = parseFloat(value) || 0;
+            } else if (type === 'perKm') {
+                pricingData[vehicleId].pricePerKm = parseFloat(value) || 0;
+            }
+            
+            // Save back to localStorage
+            localStorage.setItem('vehiclePricing', JSON.stringify(pricingData));
+            
+            // Trigger sync to booking system
+            syncDynamicPricingToBookingSystem();
+            
+            console.log(`Updated ${type} pricing for vehicle ${vehicleId}: €${value}`);
+        }
+        
+        function syncDynamicPricingToBookingSystem() {
+            const pricingData = JSON.parse(localStorage.getItem('vehiclePricing') || '{}');
+            const vehicles = JSON.parse(localStorage.getItem('taxiVehicles') || '[]');
+            
+            // Create booking system compatible data using real vehicle data
+            const bookingSystemPricing = {};
+            
+            vehicles.forEach(vehicle => {
+                if (vehicle.active) {
+                    const pricing = pricingData[vehicle.id] || { minimumPrice: 15.00, pricePerKm: 1.50 };
+                    bookingSystemPricing[vehicle.id] = {
+                        vehicleId: vehicle.id,
+                        vehicleName: vehicle.name,
+                        minimumPrice: pricing.minimumPrice,
+                        pricePerKm: pricing.pricePerKm,
+                        capacity: vehicle.capacity,
+                        image: vehicle.image,
+                        description: vehicle.description,
+                        active: vehicle.active,
+                        lastUpdated: new Date().toISOString()
+                    };
+                }
+            });
+            
+            // Save for booking system
+            localStorage.setItem('bookingSystemPricing', JSON.stringify(bookingSystemPricing));
+            localStorage.setItem('pricingLastUpdate', Date.now().toString());
+            
+            // Also create vehicle data for booking system - PROTECT custom images
+            const bookingSystemVehicles = vehicles
+                .filter(v => v.active && (v.display === 'Frontend & Backend' || v.display === 'Frontend only'))
+                .map(v => {
+                    const pricing = pricingData[v.id] || { minimumPrice: 25.00, pricePerKm: 2.50 };
+                    
+                    // Protect custom uploaded images - never overwrite them
+                    let protectedImage = v.image;
+                    if (v.image && v.image.includes('unsplash')) {
+                        // Remove default unsplash images - let booking system handle fallback
+                        protectedImage = null;
+                    }
+                    
+                    return {
+                        id: v.id,
+                        name: v.name,
+                        price: pricing.minimumPrice, // Use minimum price as base price
+                        passengers: `1-${v.capacity?.passengers || 4} passengers`,
+                        luggage: `1-${v.capacity?.luggage || 2} large bags`,
+                        handLuggage: `1-${v.capacity?.handLuggage || 2} small bags`,
+                        image: protectedImage, // Protected from overwrites
+                        capacity: {
+                            passengers: v.capacity?.passengers || 4,
+                            luggage: v.capacity?.luggage || 2,
+                            handLuggage: v.capacity?.handLuggage || 2,
+                            wheelchairs: v.capacity?.wheelchairs || 0,
+                            childSeats: v.capacity?.childSeats || 0
+                        },
+                        description: v.description || '',
+                        active: v.active,
+                        lastUpdated: new Date().toISOString()
+                    };
+                });
+            
+            localStorage.setItem('bookingSystemVehicles', JSON.stringify(bookingSystemVehicles));
+            
+            console.log('💰 Dynamic pricing synced to booking system:', bookingSystemPricing);
+            console.log('🚗 Vehicle data synced to booking system:', bookingSystemVehicles.length, 'vehicles');
+            updateTestResults(`🔄 Synced ${Object.keys(bookingSystemPricing).length} vehicles with pricing + ${bookingSystemVehicles.length} vehicles to booking system`);
+            
+            // Update timestamp to trigger booking system refresh
+            localStorage.setItem('pricingLastUpdate', Date.now().toString());
+            
+            // Trigger immediate refresh in booking system if it's open
+            try {
+                window.postMessage({ 
+                    type: 'PRICING_UPDATED', 
+                    vehicles: bookingSystemVehicles,
+                    pricing: bookingSystemPricing,
+                    timestamp: Date.now()
+                }, '*');
+                console.log('📡 Sent pricing update message to booking system');
+            } catch (e) {
+                console.log('⚠️ Could not send refresh message:', e.message);
+            }
+        }
+        
+        function saveAllPricing() {
+            const vehicles = JSON.parse(localStorage.getItem('taxiVehicles') || '[]');
+            let savedCount = 0;
+            
+            vehicles.forEach(vehicle => {
+                const minimumInput = document.getElementById(`minimum_${vehicle.id}`);
+                const perKmInput = document.getElementById(`perKm_${vehicle.id}`);
+                
+                if (minimumInput && perKmInput) {
+                    updateDynamicPricing(vehicle.id, 'minimum', minimumInput.value);
+                    updateDynamicPricing(vehicle.id, 'perKm', perKmInput.value);
+                    savedCount++;
+                }
+            });
+            
+            alert(`✅ Alle prijzen opgeslagen!\n\n${savedCount} voertuigen bijgewerkt\nPrijzen zijn gesynchroniseerd met het boekingssysteem.`);
+            updateTestResults(`✅ Saved pricing for ${savedCount} vehicles from Types of Vehicles`);
+        }
+        
+        function resetToDefaults() {
+            if (confirm('Weet je zeker dat je alle prijzen wilt resetten naar de standaardwaarden?')) {
+                const vehicles = JSON.parse(localStorage.getItem('taxiVehicles') || '[]');
+                
+                vehicles.forEach(vehicle => {
+                    const minimumInput = document.getElementById(`minimum_${vehicle.id}`);
+                    const perKmInput = document.getElementById(`perKm_${vehicle.id}`);
+                    
+                    if (minimumInput && perKmInput) {
+                        minimumInput.value = '15.00';
+                        perKmInput.value = '1.50';
+                        updateDynamicPricing(vehicle.id, 'minimum', 15.00);
+                        updateDynamicPricing(vehicle.id, 'perKm', 1.50);
+                    }
+                });
+                
+                alert('✅ Prijzen gereset naar standaardwaarden (€15 min, €1.50/km)');
+                updateTestResults('🔄 All vehicles reset to default pricing');
+            }
+        }
+        
+        function syncPricingToBookingSystem() {
+            const pricingData = JSON.parse(localStorage.getItem('vehiclePricing') || '{}');
+            const vehicles = JSON.parse(localStorage.getItem('taxiVehicles') || '[]');
+            
+            // Create booking system compatible data
+            const bookingSystemPricing = {};
+            
+            vehicles.forEach(vehicle => {
+                if (vehicle.active) {
+                    const pricing = pricingData[vehicle.id] || { minimumPrice: 15.00, pricePerKm: 1.50 };
+                    bookingSystemPricing[vehicle.id] = {
+                        vehicleId: vehicle.id,
+                        vehicleName: vehicle.name,
+                        minimumPrice: pricing.minimumPrice,
+                        pricePerKm: pricing.pricePerKm,
+                        capacity: vehicle.capacity,
+                        image: vehicle.image,
+                        description: vehicle.description,
+                        active: vehicle.active,
+                        lastUpdated: new Date().toISOString()
+                    };
+                }
+            });
+            
+            // Save for booking system
+            localStorage.setItem('bookingSystemPricing', JSON.stringify(bookingSystemPricing));
+            localStorage.setItem('pricingLastUpdate', Date.now().toString());
+            
+            console.log('Pricing synced to booking system:', bookingSystemPricing);
+        }
+        
+        
+        function adjustStaticPrice(fieldId, amount) {
+            // This function is no longer used - vehicles are loaded dynamically from Types of Vehicles
+            console.log('ℹ️ Please use the dynamic vehicles from Types of Vehicles instead');
+        }
+        
+        function savePricing() {
+            // This function is no longer used with dynamic pricing
+            console.log('ℹ️ Using dynamic pricing - no static save needed');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📱 Admin panel initialized');
+            
+            // Auto-load vehicle pricing when Distance & Time section is opened
+            setTimeout(() => {
+                const section = document.getElementById('distance-time-section');
+                if (section && section.classList.contains('active')) {
+                    console.log('🔄 Auto-loading vehicle pricing for Distance & Time...');
+                    loadVehiclePricing();
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

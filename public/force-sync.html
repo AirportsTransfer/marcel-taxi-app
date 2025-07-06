@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔄 Force Sync - Marcel's Taxi</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-info { background: #17a2b8; color: white; }
+
+        .log-area {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            height: 300px;
+            overflow-y: auto;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .status {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 Force Vehicle Synchronization</h1>
+        <p>Use deze pagina om de vehicle sync tussen admin panel en booking system te forceren.</p>
+
+        <div class="status">
+            <h3>📊 Current Status</h3>
+            <p><strong>Admin Vehicles:</strong> <span id="adminCount">0</span></p>
+            <p><strong>Booking Vehicles:</strong> <span id="bookingCount">0</span></p>
+            <p><strong>Last Sync:</strong> <span id="lastSync">Never</span></p>
+        </div>
+
+        <div>
+            <button class="btn btn-primary" onclick="forceSync()">🔄 Force Sync Now</button>
+            <button class="btn btn-success" onclick="loadFromAdmin()">📥 Load from Admin Panel</button>
+            <button class="btn btn-info" onclick="refreshStatus()">📊 Refresh Status</button>
+            <button class="btn btn-danger" onclick="clearAllData()">🗑️ Clear All Data</button>
+        </div>
+
+        <div>
+            <a href="/admin-vehicles.html" target="_blank" class="btn btn-success">🚗 Open Admin Panel</a>
+            <a href="/booking-exact.html" target="_blank" class="btn btn-info">🎫 Open Booking System</a>
+            <a href="/debug-sync.html" target="_blank" class="btn btn-primary">🔍 Debug Console</a>
+        </div>
+
+        <div class="log-area" id="logArea">
+            [System Ready] Force sync tool initialized...<br>
+        </div>
+    </div>
+
+    <script>
+        function log(message) {
+            const logArea = document.getElementById('logArea');
+            const timestamp = new Date().toLocaleTimeString();
+            logArea.innerHTML += `[${timestamp}] ${message}<br>`;
+            logArea.scrollTop = logArea.scrollHeight;
+            console.log(message);
+        }
+
+        function refreshStatus() {
+            log('📊 Refreshing status...');
+            
+            const adminData = JSON.parse(localStorage.getItem('taxiVehicles') || '[]');
+            const bookingData = JSON.parse(localStorage.getItem('bookingSystemVehicles') || '[]');
+            const lastUpdate = localStorage.getItem('vehiclesLastUpdate');
+            
+            document.getElementById('adminCount').textContent = adminData.length;
+            document.getElementById('bookingCount').textContent = bookingData.length;
+            document.getElementById('lastSync').textContent = lastUpdate ? 
+                new Date(parseInt(lastUpdate)).toLocaleString() : 'Never';
+            
+            log(`✅ Status: Admin=${adminData.length}, Booking=${bookingData.length}`);
+            
+            if (adminData.length > 0) {
+                adminData.forEach(v => {
+                    const imageType = v.image?.startsWith('data:') ? 'CUSTOM' : 'DEFAULT';
+                    log(`🚗 Admin: ${v.name} (${imageType} image, active: ${v.active})`);
+                });
+            }
+            
+            if (bookingData.length > 0) {
+                bookingData.forEach(v => {
+                    const imageType = v.image?.startsWith('data:') ? 'CUSTOM' : 'DEFAULT';
+                    log(`🎫 Booking: ${v.name} (${imageType} image)`);
+                });
+            }
+        }
+
+        function loadFromAdmin() {
+            log('📥 Loading vehicles from admin storage...');
+            
+            const adminVehicles = JSON.parse(localStorage.getItem('taxiVehicles') || '[]');
+            log(`📋 Found ${adminVehicles.length} vehicles in admin storage`);
+            
+            if (adminVehicles.length === 0) {
+                log('⚠️ No vehicles found in admin storage');
+                return;
+            }
+            
+            // Convert to booking format
+            const bookingVehicles = adminVehicles
+                .filter(v => v.active && (v.display === 'Frontend & Backend' || v.display === 'Frontend only'))
+                .map(v => ({
+                    id: v.id,
+                    name: v.name,
+                    price: Math.floor(Math.random() * 300 + 150),
+                    passengers: `1-${v.capacity?.passengers || 4} passengers`,
+                    luggage: `1-${v.capacity?.luggage || 2} large bags`,
+                    handLuggage: `1-${v.capacity?.handLuggage || 2} small bags`,
+                    image: v.image,
+                    capacity: {
+                        passengers: v.capacity?.passengers || 4,
+                        luggage: v.capacity?.luggage || 2,
+                        handLuggage: v.capacity?.handLuggage || 2,
+                        wheelchairs: v.capacity?.wheelchairs || 0,
+                        childSeats: v.capacity?.childSeats || 0
+                    },
+                    description: v.description || '',
+                    active: v.active,
+                    lastUpdated: new Date().toISOString()
+                }));
+            
+            log(`🔄 Converted ${bookingVehicles.length} vehicles to booking format`);
+            
+            // Save to booking storage
+            localStorage.setItem('bookingSystemVehicles', JSON.stringify(bookingVehicles));
+            localStorage.setItem('vehiclesLastUpdate', Date.now().toString());
+            
+            log('💾 Saved to booking system storage');
+            refreshStatus();
+        }
+
+        function forceSync() {
+            log('🔄 Force syncing vehicles...');
+            
+            // First load from admin
+            loadFromAdmin();
+            
+            // Then trigger cross-tab communication
+            try {
+                const bookingVehicles = JSON.parse(localStorage.getItem('bookingSystemVehicles') || '[]');
+                
+                // Send message to booking system
+                window.postMessage({ 
+                    type: 'FORCE_VEHICLE_REFRESH', 
+                    vehicles: bookingVehicles,
+                    timestamp: Date.now()
+                }, '*');
+                
+                // Trigger storage event
+                window.dispatchEvent(new StorageEvent('storage', {
+                    key: 'bookingSystemVehicles',
+                    newValue: JSON.stringify(bookingVehicles),
+                    url: window.location.href
+                }));
+                
+                log('📡 Sent cross-tab sync messages');
+            } catch (e) {
+                log('❌ Error sending sync messages: ' + e.message);
+            }
+            
+            log('✅ Force sync completed');
+        }
+
+        function clearAllData() {
+            if (confirm('Clear all vehicle data? This will remove everything!')) {
+                localStorage.removeItem('bookingSystemVehicles');
+                localStorage.removeItem('taxiVehicles');
+                localStorage.removeItem('vehiclesLastUpdate');
+                log('🗑️ All data cleared');
+                refreshStatus();
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Force sync tool ready');
+            refreshStatus();
+        });
+    </script>
+</body>
+</html>

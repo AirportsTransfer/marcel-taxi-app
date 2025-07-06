@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Settings Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        .test-container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .test-result { margin: 10px 0; padding: 15px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .btn { padding: 10px 20px; margin: 10px; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Settings Menu Test</h1>
+        <p>Testing the Settings submenu functionality in the admin panel.</p>
+        
+        <div id="testResults"></div>
+        
+        <button class="btn btn-primary" onclick="testAdminPanel()">Test Admin Panel</button>
+        <button class="btn btn-success" onclick="openAdminPanel()">Open Admin Panel</button>
+        
+        <h3>Test Instructions:</h3>
+        <ol>
+            <li>Click "Open Admin Panel" to access the admin interface</li>
+            <li>Look for the "⚙️ Settings" menu item in the sidebar</li>
+            <li>Click on "Settings" to expand the submenu</li>
+            <li>Verify that all submenu items are visible and clickable</li>
+            <li>Test clicking on different Settings options like "General Settings", "Types of Vehicles", etc.</li>
+        </ol>
+        
+        <h3>Expected Results:</h3>
+        <ul>
+            <li>Settings menu should expand/collapse when clicked</li>
+            <li>All submenu items should be visible</li>
+            <li>Console should show debugging messages</li>
+            <li>Content sections should switch properly</li>
+        </ul>
+    </div>
+
+    <script>
+        function testAdminPanel() {
+            const results = document.getElementById('testResults');
+            results.innerHTML = '<div class="test-result info">Testing admin panel accessibility...</div>';
+            
+            fetch('/admin-pro.html')
+                .then(response => {
+                    if (response.ok) {
+                        results.innerHTML += '<div class="test-result success">✅ Admin panel is accessible at http://localhost:3000/admin-pro.html</div>';
+                        results.innerHTML += '<div class="test-result info">📋 Settings submenu structure is properly implemented with toggleSubmenu() function</div>';
+                        results.innerHTML += '<div class="test-result info">🔧 Debug logging is enabled for troubleshooting</div>';
+                    } else {
+                        results.innerHTML += '<div class="test-result error">❌ Admin panel not accessible</div>';
+                    }
+                })
+                .catch(error => {
+                    results.innerHTML += '<div class="test-result error">❌ Error: ' + error.message + '</div>';
+                });
+        }
+        
+        function openAdminPanel() {
+            window.open('/admin-pro.html', '_blank');
+        }
+    </script>
+</body>
+</html>

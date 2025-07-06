@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Pricing: Leuven → Brussels Airport - Marcel's Taxi</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn:hover { transform: translateY(-1px); }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        .price-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px 0;
+        }
+        .vehicle-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        .price-calculation {
+            font-family: 'Courier New', monospace;
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-size: 12px;
+        }
+        .final-price {
+            font-size: 24px;
+            font-weight: 700;
+            color: #28a745;
+            text-align: center;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Pricing: Leuven Vaartstraat 56 → Brussels Airport</h1>
+        <p>Test de prijsberekening voor uw specifieke route en voertuigprijzen</p>
+        
+        <div class="test-section">
+            <h3>📍 Route Information</h3>
+            <p><strong>Van:</strong> Leuven Vaartstraat 56</p>
+            <p><strong>Naar:</strong> Brussels Airport</p>
+            <p><strong>Afstand:</strong> <span id="calculatedDistance">Berekenen...</span></p>
+        </div>
+        
+        <div style="margin: 20px 0;">
+            <button class="btn btn-primary" onclick="setupCorrectPricing()">
+                🔧 Stel Correcte Prijzen In
+            </button>
+            <button class="btn btn-success" onclick="testPriceCalculation()">
+                🧪 Test Prijsberekening
+            </button>
+            <button class="btn btn-danger" onclick="resetData()">
+                🗑️ Reset Test Data
+            </button>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // Distance calculation function (copied from booking system)
+        function calculateDistance(from, to) {
+            console.log(`🗺️ Calculating distance from "${from}" to "${to}"`);
+            
+            const distances = {
+                'leuven': {
+                    'brussels': 25, 'antwerpen': 45, 'maastricht': 95, 'eindhoven': 70,
+                    'amsterdam': 160, 'rotterdam': 135, 'utrecht': 125, 'den haag': 120,
+                    'schiphol': 145, 'breda': 100, 'tilburg': 95
+                },
+                'brussels': {
+                    'leuven': 25, 'antwerpen': 45, 'maastricht': 120, 'eindhoven': 85,
+                    'amsterdam': 175, 'rotterdam': 150, 'utrecht': 140, 'den haag': 135,
+                    'schiphol': 160, 'breda': 115, 'tilburg': 110
+                }
+            };
+            
+            // Clean and normalize input
+            const fromKey = from.toLowerCase().trim()
+                .replace(/vaartstraat.*/, '')
+                .replace(/airport.*/, '')
+                .replace(/centraal.*/, '')
+                .replace(/\[.*\]/, '')
+                .replace(/\s+/, ' ')
+                .split(' ')[0];
+                
+            const toKey = to.toLowerCase().trim()
+                .replace(/airport.*/, '')
+                .replace(/centraal.*/, '')
+                .replace(/\[.*\]/, '')
+                .replace(/\s+/, ' ')
+                .split(' ')[0];
+            
+            console.log(`🔍 Normalized: "${fromKey}" → "${toKey}"`);
+            
+            // Check both directions
+            if (distances[fromKey] && distances[fromKey][toKey]) {
+                const distance = distances[fromKey][toKey];
+                console.log(`✅ Found distance: ${distance}km`);
+                return distance;
+            }
+            
+            if (distances[toKey] && distances[toKey][fromKey]) {
+                const distance = distances[toKey][fromKey];
+                console.log(`✅ Found reverse distance: ${distance}km`);
+                return distance;
+            }
+            
+            // Default for this specific route
+            const defaultDistance = 25; // Leuven to Brussels is about 25km
+            console.log(`⚠️ Using default for Leuven-Brussels: ${defaultDistance}km`);
+            return defaultDistance;
+        }
+        
+        function setupCorrectPricing() {
+            console.log('🔧 Setting up correct vehicle pricing...');
+            
+            // Create test vehicles with your specified pricing
+            const testVehicles = [
+                {
+                    id: 'saloon',
+                    name: 'Saloon',
+                    description: 'Premium saloon service',
+                    image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTUgMTFMMTIgM0wxOSAxMVYyMEg1VjExWiIgZmlsbD0iIzM0OTVlYiIvPgo8L3N2Zz4K',
+                    driver: 'All',
+                    services: 'All',
+                    hourlyRate: 0,
+                    capacity: {
+                        passengers: 4,
+                        luggage: 3,
+                        handLuggage: 3,
+                        wheelchairs: 0,
+                        childSeats: 2
+                    },
+                    enquire: false,
+                    default: false,
+                    active: true,
+                    ordering: 0,
+                    display: 'Frontend & Backend'
+                },
+                {
+                    id: 'estate',
+                    name: 'Estate',
+                    description: 'Estate vehicle with extra space',
+                    image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTUgMTFMMTIgM0wxOSAxMVYyMEg1VjExWiIgZmlsbD0iIzI4YTc0NSIvPgo8L3N2Zz4K',
+                    driver: 'All',
+                    services: 'All',
+                    hourlyRate: 0,
+                    capacity: {
+                        passengers: 4,
+                        luggage: 5,
+                        handLuggage: 4,
+                        wheelchairs: 0,
+                        childSeats: 2
+                    },
+                    enquire: false,
+                    default: false,
+                    active: true,
+                    ordering: 1,
+                    display: 'Frontend & Backend'
+                },
+                {
+                    id: 'minivan',
+                    name: 'Minivan',
+                    description: 'Spacious minivan for larger groups',
+                    image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTUgMTFMMTIgM0wxOSAxMVYyMEg1VjExWiIgZmlsbD0iI2ZmOGMwMCIvPgo8L3N2Zz4K',
+                    driver: 'All',
+                    services: 'All',
+                    hourlyRate: 0,
+                    capacity: {
+                        passengers: 8,
+                        luggage: 8,
+                        handLuggage: 8,
+                        wheelchairs: 1,
+                        childSeats: 4
+                    },
+                    enquire: false,
+                    default: false,
+                    active: true,
+                    ordering: 2,
+                    display: 'Frontend & Backend'
+                },
+                {
+                    id: 'v-class',
+                    name: 'V Class',
+                    description: 'Luxury V Class Mercedes',
+                    image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTUgMTFMMTIgM0wxOSAxMVYyMEg1VjExWiIgZmlsbD0iIzZmNDJjMSIvPgo8L3N2Zz4K',
+                    driver: 'All',
+                    services: 'All',
+                    hourlyRate: 0,
+                    capacity: {
+                        passengers: 7,
+                        luggage: 7,
+                        handLuggage: 7,
+                        wheelchairs: 1,
+                        childSeats: 3
+                    },
+                    enquire: false,
+                    default: false,
+                    active: true,
+                    ordering: 3,
+                    display: 'Frontend & Backend'
+                }
+            ];
+            
+            // Save vehicles to Types of Vehicles
+            localStorage.setItem('taxiVehicles', JSON.stringify(testVehicles));
+            
+            // Set up your specific pricing: Saloon starts at €50 + €1.80/km
+            const vehiclePricing = {
+                'saloon': { minimumPrice: 50.00, pricePerKm: 1.80 },
+                'estate': { minimumPrice: 60.00, pricePerKm: 2.00 },     // Slightly higher for estate
+                'minivan': { minimumPrice: 70.00, pricePerKm: 2.20 },   // Higher for larger vehicle
+                'v-class': { minimumPrice: 80.00, pricePerKm: 2.50 }    // Premium pricing for V Class
+            };
+            
+            // Save Distance & Time pricing
+            localStorage.setItem('vehiclePricing', JSON.stringify(vehiclePricing));
+            
+            // Create booking system compatible format
+            const bookingVehicles = testVehicles.map(v => {
+                const pricing = vehiclePricing[v.id];
+                const distance = calculateDistance('Leuven Vaartstraat 56', 'Brussels Airport');
+                const calculatedPrice = Math.max(pricing.minimumPrice, distance * pricing.pricePerKm);
+                
+                return {
+                    id: v.id,
+                    name: v.name,
+                    price: Math.round(calculatedPrice * 2) / 2, // Round to nearest 0.50
+                    passengers: `1-${v.capacity.passengers} passengers`,
+                    luggage: `1-${v.capacity.luggage} large bags`,
+                    handLuggage: `1-${v.capacity.handLuggage} small bags`,
+                    image: v.image,
+                    capacity: v.capacity,
+                    description: v.description,
+                    active: v.active,
+                    lastUpdated: new Date().toISOString()
+                };
+            });
+            
+            localStorage.setItem('bookingSystemVehicles', JSON.stringify(bookingVehicles));
+            localStorage.setItem('bookingSystemPricing', JSON.stringify(vehiclePricing));
+            
+            console.log('✅ Vehicle pricing setup completed');
+            document.getElementById('results').innerHTML = `
+                <div class="test-section">
+                    <h3>✅ Voertuigprijzen Ingesteld</h3>
+                    <p>De volgende voertuigen en prijzen zijn ingesteld:</p>
+                    <ul>
+                        <li><strong>Saloon:</strong> €50 minimum + €1.80/km</li>
+                        <li><strong>Estate:</strong> €60 minimum + €2.00/km</li>
+                        <li><strong>Minivan:</strong> €70 minimum + €2.20/km</li>
+                        <li><strong>V Class:</strong> €80 minimum + €2.50/km</li>
+                    </ul>
+                    <p>✅ Data opgeslagen in localStorage voor admin panels en boekingsysteem</p>
+                </div>
+            `;
+        }
+        
+        function testPriceCalculation() {
+            console.log('🧪 Testing price calculation for Leuven → Brussels Airport...');
+            
+            const from = 'Leuven Vaartstraat 56';
+            const to = 'Brussels Airport';
+            const distance = calculateDistance(from, to);
+            
+            document.getElementById('calculatedDistance').textContent = `${distance}km`;
+            
+            // Load pricing data
+            const vehiclePricing = localStorage.getItem('vehiclePricing');
+            if (!vehiclePricing) {
+                document.getElementById('results').innerHTML = `
+                    <div class="test-section">
+                        <h3>❌ Geen Prijzen Gevonden</h3>
+                        <p>Klik eerst op "Stel Correcte Prijzen In" om de voertuigprijzen in te stellen.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const pricing = JSON.parse(vehiclePricing);
+            
+            let resultsHTML = `
+                <div class="test-section">
+                    <h3>🧪 Prijsberekening Resultaten</h3>
+                    <p><strong>Route:</strong> ${from} → ${to}</p>
+                    <p><strong>Afstand:</strong> ${distance}km</p>
+                    <p><strong>Berekeningsformule:</strong> max(minimum_prijs, afstand × prijs_per_km)</p>
+                </div>
+            `;
+            
+            const vehicles = ['saloon', 'estate', 'minivan', 'v-class'];
+            const vehicleNames = {
+                'saloon': 'Saloon',
+                'estate': 'Estate', 
+                'minivan': 'Minivan',
+                'v-class': 'V Class'
+            };
+            
+            vehicles.forEach(vehicleId => {
+                if (pricing[vehicleId]) {
+                    const vehiclePricing = pricing[vehicleId];
+                    const minimumPrice = vehiclePricing.minimumPrice;
+                    const pricePerKm = vehiclePricing.pricePerKm;
+                    const distancePrice = distance * pricePerKm;
+                    const finalPrice = Math.max(minimumPrice, distancePrice);
+                    const roundedPrice = Math.round(finalPrice * 2) / 2; // Round to nearest 0.50
+                    
+                    const isMinimumUsed = minimumPrice >= distancePrice;
+                    
+                    resultsHTML += `
+                        <div class="price-card">
+                            <div class="vehicle-name">${vehicleNames[vehicleId]}</div>
+                            <div class="price-calculation">
+                                Minimum prijs: €${minimumPrice.toFixed(2)}
+                                Afstand prijs: ${distance}km × €${pricePerKm.toFixed(2)} = €${distancePrice.toFixed(2)}
+                                
+                                Berekening: max(€${minimumPrice.toFixed(2)}, €${distancePrice.toFixed(2)}) = €${finalPrice.toFixed(2)}
+                                ${isMinimumUsed ? '→ Minimum prijs wordt gebruikt' : '→ Afstandsprijs wordt gebruikt'}
+                                
+                                Afgerond: €${roundedPrice.toFixed(2)}
+                            </div>
+                            <div class="final-price">€${roundedPrice.toFixed(2)}</div>
+                        </div>
+                    `;
+                    
+                    console.log(`🚗 ${vehicleNames[vehicleId]}: €${minimumPrice} min + €${pricePerKm}/km × ${distance}km = €${roundedPrice.toFixed(2)}`);
+                }
+            });
+            
+            document.getElementById('results').innerHTML = resultsHTML;
+        }
+        
+        function resetData() {
+            if (confirm('🗑️ Reset alle test data?')) {
+                localStorage.removeItem('taxiVehicles');
+                localStorage.removeItem('vehiclePricing');
+                localStorage.removeItem('bookingSystemVehicles');
+                localStorage.removeItem('bookingSystemPricing');
+                
+                document.getElementById('results').innerHTML = `
+                    <div class="test-section">
+                        <h3>🗑️ Data Gereset</h3>
+                        <p>Alle test data is verwijderd uit localStorage.</p>
+                    </div>
+                `;
+                
+                document.getElementById('calculatedDistance').textContent = 'Berekenen...';
+                console.log('🗑️ All test data cleared');
+            }
+        }
+        
+        // Auto-calculate distance on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const distance = calculateDistance('Leuven Vaartstraat 56', 'Brussels Airport');
+            document.getElementById('calculatedDistance').textContent = `${distance}km`;
+            
+            console.log('🚀 Price testing tool loaded');
+            console.log(`📏 Leuven → Brussels Airport distance: ${distance}km`);
+        });
+    </script>
+</body>
+</html>

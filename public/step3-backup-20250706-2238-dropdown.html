@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marcel's Taxi - STAP 3: Klantgegevens</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5;
+            color: #333;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        .booking-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            min-height: calc(100vh - 40px);
+        }
+
+        .step-header {
+            text-align: center;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 25px 20px;
+            position: relative;
+        }
+
+        .back-button {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .back-button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-50%) translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .step-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .step-progress {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .progress-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .progress-dot:hover {
+            transform: scale(1.2);
+        }
+
+        .progress-dot.active {
+            background: white;
+        }
+
+        .progress-dot.completed {
+            background: #28a745;
+        }
+
+        /* FORM SECTIONS */
+        .form-section {
+            background: #fff;
+            padding: 25px 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-input:valid {
+            border-color: #28a745;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+
+        /* BOOKING SUMMARY */
+        .booking-summary {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid #dee2e6;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px;
+        }
+
+        .summary-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 18px;
+            color: #667eea;
+            margin-top: 10px;
+            padding-top: 15px;
+            border-top: 2px solid #dee2e6;
+        }
+
+        .summary-label {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .summary-value {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        /* ACTION BUTTONS */
+        .action-buttons {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-top: 1px solid #dee2e6;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 20px 50px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a67d8 0%, #667eea 100%);
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            background: linear-gradient(135deg, #6c757d 0%, #adb5bd 100%);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.2);
+            opacity: 0.6;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 15px;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="booking-container">
+        <button class="back-button" onclick="goBack()">← Terug naar STAP 2</button>
+        
+        <div class="step-header">
+            <h1 class="step-title">STAP 3: Klantgegevens</h1>
+            <p>Vul uw gegevens in om de boeking af te ronden</p>
+            <div class="step-progress">
+                <div class="progress-dot completed" onclick="goToStep(1)" title="Ga naar STAP 1"></div>
+                <div class="progress-dot completed" onclick="goToStep(2)" title="Ga naar STAP 2"></div>
+                <div class="progress-dot active"></div>
+            </div>
+        </div>
+
+        <!-- PERSOONLIJKE GEGEVENS -->
+        <div class="form-section">
+            <h2 class="section-title">Persoonlijke gegevens</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="firstName">Voornaam *</label>
+                    <input type="text" class="form-input" id="firstName" required placeholder="Uw voornaam">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="lastName">Achternaam *</label>
+                    <input type="text" class="form-input" id="lastName" required placeholder="Uw achternaam">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="email">Email *</label>
+                    <input type="email" class="form-input" id="email" required placeholder="uw@email.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="phone">Telefoon *</label>
+                    <input type="tel" class="form-input" id="phone" required placeholder="+32 xxx xx xx xx">
+                </div>
+            </div>
+        </div>
+
+        <!-- REISGEGEVENS -->
+        <div class="form-section">
+            <h2 class="section-title">Extra reisgegevens</h2>
+            <div class="form-group">
+                <label class="form-label" for="specialRequests">Bijzondere verzoeken</label>
+                <textarea class="form-input form-textarea" id="specialRequests" placeholder="Bijv. kinderzitje, extra bagage, bijzondere instructies..."></textarea>
+            </div>
+        </div>
+
+        <!-- BOOKING SUMMARY -->
+        <div class="booking-summary">
+            <h3 class="summary-title">Boeking Overzicht</h3>
+            <div class="summary-row">
+                <span class="summary-label">Van:</span>
+                <span class="summary-value" id="summaryFrom">-</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Naar:</span>
+                <span class="summary-value" id="summaryTo">-</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Datum & Tijd:</span>
+                <span class="summary-value" id="summaryDateTime">-</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Voertuig:</span>
+                <span class="summary-value" id="summaryVehicle">-</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Passagiers:</span>
+                <span class="summary-value" id="summaryPassengers">1</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Extra stops:</span>
+                <span class="summary-value" id="summaryExtraStops">Geen</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Retour:</span>
+                <span class="summary-value" id="summaryReturn">Nee</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Totaalprijs:</span>
+                <span class="summary-value" id="summaryPrice">€0.00</span>
+            </div>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="action-buttons">
+            <button class="btn-secondary" onclick="goToStep1()">← STAP 1</button>
+            <button class="btn-primary" id="completeBookingBtn" onclick="completeBooking()">
+                Boeking Bevestigen
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Load booking data from previous steps
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBookingSummary();
+            initializeForm();
+        });
+
+        function loadBookingSummary() {
+            console.log('🚀 STAP 3: Loading booking summary...');
+            
+            // Load data from localStorage (set by previous steps)
+            const step1Data = {
+                fromLocation: localStorage.getItem('fromLocation') || 'Niet ingevuld',
+                toLocation: localStorage.getItem('toLocation') || 'Niet ingevuld',
+                travelDate: localStorage.getItem('travelDate') || 'Niet ingevuld',
+                travelTime: `${localStorage.getItem('travelHour') || 'XX'}:${localStorage.getItem('travelMinute') || 'XX'}`,
+                extraStops: parseInt(localStorage.getItem('extraStopCount')) || 0,
+                returnTrip: localStorage.getItem('returnActive') === 'true'
+            };
+
+            const step2Data = JSON.parse(localStorage.getItem('selectedVehicleStep2') || '{}');
+            const selectedPassengers = localStorage.getItem('selectedPassengers') || '1';
+            
+            // Update summary display
+            document.getElementById('summaryFrom').textContent = step1Data.fromLocation;
+            document.getElementById('summaryTo').textContent = step1Data.toLocation;
+            document.getElementById('summaryDateTime').textContent = `${step1Data.travelDate} om ${step1Data.travelTime}`;
+            document.getElementById('summaryVehicle').textContent = step2Data.vehicle?.name || 'Niet geselecteerd';
+            document.getElementById('summaryPassengers').textContent = selectedPassengers;
+            document.getElementById('summaryExtraStops').textContent = step1Data.extraStops > 0 ? `${step1Data.extraStops} stops` : 'Geen';
+            document.getElementById('summaryReturn').textContent = step1Data.returnTrip ? 'Ja' : 'Nee';
+            
+            // Calculate total price
+            let totalPrice = step2Data.pricing?.minimumPrice || 0;
+            if (step1Data.returnTrip) {
+                totalPrice *= 1.5; // Return trip multiplier
+            }
+            document.getElementById('summaryPrice').textContent = `€${totalPrice.toFixed(2)}`;
+
+            console.log('✅ Booking summary loaded', { step1Data, step2Data, totalPrice });
+        }
+
+        function initializeForm() {
+            // Form validation
+            const requiredFields = ['firstName', 'lastName', 'email', 'phone'];
+            const completeBtn = document.getElementById('completeBookingBtn');
+            
+            requiredFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                field.addEventListener('input', function() {
+                    validateForm();
+                });
+            });
+            
+            validateForm();
+        }
+
+        function validateForm() {
+            const requiredFields = ['firstName', 'lastName', 'email', 'phone'];
+            const completeBtn = document.getElementById('completeBookingBtn');
+            
+            let allValid = true;
+            requiredFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (!field.value.trim()) {
+                    allValid = false;
+                }
+            });
+            
+            // Email validation
+            const email = document.getElementById('email').value;
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (email && !emailRegex.test(email)) {
+                allValid = false;
+            }
+            
+            completeBtn.disabled = !allValid;
+        }
+
+        function completeBooking() {
+            // Collect all form data
+            const customerData = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                passengers: localStorage.getItem('selectedPassengers') || '1',
+                specialRequests: document.getElementById('specialRequests').value
+            };
+
+            // Get booking data
+            const step1Data = {
+                fromLocation: localStorage.getItem('fromLocation'),
+                toLocation: localStorage.getItem('toLocation'),
+                travelDate: localStorage.getItem('travelDate'),
+                travelHour: localStorage.getItem('travelHour'),
+                travelMinute: localStorage.getItem('travelMinute'),
+                extraStopCount: localStorage.getItem('extraStopCount'),
+                returnActive: localStorage.getItem('returnActive')
+            };
+
+            const step2Data = JSON.parse(localStorage.getItem('selectedVehicleStep2') || '{}');
+
+            const completeBooking = {
+                customer: customerData,
+                trip: step1Data,
+                vehicle: step2Data,
+                bookingDate: new Date().toISOString(),
+                bookingId: generateBookingId()
+            };
+
+            // Save complete booking
+            localStorage.setItem('completedBooking', JSON.stringify(completeBooking));
+
+            console.log('✅ Booking completed!', completeBooking);
+
+            // Show confirmation
+            alert(`✅ Boeking Bevestigd!
+            
+Boeking ID: ${completeBooking.bookingId}
+Klant: ${customerData.firstName} ${customerData.lastName}
+Van: ${step1Data.fromLocation}
+Naar: ${step1Data.toLocation}
+Datum: ${step1Data.travelDate} om ${step1Data.travelHour}:${step1Data.travelMinute}
+Voertuig: ${step2Data.vehicle?.name}
+
+Een bevestigingsmail wordt verzonden naar: ${customerData.email}`);
+
+            // Reset form and redirect
+            setTimeout(() => {
+                // Clear booking data
+                clearBookingData();
+                // Redirect to step 1 for new booking
+                window.location.href = 'booking-exact.html';
+            }, 2000);
+        }
+
+        function generateBookingId() {
+            return 'BK' + Date.now().toString().slice(-8) + Math.floor(Math.random() * 100).toString().padStart(2, '0');
+        }
+
+        function clearBookingData() {
+            const keys = [
+                'fromLocation', 'toLocation', 'travelDate', 'travelHour', 'travelMinute',
+                'extraStopCount', 'returnActive', 'selectedVehicleStep2'
+            ];
+            keys.forEach(key => localStorage.removeItem(key));
+        }
+
+        function goBack() {
+            window.location.href = 'step2.html';
+        }
+
+        function goToStep1() {
+            window.location.href = 'booking-exact.html';
+        }
+
+        function goToStep(stepNumber) {
+            if (stepNumber === 1) {
+                window.location.href = 'booking-exact.html';
+            } else if (stepNumber === 2) {
+                window.location.href = 'step2.html';
+            }
+        }
+    </script>
+</body>
+</html>

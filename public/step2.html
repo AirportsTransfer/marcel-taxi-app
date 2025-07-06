@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marcel's Taxi - STAP 2: Voertuig Selectie</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5;
+            color: #333;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        .booking-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            min-height: calc(100vh - 40px);
+        }
+
+        .step-header {
+            text-align: center;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 25px 20px;
+            position: relative;
+        }
+
+        .step-progress {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .progress-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .progress-dot:hover {
+            transform: scale(1.2);
+        }
+
+        .progress-dot.active {
+            background: white;
+        }
+
+        .progress-dot.completed {
+            background: #28a745;
+        }
+
+        .step-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .back-button {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .back-button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-50%) translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* VEHICLE SECTION */
+        .vehicles-section {
+            background: #fff;
+            padding: 25px 20px;
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .vehicle-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .vehicle-card {
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .vehicle-card:hover:not(.selected) {
+            border-color: #667eea;
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.25);
+        }
+
+        .vehicle-card.selected {
+            border-color: #ffc107;
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 20px 50px rgba(255,193,7,0.3);
+        }
+
+        .vehicle-card.selected .vehicle-name {
+            color: #856404;
+        }
+
+        .vehicle-card.selected .vehicle-price {
+            color: #856404;
+        }
+
+        .vehicle-image {
+            width: 100%;
+            height: 80px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 2px solid #dee2e6;
+            position: relative;
+        }
+
+        .vehicle-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .vehicle-emoji {
+            font-size: 40px;
+            color: #6c757d;
+        }
+
+        .vehicle-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            letter-spacing: -0.3px;
+        }
+
+        .vehicle-price {
+            font-size: 20px;
+            font-weight: 800;
+            color: #667eea;
+            margin-bottom: 12px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .vehicle-card.selected .vehicle-price {
+            color: #28a745;
+        }
+
+        .vehicle-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .vehicle-card.disabled:hover {
+            transform: none;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            border-color: #e9ecef;
+        }
+
+        .vehicle-specs {
+            font-size: 12px;
+            color: #495057;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .vehicle-description {
+            font-size: 11px;
+            color: #6c757d;
+            font-style: italic;
+            line-height: 1.3;
+        }
+
+        /* ACTION BUTTONS */
+        .action-buttons {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-top: 1px solid #dee2e6;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 20px 50px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a67d8 0%, #667eea 100%);
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            background: linear-gradient(135deg, #6c757d 0%, #adb5bd 100%);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.2);
+            opacity: 0.6;
+        }
+
+        .selected-info {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border: 2px solid #28a745;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 25px 30px;
+            font-size: 16px;
+            color: #155724;
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.15);
+            text-align: center;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .status-indicator {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            border: 1px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+            display: inline-block;
+        }
+
+        .admin-link {
+            background: #6c757d;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 12px;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        /* DROPDOWN INTERFACE */
+        .dropdown-container {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 0 auto;
+            max-width: 500px;
+        }
+
+        .dropdown-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .dropdown-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .dropdown-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dropdown-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #6c757d;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .dropdown-wrapper {
+            position: relative;
+        }
+
+        .dropdown-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            background: white;
+            font-size: 16px;
+            font-weight: 500;
+            color: #495057;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 16px;
+            padding-right: 40px;
+        }
+
+        .dropdown-select:hover {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .dropdown-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        /* COUNTER CONTROLS */
+        .counter-control {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .counter-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .counter-icon {
+            font-size: 18px;
+        }
+
+        .counter-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .counter-buttons {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: #2c3e50;
+            border-radius: 20px;
+            padding: 5px;
+        }
+
+        .counter-btn {
+            width: 30px;
+            height: 30px;
+            border: none;
+            border-radius: 50%;
+            background: #34495e;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .counter-btn:hover {
+            background: #ffc107;
+            color: #2c3e50;
+            transform: scale(1.1);
+        }
+
+        .counter-value {
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            min-width: 20px;
+            text-align: center;
+        }
+    </style>
+    <!-- Google Maps API (only load if needed) -->
+    <script src="maps-config.js"></script>
+    <script>
+        // Global variable for maps functionality
+        let mapInitialized = false;
+        let routeMap = null;
+        let directionsService = null;
+        let directionsRenderer = null;
+    </script>
+</head>
+<body>
+    <div class="booking-container">
+        <button class="back-button" onclick="goBack()">← Terug naar STAP 1</button>
+        
+        <div class="step-header">
+            <h1 class="step-title">STAP 2: Voertuig Selectie</h1>
+            <p>Kies het gewenste voertuig voor uw rit</p>
+            <div class="step-progress">
+                <div class="progress-dot completed" onclick="goToStep(1)" title="Ga naar STAP 1"></div>
+                <div class="progress-dot active"></div>
+                <div class="progress-dot" onclick="goToStep(3)" title="Ga naar STAP 3 (eerst voertuig selecteren)"></div>
+            </div>
+            <div class="status-indicator" id="statusIndicator">
+                📡 Verbinding met Distance & Time Pricing...
+            </div>
+        </div>
+
+        <!-- PASSENGER SELECTION -->
+        <div class="vehicles-section" style="border-bottom: 1px solid #e9ecef; padding-bottom: 20px;">
+            <div class="dropdown-container">
+                <div class="dropdown-row">
+                    <div class="dropdown-item">
+                        <div class="counter-control">
+                            <div class="counter-header">
+                                <span class="counter-icon">👥</span>
+                                <span class="counter-label">Passagiers</span>
+                            </div>
+                            <div class="counter-buttons">
+                                <button class="counter-btn" onclick="changeCount('passengers', -1)">-</button>
+                                <span class="counter-value" id="passengersCount">1</span>
+                                <button class="counter-btn" onclick="changeCount('passengers', 1)">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown-item">
+                        <div class="counter-control">
+                            <div class="counter-header">
+                                <span class="counter-icon">🧳</span>
+                                <span class="counter-label">Koffers</span>
+                            </div>
+                            <div class="counter-buttons">
+                                <button class="counter-btn" onclick="changeCount('koffers', -1)">-</button>
+                                <span class="counter-value" id="koffersCount">0</span>
+                                <button class="counter-btn" onclick="changeCount('koffers', 1)">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="dropdown-row">
+                    <div class="dropdown-item">
+                        <div class="counter-control">
+                            <div class="counter-header">
+                                <span class="counter-icon">💼</span>
+                                <span class="counter-label">Handbagage</span>
+                            </div>
+                            <div class="counter-buttons">
+                                <button class="counter-btn" onclick="changeCount('handbagage', -1)">-</button>
+                                <span class="counter-value" id="handbagageCount">0</span>
+                                <button class="counter-btn" onclick="changeCount('handbagage', 1)">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown-item">
+                        <!-- Empty space for symmetry -->
+                    </div>
+                </div>
+            </div>
+            <div id="passengerRecommendation" style="text-align: center; font-size: 14px; color: #666; margin-top: 15px;"></div>
+        </div>
+
+        <!-- VEHICLES -->
+        <div class="vehicles-section">
+            <div class="vehicle-grid" id="vehicleGrid">
+                <div class="loading">
+                    <h3>🔄 Laden...</h3>
+                    <p>Voertuigen laden van Types of Vehicles en Distance & Time Pricing</p>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 15px;">
+                <a href="admin-simple.html" target="_blank" class="admin-link">
+                    ⚙️ Admin: Configureer voertuigen & prijzen
+                </a>
+            </div>
+        </div>
+
+        <!-- ROUTE MAP -->
+        <div class="vehicles-section" style="border-top: 1px solid #e9ecef; padding-top: 20px;">
+            <h2 class="section-title">Route overzicht</h2>
+            <div id="mapContainer" style="width: 100%; height: 300px; border-radius: 12px; overflow: hidden; border: 2px solid #e9ecef; background: #f8f9fa; display: flex; align-items: center; justify-content: center; color: #6c757d;">
+                <div id="mapLoading">
+                    <div style="text-align: center;">
+                        <div style="font-size: 18px; margin-bottom: 10px;">🗺️ Route wordt geladen...</div>
+                        <div style="font-size: 14px;">Van: <span id="routeFrom">-</span></div>
+                        <div style="font-size: 14px;">Naar: <span id="routeTo">-</span></div>
+                    </div>
+                </div>
+                <div id="map" style="width: 100%; height: 100%; display: none;"></div>
+            </div>
+            <div id="routeInfo" style="display: flex; justify-content: space-between; margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 14px;">
+                <div><strong>Afstand:</strong> <span id="routeDistance">Berekenen...</span></div>
+                <div><strong>Tijd:</strong> <span id="routeDuration">Berekenen...</span></div>
+                <div><strong>Route type:</strong> <span id="routeType">Snelste route</span></div>
+            </div>
+        </div>
+
+        <!-- SELECTED INFO -->
+        <div id="selectedInfo" class="selected-info" style="display: none;">
+            <strong>✅ Geselecteerd:</strong> <span id="selectedVehicleName"></span><br>
+            <strong>Prijs:</strong> <span id="selectedMinPrice"></span>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="action-buttons">
+            <button class="btn-primary" id="continueBtn" onclick="continueToStep3()" disabled>
+                Volgende: STAP 3 - Klantgegevens
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let selectedVehicle = null;
+        let vehicles = [];
+        let pricingData = {};
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatus('🔄 Loading system...', '#17a2b8');
+            loadSystemData();
+            // Set default passengers to 1
+            selectPassengers(1);
+            // Load route information
+            loadRouteInfo();
+        });
+
+        function updateStatus(message, color = '#17a2b8') {
+            const indicator = document.getElementById('statusIndicator');
+            indicator.textContent = message;
+            indicator.style.background = color;
+        }
+
+        function loadSystemData() {
+            console.log('🚀 STAP 2: Loading vehicle and pricing data...');
+            
+            // Load vehicles from Types of Vehicles (admin system)
+            const savedVehicles = localStorage.getItem('taxiVehicles');
+            if (savedVehicles) {
+                vehicles = JSON.parse(savedVehicles);
+                console.log('✅ Loaded vehicles from Types of Vehicles:', vehicles.length, 'vehicles');
+                updateStatus(`✅ ${vehicles.length} voertuigen geladen van Types of Vehicles`, '#28a745');
+            } else {
+                console.log('⚠️ No vehicles found, creating defaults');
+                createDefaultVehicles();
+            }
+
+            // Load pricing from Distance & Time Pricing (admin system)
+            const savedPricing = localStorage.getItem('vehiclePricing');
+            if (savedPricing) {
+                pricingData = JSON.parse(savedPricing);
+                console.log('✅ Loaded pricing from Distance & Time:', Object.keys(pricingData).length, 'configurations');
+                updateStatus(`✅ Verbonden met Distance & Time Pricing systeem`, '#28a745');
+            } else {
+                console.log('⚠️ No pricing found, creating defaults');
+                createDefaultPricing();
+            }
+
+            setTimeout(() => {
+                renderVehicles();
+            }, 500);
+        }
+
+        function createDefaultVehicles() {
+            vehicles = [
+                {
+                    id: 'saloon',
+                    name: 'Saloon',
+                    description: 'Comfort sedan voor dagelijks gebruik',
+                    active: true,
+                    capacity: { passengers: 4, luggage: 2 },
+                    image: null
+                },
+                {
+                    id: 'estate',
+                    name: 'Estate',
+                    description: 'Ruime stationwagen met extra bagageruimte',
+                    active: true,
+                    capacity: { passengers: 4, luggage: 4 },
+                    image: null
+                },
+                {
+                    id: 'minivan',
+                    name: 'Minivan',
+                    description: 'Ideaal voor kleine groepen',
+                    active: true,
+                    capacity: { passengers: 6, luggage: 4 },
+                    image: null
+                },
+                {
+                    id: 'minivan_long',
+                    name: 'Minivan Long',
+                    description: 'Grote groepsvervoer met maximum comfort',
+                    active: true,
+                    capacity: { passengers: 8, luggage: 6 },
+                    image: null
+                }
+            ];
+            
+            localStorage.setItem('taxiVehicles', JSON.stringify(vehicles));
+            updateStatus('✅ Default voertuigen aangemaakt', '#ffc107');
+        }
+
+        function createDefaultPricing() {
+            pricingData = {
+                saloon: { minimumPrice: 45.00, pricePerKm: 1.50 },
+                estate: { minimumPrice: 55.00, pricePerKm: 1.80 },
+                minivan: { minimumPrice: 65.00, pricePerKm: 2.00 },
+                minivan_long: { minimumPrice: 85.00, pricePerKm: 2.50 }
+            };
+            
+            localStorage.setItem('vehiclePricing', JSON.stringify(pricingData));
+            updateStatus('✅ Default pricing aangemaakt', '#ffc107');
+        }
+
+        function renderVehicles() {
+            const grid = document.getElementById('vehicleGrid');
+            grid.innerHTML = '';
+
+            // Filter active vehicles
+            const activeVehicles = vehicles.filter(vehicle => vehicle.active !== false);
+
+            if (activeVehicles.length === 0) {
+                grid.innerHTML = `
+                    <div class="loading">
+                        <h3>⚠️ Geen actieve voertuigen</h3>
+                        <p>Configureer voertuigen in Admin → Types of Vehicles</p>
+                        <a href="admin-simple.html" target="_blank" class="admin-link">
+                            🔧 Open Admin Panel
+                        </a>
+                    </div>
+                `;
+                updateStatus('⚠️ Geen voertuigen beschikbaar', '#dc3545');
+                return;
+            }
+
+            activeVehicles.forEach(vehicle => {
+                const pricing = pricingData[vehicle.id] || { minimumPrice: 50.00, pricePerKm: 2.00 };
+                
+                const card = document.createElement('div');
+                card.className = 'vehicle-card';
+                card.onclick = () => selectVehicle(vehicle, pricing);
+                
+                // Determine image or emoji
+                let imageContent;
+                if (vehicle.image && vehicle.image.startsWith('data:')) {
+                    // Custom uploaded image
+                    imageContent = `<img src="${vehicle.image}" alt="${vehicle.name}">`;
+                } else if (vehicle.image && vehicle.image.startsWith('http')) {
+                    // External image URL
+                    imageContent = `<img src="${vehicle.image}" alt="${vehicle.name}">`;
+                } else {
+                    // Use emoji based on vehicle type
+                    const emojis = {
+                        'saloon': '🚗',
+                        'estate': '🚙', 
+                        'minivan': '🚐',
+                        'minivan_long': '🚌'
+                    };
+                    imageContent = `<div class="vehicle-emoji">${emojis[vehicle.id] || '🚗'}</div>`;
+                }
+                
+                // Get baggage info based on vehicle type
+                const bagageInfo = getBagageInfo(vehicle.id);
+                
+                card.innerHTML = `
+                    <div class="vehicle-image">
+                        ${imageContent}
+                    </div>
+                    <div class="vehicle-name">${vehicle.name}</div>
+                    <div class="vehicle-price">€${pricing.minimumPrice.toFixed(2)}</div>
+                    <div class="vehicle-specs">
+                        👥 ${bagageInfo.passengers} Passengers<br>
+                        🧳 ${bagageInfo.luggages} Luggages (25kg each)<br>
+                        💼 ${bagageInfo.bags} Bags (10kg each)
+                    </div>
+                    <div class="vehicle-description">${vehicle.description}</div>
+                `;
+                
+                grid.appendChild(card);
+            });
+
+            updateStatus(`${activeVehicles.length} voertuigen geladen`, '#28a745');
+            console.log(`✅ Rendered ${activeVehicles.length} vehicles with pricing`);
+        }
+
+        function selectVehicle(vehicle, pricing) {
+            // Remove previous selection
+            document.querySelectorAll('.vehicle-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            // Select current vehicle
+            event.currentTarget.classList.add('selected');
+            selectedVehicle = { vehicle, pricing };
+
+            // Update passenger count based on vehicle selection
+            updatePassengerCountForVehicle(vehicle.id);
+
+            // Show selection info
+            const selectedInfo = document.getElementById('selectedInfo');
+            const selectedName = document.getElementById('selectedVehicleName');
+            const selectedMinPrice = document.getElementById('selectedMinPrice');
+
+            selectedName.textContent = vehicle.name;
+            selectedMinPrice.textContent = `€${pricing.minimumPrice.toFixed(2)}`;
+            selectedInfo.style.display = 'block';
+
+            // Enable continue button
+            document.getElementById('continueBtn').disabled = false;
+
+            console.log('✅ Vehicle selected:', vehicle.name, 'with pricing:', pricing);
+            updateStatus(`${vehicle.name} geselecteerd`, '#28a745');
+        }
+
+        function updatePassengerCountForVehicle(vehicleId) {
+            let suggestedPassengers = 1;
+            let suggestedKoffers = 2;
+            let suggestedHandbagage = 2;
+            let recommendationText = '';
+
+            // Set counts based on vehicle type
+            switch(vehicleId) {
+                case 'saloon':
+                    suggestedPassengers = 3;
+                    suggestedKoffers = 2;
+                    suggestedHandbagage = 2;
+                    recommendationText = 'Saloon: ideaal voor 1-3 passagiers';
+                    break;
+                case 'estate':
+                    suggestedPassengers = 4;
+                    suggestedKoffers = 3;
+                    suggestedHandbagage = 3;
+                    recommendationText = 'Estate: ideaal voor 4 passagiers';
+                    break;
+                case 'minivan':
+                    suggestedPassengers = 6;
+                    suggestedKoffers = 6;
+                    suggestedHandbagage = 6;
+                    recommendationText = 'Minivan: ideaal voor 5-6 passagiers';
+                    break;
+                case 'minivan_long':
+                    suggestedPassengers = 8;
+                    suggestedKoffers = 8;
+                    suggestedHandbagage = 8;
+                    recommendationText = 'Minivan Long: ideaal voor 7-8 passagiers';
+                    break;
+            }
+
+            // Update counter displays
+            counters.passengers = suggestedPassengers;
+            counters.koffers = suggestedKoffers;
+            counters.handbagage = suggestedHandbagage;
+            document.getElementById('passengersCount').textContent = suggestedPassengers;
+            document.getElementById('koffersCount').textContent = suggestedKoffers;
+            document.getElementById('handbagageCount').textContent = suggestedHandbagage;
+            
+            localStorage.setItem('selectedPassengers', suggestedPassengers);
+            localStorage.setItem('selectedKoffers', suggestedKoffers);
+            localStorage.setItem('selectedHandbagage', suggestedHandbagage);
+            
+            // Update recommendation text
+            const recommendation = document.getElementById('passengerRecommendation');
+            recommendation.textContent = recommendationText;
+            
+            console.log(`✅ Updated counts: ${suggestedPassengers} passagiers, ${suggestedKoffers} koffers, ${suggestedHandbagage} handbagage for ${vehicleId}`);
+        }
+
+        function continueToStep3() {
+            if (!selectedVehicle) {
+                alert('⚠️ Selecteer eerst een voertuig');
+                return;
+            }
+
+            // Save selection for STAP 3
+            localStorage.setItem('selectedVehicleStep2', JSON.stringify(selectedVehicle));
+            
+            // Save additional passenger details
+            const passengerDetails = {
+                passengers: counters.passengers,
+                koffers: counters.koffers,
+                handbagage: counters.handbagage
+            };
+            localStorage.setItem('passengerDetails', JSON.stringify(passengerDetails));
+
+            console.log('✅ Continuing to STAP 3 with selection:', selectedVehicle);
+            console.log('✅ Passenger details saved:', passengerDetails);
+            
+            // Go to STAP 3
+            window.location.href = 'step3.html';
+        }
+
+        function goBack() {
+            window.location.href = 'booking-exact.html';
+        }
+
+        function goToStep(stepNumber) {
+            if (stepNumber === 1) {
+                window.location.href = 'booking-exact.html';
+            } else if (stepNumber === 3) {
+                if (!selectedVehicle) {
+                    alert('⚠️ Selecteer eerst een voertuig voordat u naar STAP 3 gaat');
+                    return;
+                }
+                // Save selection and go to STAP 3
+                localStorage.setItem('selectedVehicleStep2', JSON.stringify(selectedVehicle));
+                window.location.href = 'step3.html';
+            }
+        }
+
+        // Test connection with admin systems
+        function testAdminConnection() {
+            const vehicleCount = vehicles.length;
+            const pricingCount = Object.keys(pricingData).length;
+            
+            console.log('🔗 Admin Connection Test:');
+            console.log('📋 Types of Vehicles:', vehicleCount, 'vehicles');
+            console.log('💰 Distance & Time Pricing:', pricingCount, 'configurations');
+            console.log('🔄 Data sync successful');
+        }
+
+        // Run connection test after load
+        setTimeout(testAdminConnection, 1000);
+
+        // Counter controls functionality
+        let counters = {
+            passengers: 1,
+            koffers: 0,
+            handbagage: 0
+        };
+
+        function changeCount(type, delta) {
+            const current = counters[type];
+            let newValue = current + delta;
+            
+            // Set limits
+            if (type === 'passengers') {
+                newValue = Math.max(1, Math.min(8, newValue));
+            } else if (type === 'koffers' || type === 'handbagage') {
+                newValue = Math.max(0, Math.min(8, newValue));
+            }
+            
+            counters[type] = newValue;
+            
+            // Update display
+            document.getElementById(`${type}Count`).textContent = newValue;
+            
+            // Save to localStorage
+            localStorage.setItem('selectedPassengers', counters.passengers);
+            localStorage.setItem('selectedKoffers', counters.koffers);
+            localStorage.setItem('selectedHandbagage', counters.handbagage);
+            
+            // Trigger passenger selection logic for vehicle recommendation
+            if (type === 'passengers') {
+                selectPassengers(newValue);
+            }
+        }
+
+        // Passenger selection functionality
+        function selectPassengers(count) {
+            // Update counter display
+            counters.passengers = parseInt(count);
+            document.getElementById('passengersCount').textContent = count;
+
+            // Save passenger count
+            localStorage.setItem('selectedPassengers', count);
+
+            // Show recommendation and auto-select vehicle
+            const recommendation = document.getElementById('passengerRecommendation');
+            let recommendedVehicle = null;
+
+            if (count >= 1 && count <= 3) {
+                recommendation.textContent = 'Aanbevolen: Saloon wagen';
+                recommendedVehicle = 'saloon';
+            } else if (count === 4) {
+                recommendation.textContent = 'Aanbevolen: Estate wagen';
+                recommendedVehicle = 'estate';
+            } else if (count >= 5 && count <= 6) {
+                recommendation.textContent = 'Aanbevolen: Minivan';
+                recommendedVehicle = 'minivan';
+            } else if (count >= 7 && count <= 8) {
+                recommendation.textContent = 'Aanbevolen: Minivan Long (verplicht voor 7-8 passagiers)';
+                recommendedVehicle = 'minivan_long';
+            }
+
+            // Auto-select recommended vehicle after vehicles are loaded
+            setTimeout(() => {
+                autoSelectRecommendedVehicle(recommendedVehicle);
+                
+                // For 7-8 passengers, disable other vehicles
+                if (count >= 7) {
+                    disableIncompatibleVehicles(count);
+                } else {
+                    enableAllVehicles();
+                }
+            }, 1000);
+        }
+
+        function autoSelectRecommendedVehicle(vehicleId) {
+            const vehicleCards = document.querySelectorAll('.vehicle-card');
+            const targetVehicle = vehicles.find(v => v.id === vehicleId);
+            
+            if (targetVehicle && vehicleCards.length > 0) {
+                // Find the matching card and click it
+                vehicleCards.forEach((card, index) => {
+                    const activeVehicles = vehicles.filter(vehicle => vehicle.active !== false);
+                    const cardVehicle = activeVehicles[index];
+                    
+                    if (cardVehicle && cardVehicle.id === vehicleId) {
+                        // Remove previous selections
+                        document.querySelectorAll('.vehicle-card').forEach(c => {
+                            c.classList.remove('selected');
+                        });
+                        
+                        // Select this card
+                        card.classList.add('selected');
+                        const pricing = pricingData[vehicleId] || { minimumPrice: 50.00, pricePerKm: 2.00 };
+                        selectedVehicle = { vehicle: targetVehicle, pricing };
+
+                        // Show selection info
+                        const selectedInfo = document.getElementById('selectedInfo');
+                        const selectedName = document.getElementById('selectedVehicleName');
+                        const selectedMinPrice = document.getElementById('selectedMinPrice');
+
+                        selectedName.textContent = targetVehicle.name;
+                        selectedMinPrice.textContent = `€${pricing.minimumPrice.toFixed(2)}`;
+                        selectedInfo.style.display = 'block';
+
+                        // Enable continue button
+                        document.getElementById('continueBtn').disabled = false;
+
+                        console.log('✅ Auto-selected vehicle:', targetVehicle.name);
+                        updateStatus(`${targetVehicle.name} automatisch geselecteerd`, '#28a745');
+                    }
+                });
+            }
+        }
+
+        function disableIncompatibleVehicles(passengerCount) {
+            const vehicleCards = document.querySelectorAll('.vehicle-card');
+            const activeVehicles = vehicles.filter(vehicle => vehicle.active !== false);
+
+            vehicleCards.forEach((card, index) => {
+                const vehicle = activeVehicles[index];
+                if (vehicle) {
+                    // For 7-8 passengers, only Minivan Long is allowed
+                    if (passengerCount >= 7 && vehicle.id !== 'minivan_long') {
+                        card.classList.add('disabled');
+                        // Remove selection if this card was selected
+                        if (card.classList.contains('selected')) {
+                            card.classList.remove('selected');
+                            selectedVehicle = null;
+                            document.getElementById('selectedInfo').style.display = 'none';
+                            document.getElementById('continueBtn').disabled = true;
+                        }
+                    }
+                }
+            });
+        }
+
+        function enableAllVehicles() {
+            const vehicleCards = document.querySelectorAll('.vehicle-card');
+            vehicleCards.forEach(card => {
+                card.classList.remove('disabled');
+            });
+        }
+
+        function getBagageInfo(vehicleId) {
+            // Define baggage capacity based on vehicle type (like in screenshot)
+            const bagageCapacity = {
+                'saloon': { passengers: 3, luggages: 2, bags: 2 },
+                'estate': { passengers: 4, luggages: 3, bags: 3 },
+                'minivan': { passengers: 6, luggages: 6, bags: 6 },
+                'minivan_long': { passengers: 8, luggages: 8, bags: 8 }
+            };
+            
+            return bagageCapacity[vehicleId] || { passengers: 4, luggages: 2, bags: 2 };
+        }
+
+        // Route and Maps functionality
+        function loadRouteInfo() {
+            const fromLocation = localStorage.getItem('fromLocation') || 'Niet ingevuld';
+            const toLocation = localStorage.getItem('toLocation') || 'Niet ingevuld';
+            
+            // Update route display
+            document.getElementById('routeFrom').textContent = fromLocation;
+            document.getElementById('routeTo').textContent = toLocation;
+            
+            if (fromLocation !== 'Niet ingevuld' && toLocation !== 'Niet ingevuld') {
+                // Try to load route with fallback
+                calculateRouteWithFallback(fromLocation, toLocation);
+            }
+        }
+
+        function calculateRouteWithFallback(from, to) {
+            // First try with Google Maps (if API key available)
+            if (typeof google !== 'undefined' && google.maps) {
+                initializeGoogleMapsRoute(from, to);
+            } else {
+                // Fallback to simple distance calculation
+                calculateSimpleRoute(from, to);
+                // Optionally load Google Maps API
+                loadGoogleMapsAPI();
+            }
+        }
+
+        function calculateSimpleRoute(from, to) {
+            // Use configured known routes or fallback
+            const knownRoutes = GOOGLE_MAPS_CONFIG?.knownRoutes || {
+                'leuven-brussels': { distance: '28 km', duration: '35 min' },
+                'leuven-willebroek': { distance: '50 km', duration: '45 min' },
+                'brussels-zaventem': { distance: '15 km', duration: '20 min' }
+            };
+            
+            // Try to match known routes
+            const routeKey = createRouteKey(from, to);
+            const route = knownRoutes[routeKey];
+            
+            if (route) {
+                document.getElementById('routeDistance').textContent = route.distance;
+                document.getElementById('routeDuration').textContent = route.duration;
+                document.getElementById('routeType').textContent = 'Geschatte route';
+            } else {
+                // Default estimation
+                document.getElementById('routeDistance').textContent = '25-50 km (schatting)';
+                document.getElementById('routeDuration').textContent = '30-60 min (schatting)';
+                document.getElementById('routeType').textContent = 'Schatting - exacte route wordt berekend';
+            }
+            
+            // Hide loading, show info message
+            document.getElementById('mapLoading').innerHTML = `
+                <div style="text-align: center;">
+                    <div style="font-size: 16px; margin-bottom: 10px;">🗺️ Route informatie</div>
+                    <div style="font-size: 14px; color: #28a745;">Van: ${from}</div>
+                    <div style="font-size: 14px; color: #28a745;">Naar: ${to}</div>
+                    <div style="font-size: 12px; margin-top: 10px; color: #6c757d;">
+                        Exacte route wordt berekend bij bevestiging
+                    </div>
+                </div>
+            `;
+        }
+
+        function createRouteKey(from, to) {
+            // Normalize city names for route matching
+            const normalize = (str) => str.toLowerCase()
+                .replace(/\s+/g, '-')
+                .replace(/[^a-z-]/g, '')
+                .split('-')[0]; // Take first word (city name)
+            
+            const fromCity = normalize(from);
+            const toCity = normalize(to);
+            
+            return `${fromCity}-${toCity}`;
+        }
+
+        function loadGoogleMapsAPI() {
+            // Only load if not already loaded and we have a potential API key
+            if (typeof google === 'undefined') {
+                console.log('📍 Google Maps API not loaded - using fallback route calculation');
+                // Could add dynamic API loading here if needed
+                // For now, we use the fallback system
+            }
+        }
+
+        function initializeGoogleMapsRoute(from, to) {
+            if (!mapInitialized) {
+                // Initialize map
+                routeMap = new google.maps.Map(document.getElementById('map'), {
+                    zoom: 8,
+                    center: { lat: 50.8798, lng: 4.7005 }, // Belgium center
+                    styles: [
+                        {
+                            featureType: 'poi',
+                            elementType: 'labels',
+                            stylers: [{ visibility: 'off' }]
+                        }
+                    ]
+                });
+                
+                directionsService = new google.maps.DirectionsService();
+                directionsRenderer = new google.maps.DirectionsRenderer({
+                    suppressMarkers: false,
+                    polylineOptions: {
+                        strokeColor: '#667eea',
+                        strokeWeight: 5
+                    }
+                });
+                
+                directionsRenderer.setMap(routeMap);
+                mapInitialized = true;
+            }
+            
+            // Calculate route
+            const request = {
+                origin: from,
+                destination: to,
+                travelMode: google.maps.TravelMode.DRIVING,
+                avoidTolls: false,
+                avoidHighways: false
+            };
+            
+            directionsService.route(request, (result, status) => {
+                if (status === 'OK') {
+                    directionsRenderer.setDirections(result);
+                    
+                    // Update route info
+                    const route = result.routes[0].legs[0];
+                    document.getElementById('routeDistance').textContent = route.distance.text;
+                    document.getElementById('routeDuration').textContent = route.duration.text;
+                    document.getElementById('routeType').textContent = 'Google Maps route';
+                    
+                    // Show map, hide loading
+                    document.getElementById('mapLoading').style.display = 'none';
+                    document.getElementById('map').style.display = 'block';
+                    
+                    console.log('✅ Google Maps route loaded:', route.distance.text, route.duration.text);
+                } else {
+                    console.log('⚠️ Google Maps route failed, using fallback');
+                    calculateSimpleRoute(from, to);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -59,7 +59,7 @@ const server = http.createServer((req, res) => {
   
   // Serve static files
   if (pathname === '/' || pathname === '/index.html') {
-    const filePath = path.join(__dirname, 'public', 'simple.html');
+    const filePath = path.join(__dirname, 'public', 'professional.html');
     if (fs.existsSync(filePath)) {
       const content = fs.readFileSync(filePath);
       res.writeHead(200, { 'Content-Type': 'text/html' });

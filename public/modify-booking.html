@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wijzig Boeking - Marcel's Taxi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #6c757d;
+        }
+
+        .booking-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .booking-info h3 {
+            color: #495057;
+            margin-bottom: 15px;
+        }
+
+        .booking-detail {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .booking-detail:last-child {
+            margin-bottom: 0;
+        }
+
+        .booking-detail strong {
+            color: #212529;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .cost-info {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .notification {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .notification.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .notification.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .links {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .links a {
+            color: #667eea;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✏️ Wijzig Boeking</h1>
+            <p>Pas je boeking aan of annuleer deze</p>
+        </div>
+
+        <div id="notification" style="display: none;"></div>
+
+        <div class="booking-info">
+            <h3>Huidige Boeking</h3>
+            <div class="booking-detail">
+                <span>Booking ID:</span>
+                <strong id="bookingId">#TX001</strong>
+            </div>
+            <div class="booking-detail">
+                <span>Route:</span>
+                <strong id="currentRoute">Dam Square → Schiphol Airport</strong>
+            </div>
+            <div class="booking-detail">
+                <span>Datum & Tijd:</span>
+                <strong id="currentDateTime">15 januari 2024, 14:30</strong>
+            </div>
+            <div class="booking-detail">
+                <span>Voertuig:</span>
+                <strong id="currentVehicle">Saloon (3 personen)</strong>
+            </div>
+            <div class="booking-detail">
+                <span>Prijs:</span>
+                <strong id="currentPrice">€45.00</strong>
+            </div>
+        </div>
+
+        <div id="timeWarning" class="warning" style="display: none;">
+            <strong>Let op:</strong> Je kunt je boeking nog <span id="hoursLeft">24</span> uur gratis wijzigen. Na deze tijd worden er wijzigingskosten van €5.00 berekend.
+        </div>
+
+        <div id="costInfo" class="cost-info" style="display: none;">
+            <strong>Wijzigingskosten:</strong> €<span id="modificationCost">5.00</span><br>
+            <small>Dit bedrag wordt bij je nieuwe boeking opgeteld.</small>
+        </div>
+
+        <form id="modifyForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nieuwe Datum</label>
+                    <input type="date" id="newDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Nieuwe Tijd</label>
+                    <input type="time" id="newTime" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Reden voor wijziging (optioneel)</label>
+                <input type="text" id="reason" placeholder="Bijv. vlucht gewijzigd, andere afspraak">
+            </div>
+
+            <button type="submit" class="btn btn-primary">Boeking Wijzigen</button>
+        </form>
+
+        <button class="btn btn-danger" onclick="cancelBooking()">Boeking Annuleren</button>
+        <button class="btn btn-secondary" onclick="window.location.href='/'">Terug naar Hoofdpagina</button>
+
+        <div class="links">
+            <a href="mailto:info@marcelstaxi.nl">Contact opnemen</a>
+            <a href="tel:+31612345678">Bellen: +31 6 12345678</a>
+        </div>
+    </div>
+
+    <script>
+        // Load booking data from URL parameters
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const bookingId = urlParams.get('id');
+            const token = urlParams.get('token');
+            
+            if (!bookingId || !token) {
+                showNotification('Ongeldige link. Controleer je email voor de juiste link.', 'error');
+                return;
+            }
+            
+            // Load booking data (in real app, fetch from backend)
+            loadBookingData(bookingId, token);
+            
+            // Check modification deadline
+            checkModificationDeadline();
+        });
+
+        function loadBookingData(bookingId, token) {
+            // Simulate loading booking data
+            // In real app, fetch from backend using bookingId and token
+            document.getElementById('bookingId').textContent = '#' + bookingId;
+            
+            // Set current date/time for demo
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            document.getElementById('newDate').value = tomorrow.toISOString().split('T')[0];
+            document.getElementById('newTime').value = '14:30';
+        }
+
+        function checkModificationDeadline() {
+            // Calculate hours until departure
+            const departureTime = new Date('2024-01-15T14:30:00');
+            const currentTime = new Date();
+            const hoursLeft = Math.floor((departureTime - currentTime) / (1000 * 60 * 60));
+            
+            if (hoursLeft > 24) {
+                document.getElementById('hoursLeft').textContent = hoursLeft;
+                document.getElementById('timeWarning').style.display = 'block';
+            } else if (hoursLeft > 0) {
+                document.getElementById('modificationCost').textContent = '5.00';
+                document.getElementById('costInfo').style.display = 'block';
+            } else {
+                document.getElementById('modificationCost').textContent = '45.00';
+                document.getElementById('costInfo').innerHTML = '<strong>Te late wijziging:</strong> €45.00 (volledige ritprijs)<br><small>Wijzigingen binnen 24 uur voor vertrek kosten de volledige ritprijs.</small>';
+                document.getElementById('costInfo').style.display = 'block';
+            }
+        }
+
+        document.getElementById('modifyForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newDate = document.getElementById('newDate').value;
+            const newTime = document.getElementById('newTime').value;
+            const reason = document.getElementById('reason').value;
+            
+            if (!newDate || !newTime) {
+                showNotification('Vul alle velden in om je boeking te wijzigen.', 'error');
+                return;
+            }
+            
+            // Check if new date/time is in the future
+            const newDateTime = new Date(newDate + 'T' + newTime);
+            const currentTime = new Date();
+            
+            if (newDateTime <= currentTime) {
+                showNotification('Je kunt geen boeking maken in het verleden.', 'error');
+                return;
+            }
+            
+            // Process modification
+            processModification(newDate, newTime, reason);
+        });
+
+        function processModification(newDate, newTime, reason) {
+            // In real app, send to backend
+            showNotification('Je boeking wordt gewijzigd... Je ontvangt een bevestiging per email.', 'success');
+            
+            // Simulate processing
+            setTimeout(() => {
+                showNotification('Boeking succesvol gewijzigd! Nieuwe datum: ' + newDate + ' om ' + newTime, 'success');
+                
+                // Update display
+                document.getElementById('currentDateTime').textContent = formatDateTime(newDate, newTime);
+                
+                // Hide form after successful modification
+                document.getElementById('modifyForm').style.display = 'none';
+                
+                // Show confirmation
+                setTimeout(() => {
+                    if (confirm('Je boeking is gewijzigd. Wil je terug naar de hoofdpagina?')) {
+                        window.location.href = '/';
+                    }
+                }, 2000);
+            }, 1500);
+        }
+
+        function cancelBooking() {
+            if (confirm('Weet je zeker dat je je boeking wilt annuleren?')) {
+                // In real app, send cancellation to backend
+                showNotification('Boeking wordt geannuleerd... Je ontvangt een bevestiging per email.', 'success');
+                
+                setTimeout(() => {
+                    showNotification('Boeking succesvol geannuleerd. Eventuele annuleringskosten worden per email meegedeeld.', 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 2000);
+                }, 1500);
+            }
+        }
+
+        function formatDateTime(date, time) {
+            const d = new Date(date);
+            const months = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 
+                           'juli', 'augustus', 'september', 'oktober', 'november', 'december'];
+            
+            return d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear() + ', ' + time;
+        }
+
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.style.display = 'block';
+            
+            if (type === 'error') {
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>

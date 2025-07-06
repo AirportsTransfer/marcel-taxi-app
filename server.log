@@ -1,7 +1,45 @@
-🚗 Marcel's Taxi Demo is nu live!
-📱 Open je browser: http://localhost:3000
-✨ Demo gebruikers:
-   Admin: marcel@taxi.com (elk wachtwoord werkt)
-   Of registreer een nieuwe gebruiker!
+🚀 Marcel's Taxi Server running at http://localhost:3000/
+📱 Admin Panel: http://localhost:3000/admin-pro.html
+🎫 Booking System: http://localhost:3000/booking-exact.html
+🚗 Vehicle Manager: http://localhost:3000/vehicle-manager.html
 
-🔥 De app werkt nu volledig in je browser!
+✅ Server ready - Vehicle management and booking system synchronized!
+2025-07-06T09:43:53.530Z - HEAD /admin-pro.html
+2025-07-06T09:44:29.611Z - GET /admin-pro.html
+2025-07-06T09:44:40.394Z - GET /admin-pro.html
+2025-07-06T09:44:48.693Z - GET /admin-pro.html
+2025-07-06T09:45:02.835Z - GET /admin-pro.html
+2025-07-06T09:48:12.209Z - GET /admin-pro.html
+2025-07-06T09:51:54.313Z - GET /admin-simple.html
+2025-07-06T09:52:11.694Z - GET /admin-vehicles.html
+2025-07-06T09:53:30.394Z - GET /admin-vehicles.html
+2025-07-06T09:53:59.539Z - GET /
+2025-07-06T09:53:59.552Z - GET /style.css
+2025-07-06T09:53:59.564Z - GET /socket.io/socket.io.js
+2025-07-06T09:53:59.567Z - GET /app.js
+2025-07-06T09:55:59.945Z - GET /apple-touch-icon-precomposed.png
+2025-07-06T09:55:59.948Z - GET /apple-touch-icon.png
+2025-07-06T09:55:59.949Z - GET /favicon.ico
+2025-07-06T09:57:08.428Z - GET /admin-vehicles.html
+2025-07-06T09:57:42.455Z - GET /admin-pro.html
+2025-07-06T09:58:05.554Z - GET /admin-pro.html
+2025-07-06T10:00:13.718Z - GET /booking-exact.html
+2025-07-06T10:02:37.825Z - GET /admin-pro.html
+2025-07-06T10:02:52.788Z - GET /admin-pro-working.html
+2025-07-06T10:12:17.837Z - GET /admin-vehicles.html
+2025-07-06T10:12:48.460Z - GET /admin-vehicles.html
+2025-07-06T10:13:24.020Z - GET /admin-vehicles.html
+2025-07-06T10:13:29.236Z - GET /booking-exact.html
+2025-07-06T10:14:47.062Z - GET /admin-pro-working.html%F0%9F%A7%AA
+2025-07-06T10:14:52.994Z - GET /booking-exact.html
+2025-07-06T10:15:30.208Z - GET /test-vehicle-sync.html
+2025-07-06T10:15:53.063Z - GET /admin-vehicles.html
+2025-07-06T10:22:50.611Z - GET /booking-exact.html
+2025-07-06T10:26:18.290Z - GET /booking-exact.html
+2025-07-06T10:29:23.034Z - GET /booking-exact.html
+2025-07-06T10:29:32.554Z - GET /booking-exact.html
+2025-07-06T10:30:15.687Z - GET /booking-exact.html
+2025-07-06T10:31:59.196Z - GET /booking-exact.html
+2025-07-06T10:32:51.936Z - GET /booking-exact.html
+2025-07-06T10:33:19.080Z - GET /booking-exact.html
+2025-07-06T10:33:20.185Z - GET /booking-exact.html

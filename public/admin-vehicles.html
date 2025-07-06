@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Management - Marcel's Taxi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 28px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table thead {
+            background: #f8f9fa;
+        }
+
+        .table th,
+        .table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .table th {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .vehicle-img {
+            width: 80px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-secondary {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #2c3e50;
+        }
+
+        .close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .image-upload {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .image-upload:hover {
+            border-color: #3498db;
+            background: #f8fcff;
+        }
+
+        .image-preview {
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .increment-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .increment-btn {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .increment-btn:hover {
+            background: #f8f9fa;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>Types of Vehicles</h1>
+                <p>Manage your vehicle fleet and specifications</p>
+            </div>
+            <button class="btn btn-primary" onclick="openAddModal()">
+                ➕ Add New Vehicle
+            </button>
+        </div>
+
+        <div id="successMessage" class="success-message"></div>
+        <div id="errorMessage" class="error-message"></div>
+
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Driver</th>
+                        <th>Services</th>
+                        <th>Hourly Rate</th>
+                        <th>Capacity</th>
+                        <th>Enquire</th>
+                        <th>Default</th>
+                        <th>Active</th>
+                        <th>Ordering</th>
+                        <th>Display</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="vehicleTableBody">
+                    <!-- Vehicles will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Vehicle Modal -->
+    <div id="vehicleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Add New Vehicle</h3>
+                <button class="close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="vehicleForm">
+                    <div class="form-group">
+                        <label>Name *</label>
+                        <input type="text" id="vehicleName" class="form-control" placeholder="Premium Class" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="vehicleDescription" class="form-control" rows="3" placeholder="First class service"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Vehicle Image</label>
+                        <div class="image-upload" onclick="document.getElementById('imageInput').click()">
+                            <img id="imagePreview" class="image-preview" style="display: none;">
+                            <div id="uploadText">
+                                <div style="font-size: 48px; margin-bottom: 10px;">📷</div>
+                                <div>Click to upload image</div>
+                                <div style="font-size: 12px; color: #666; margin-top: 5px;">JPG, PNG, WebP (max 5MB)</div>
+                            </div>
+                        </div>
+                        <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageUpload(this)">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Passengers</label>
+                            <div class="increment-control">
+                                <button type="button" class="increment-btn" onclick="decrement('passengers')">-</button>
+                                <input type="number" id="passengers" class="form-control" value="4" min="1" max="20" style="width: 80px; text-align: center;">
+                                <button type="button" class="increment-btn" onclick="increment('passengers')">+</button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Luggage</label>
+                            <div class="increment-control">
+                                <button type="button" class="increment-btn" onclick="decrement('luggage')">-</button>
+                                <input type="number" id="luggage" class="form-control" value="2" min="0" max="20" style="width: 80px; text-align: center;">
+                                <button type="button" class="increment-btn" onclick="increment('luggage')">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Hand Luggage</label>
+                            <div class="increment-control">
+                                <button type="button" class="increment-btn" onclick="decrement('handLuggage')">-</button>
+                                <input type="number" id="handLuggage" class="form-control" value="2" min="0" max="20" style="width: 80px; text-align: center;">
+                                <button type="button" class="increment-btn" onclick="increment('handLuggage')">+</button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Wheelchairs</label>
+                            <div class="increment-control">
+                                <button type="button" class="increment-btn" onclick="decrement('wheelchairs')">-</button>
+                                <input type="number" id="wheelchairs" class="form-control" value="0" min="0" max="10" style="width: 80px; text-align: center;">
+                                <button type="button" class="increment-btn" onclick="increment('wheelchairs')">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Child Seats</label>
+                            <div class="increment-control">
+                                <button type="button" class="increment-btn" onclick="decrement('childSeats')">-</button>
+                                <input type="number" id="childSeats" class="form-control" value="0" min="0" max="10" style="width: 80px; text-align: center;">
+                                <button type="button" class="increment-btn" onclick="increment('childSeats')">+</button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Ordering</label>
+                            <div class="increment-control">
+                                <button type="button" class="increment-btn" onclick="decrement('ordering')">-</button>
+                                <input type="number" id="ordering" class="form-control" value="0" min="0" max="100" style="width: 80px; text-align: center;">
+                                <button type="button" class="increment-btn" onclick="increment('ordering')">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Driver</label>
+                        <select id="vehicleDriver" class="form-control">
+                            <option value="All">All</option>
+                            <option value="John Smith">John Smith</option>
+                            <option value="Mike Johnson">Mike Johnson</option>
+                            <option value="Sarah Wilson">Sarah Wilson</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="enableEnquire"> Enable enquire button
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="isDefault"> Default vehicle
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="isActive" checked> Active
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Display</label>
+                            <select id="displayOption" class="form-control">
+                                <option value="Frontend & Backend">Frontend & Backend</option>
+                                <option value="Frontend only">Frontend only</option>
+                                <option value="Backend only">Backend only</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-success" onclick="saveVehicle()">💾 Save Vehicle</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let vehicles = [];
+        let editingId = null;
+
+        // Initialize (moved to bottom for better sync)
+
+        function loadVehicles() {
+            console.log('🔄 Loading vehicles from localStorage...');
+            const saved = localStorage.getItem('taxiVehicles');
+            const backup = localStorage.getItem('taxiVehicles_backup');
+            
+            if (saved) {
+                try {
+                    const parsedVehicles = JSON.parse(saved);
+                    if (parsedVehicles && parsedVehicles.length > 0) {
+                        vehicles = parsedVehicles;
+                        console.log('✅ Loaded', vehicles.length, 'vehicles from localStorage');
+                        console.log('📊 Vehicle details:', vehicles.map(v => `${v.name} (active: ${v.active}, display: ${v.display})`));
+                        
+                        // Create backup when we load successfully
+                        localStorage.setItem('taxiVehicles_backup', JSON.stringify(vehicles));
+                    } else {
+                        throw new Error('Empty vehicles array');
+                    }
+                } catch (e) {
+                    console.warn('⚠️ Error loading vehicles, trying backup...', e);
+                    if (backup) {
+                        try {
+                            vehicles = JSON.parse(backup);
+                            console.log('✅ Restored', vehicles.length, 'vehicles from backup');
+                            // Restore main storage from backup
+                            localStorage.setItem('taxiVehicles', JSON.stringify(vehicles));
+                        } catch (backupError) {
+                            console.error('❌ Backup also corrupted', backupError);
+                            vehicles = [];
+                        }
+                    } else {
+                        vehicles = [];
+                    }
+                }
+            } else if (backup) {
+                console.log('📋 No main storage, but backup found - restoring...');
+                try {
+                    vehicles = JSON.parse(backup);
+                    localStorage.setItem('taxiVehicles', JSON.stringify(vehicles));
+                    console.log('✅ Restored', vehicles.length, 'vehicles from backup');
+                } catch (e) {
+                    console.error('❌ Backup corrupted', e);
+                    vehicles = [];
+                }
+            } else {
+                console.log('📋 No vehicles found in localStorage - starting with empty list');
+                console.log('👉 Admin must manually add vehicles using "Add New Vehicle" button');
+                vehicles = []; // Start with empty array - no defaults!
+            }
+            
+            // DISABLED automatic sync to prevent data loss
+            console.log('⚠️ Automatic sync disabled to prevent vehicle loss');
+        }
+
+        function saveVehicles() {
+            try {
+                // Save with backup for safety
+                localStorage.setItem('taxiVehicles', JSON.stringify(vehicles));
+                localStorage.setItem('taxiVehicles_backup', JSON.stringify(vehicles));
+                localStorage.setItem('lastVehicleSave', new Date().toISOString());
+                
+                console.log('✅ Vehicles saved successfully with backup');
+                console.log('📊 Saved', vehicles.length, 'vehicles');
+                
+                // Only sync to booking system when explicitly saving
+                syncToBookingSystem();
+            } catch (e) {
+                console.error('❌ Error saving vehicles:', e);
+                showError('Fout bij opslaan voertuigen: ' + e.message);
+            }
+        }
+
+        function renderTable() {
+            console.log('renderTable called with', vehicles.length, 'vehicles');
+            const tbody = document.getElementById('vehicleTableBody');
+            if (!tbody) {
+                console.error('vehicleTableBody element not found!');
+                return;
+            }
+            
+            tbody.innerHTML = '';
+
+            if (vehicles.length === 0) {
+                console.log('No vehicles to render');
+                tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 40px; color: #666;">No vehicles found. Click "Add New Vehicle" to get started.</td></tr>';
+                return;
+            }
+
+            console.log('Rendering', vehicles.length, 'vehicles');
+            vehicles.forEach((vehicle, index) => {
+                console.log(`Rendering vehicle ${index}:`, vehicle.name);
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <img src="${vehicle.image}" alt="${vehicle.name}" class="vehicle-img" 
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA4MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjZjhmOWZhIi8+Cjx0ZXh0IHg9IjQwIiB5PSIzMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiM2Yzc1N2QiIHRleHQtYW5jaG9yPSJtaWRkbGUiPvCfmoU8L3RleHQ+Cjwvc3ZnPgo='">
+                    </td>
+                    <td><strong>${vehicle.name}</strong></td>
+                    <td>${vehicle.driver}</td>
+                    <td>${vehicle.services}</td>
+                    <td>€${vehicle.hourlyRate}</td>
+                    <td>
+                        <small>
+                            👤 ${vehicle.capacity.passengers}<br>
+                            🧳 ${vehicle.capacity.luggage}<br>
+                            👜 ${vehicle.capacity.handLuggage}
+                        </small>
+                    </td>
+                    <td><span class="badge ${vehicle.enquire ? 'badge-success' : 'badge-secondary'}">${vehicle.enquire ? 'Yes' : 'No'}</span></td>
+                    <td><span class="badge ${vehicle.default ? 'badge-success' : 'badge-secondary'}">${vehicle.default ? 'Yes' : 'No'}</span></td>
+                    <td><span class="badge ${vehicle.active ? 'badge-success' : 'badge-danger'}">${vehicle.active ? 'Active' : 'Inactive'}</span></td>
+                    <td>${vehicle.ordering}</td>
+                    <td>${vehicle.display}</td>
+                    <td>
+                        <button class="btn btn-primary" onclick="editVehicle('${vehicle.id}')" style="margin-right: 5px; padding: 6px 12px; font-size: 12px;">✏️ Edit</button>
+                        <button class="btn btn-danger" onclick="deleteVehicle('${vehicle.id}')" style="padding: 6px 12px; font-size: 12px;">🗑️ Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function openAddModal() {
+            editingId = null;
+            document.getElementById('modalTitle').textContent = 'Add New Vehicle';
+            clearForm();
+            document.getElementById('vehicleModal').style.display = 'block';
+        }
+
+        function editVehicle(id) {
+            editingId = id;
+            const vehicle = vehicles.find(v => v.id === id);
+            if (!vehicle) return;
+
+            document.getElementById('modalTitle').textContent = 'Edit Vehicle';
+            populateForm(vehicle);
+            document.getElementById('vehicleModal').style.display = 'block';
+        }
+
+        function populateForm(vehicle) {
+            document.getElementById('vehicleName').value = vehicle.name;
+            document.getElementById('vehicleDescription').value = vehicle.description || '';
+            document.getElementById('passengers').value = vehicle.capacity.passengers;
+            document.getElementById('luggage').value = vehicle.capacity.luggage;
+            document.getElementById('handLuggage').value = vehicle.capacity.handLuggage;
+            document.getElementById('wheelchairs').value = vehicle.capacity.wheelchairs || 0;
+            document.getElementById('childSeats').value = vehicle.capacity.childSeats || 0;
+            document.getElementById('ordering').value = vehicle.ordering;
+            document.getElementById('vehicleDriver').value = vehicle.driver;
+            document.getElementById('enableEnquire').checked = vehicle.enquire;
+            document.getElementById('isDefault').checked = vehicle.default;
+            document.getElementById('isActive').checked = vehicle.active;
+            document.getElementById('displayOption').value = vehicle.display;
+
+            if (vehicle.image) {
+                const preview = document.getElementById('imagePreview');
+                preview.src = vehicle.image;
+                preview.style.display = 'block';
+                
+                // Mark as uploaded if it's a base64 image
+                if (vehicle.image.startsWith('data:')) {
+                    preview.setAttribute('data-uploaded', 'true');
+                    console.log('✅ Loaded existing base64 image for editing');
+                } else {
+                    preview.removeAttribute('data-uploaded');
+                    console.log('✅ Loaded existing HTTP image for editing');
+                }
+                
+                document.getElementById('uploadText').style.display = 'none';
+            }
+        }
+
+        function clearForm() {
+            document.getElementById('vehicleForm').reset();
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('uploadText').style.display = 'block';
+            document.getElementById('passengers').value = 4;
+            document.getElementById('luggage').value = 2;
+            document.getElementById('handLuggage').value = 2;
+            document.getElementById('wheelchairs').value = 0;
+            document.getElementById('childSeats').value = 0;
+            document.getElementById('ordering').value = 0;
+            document.getElementById('isActive').checked = true;
+        }
+
+        function closeModal() {
+            document.getElementById('vehicleModal').style.display = 'none';
+            editingId = null;
+        }
+
+        function saveVehicle() {
+            const name = document.getElementById('vehicleName').value.trim();
+            if (!name) {
+                showError('Vehicle name is required!');
+                return;
+            }
+
+            // Get image - prioritize uploaded base64 images, don't use default fallback
+            let imageUrl = null;
+            const preview = document.getElementById('imagePreview');
+            
+            console.log('🔍 Checking for uploaded image...');
+            console.log('Preview element exists:', !!preview);
+            console.log('Preview src exists:', !!preview?.src);
+            console.log('Preview src starts with data:', preview?.src?.startsWith('data:'));
+            console.log('Preview marked as uploaded:', preview?.getAttribute('data-uploaded'));
+            
+            if (preview && preview.src) {
+                if (preview.src.startsWith('data:') || preview.getAttribute('data-uploaded') === 'true') {
+                    imageUrl = preview.src;
+                    console.log('✅ Using custom uploaded image (base64), length:', imageUrl.length);
+                    console.log('📊 Image preview:', imageUrl.substring(0, 100) + '...');
+                } else if (preview.src.startsWith('http') && !preview.src.includes('unsplash')) {
+                    imageUrl = preview.src;
+                    console.log('✅ Using custom HTTP image:', imageUrl);
+                } else {
+                    console.log('⚠️ Using default image (no custom upload detected)');
+                }
+            } else {
+                console.log('⚠️ No preview element or src found, using default');
+            }
+
+            const vehicleData = {
+                id: editingId || generateId(name),
+                name: name,
+                description: document.getElementById('vehicleDescription').value,
+                image: imageUrl,
+                driver: document.getElementById('vehicleDriver').value,
+                services: 'All',
+                hourlyRate: 0,
+                capacity: {
+                    passengers: parseInt(document.getElementById('passengers').value) || 4,
+                    luggage: parseInt(document.getElementById('luggage').value) || 2,
+                    handLuggage: parseInt(document.getElementById('handLuggage').value) || 2,
+                    wheelchairs: parseInt(document.getElementById('wheelchairs').value) || 0,
+                    childSeats: parseInt(document.getElementById('childSeats').value) || 0
+                },
+                enquire: document.getElementById('enableEnquire').checked,
+                default: document.getElementById('isDefault').checked,
+                active: document.getElementById('isActive').checked,
+                ordering: parseInt(document.getElementById('ordering').value) || 0,
+                display: document.getElementById('displayOption').value
+            };
+
+            console.log('Saving vehicle:', vehicleData);
+
+            if (editingId) {
+                const index = vehicles.findIndex(v => v.id === editingId);
+                if (index !== -1) {
+                    vehicles[index] = vehicleData;
+                    console.log('Updated vehicle at index', index);
+                }
+            } else {
+                vehicles.push(vehicleData);
+                console.log('Added new vehicle. Total vehicles:', vehicles.length);
+            }
+
+            // Save and render
+            saveVehicles();
+            
+            // Force immediate sync
+            setTimeout(() => {
+                syncToBookingSystem();
+                renderTable();
+                console.log('Table rendered with', vehicles.length, 'vehicles');
+            }, 100);
+            
+            // Additional forced sync after a short delay
+            setTimeout(() => {
+                console.log('🔄 Performing additional sync...');
+                syncToBookingSystem();
+            }, 500);
+            
+            closeModal();
+            
+            showSuccess(`Vehicle "${name}" ${editingId ? 'updated' : 'saved'} successfully! Changes synchronized to booking system.`);
+        }
+
+        function deleteVehicle(id) {
+            const vehicle = vehicles.find(v => v.id === id);
+            if (!vehicle) return;
+
+            if (confirm(`Delete "${vehicle.name}"? This cannot be undone.`)) {
+                vehicles = vehicles.filter(v => v.id !== id);
+                saveVehicles();
+                renderTable();
+                showSuccess(`Vehicle "${vehicle.name}" deleted successfully!`);
+            }
+        }
+
+        function generateId(name) {
+            return name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/--+/g, '-').replace(/^-|-$/g, '');
+        }
+
+        function handleImageUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            console.log('📷 Starting image upload:', file.name, 'Size:', file.size);
+
+            if (file.size > 5 * 1024 * 1024) {
+                showError('Image must be less than 5MB');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('imagePreview');
+                const base64Data = e.target.result;
+                
+                console.log('✅ Image converted to base64, length:', base64Data.length);
+                console.log('📊 Base64 preview:', base64Data.substring(0, 100) + '...');
+                
+                preview.src = base64Data;
+                preview.style.display = 'block';
+                preview.setAttribute('data-uploaded', 'true'); // Mark as uploaded
+                document.getElementById('uploadText').style.display = 'none';
+                
+                console.log('✅ Image preview updated successfully');
+                showSuccess('Image uploaded! This will sync to booking system when you save.');
+            };
+            
+            reader.onerror = function(error) {
+                console.error('❌ Error reading file:', error);
+                showError('Error reading image file');
+            };
+            
+            reader.readAsDataURL(file);
+        }
+
+        function increment(fieldId) {
+            const input = document.getElementById(fieldId);
+            input.value = parseInt(input.value) + 1;
+        }
+
+        function decrement(fieldId) {
+            const input = document.getElementById(fieldId);
+            const newValue = parseInt(input.value) - 1;
+            input.value = Math.max(0, newValue);
+        }
+
+        function syncToBookingSystem() {
+            console.log('🔄 Synchronizing vehicles to booking system...');
+            console.log('📊 Total vehicles to sync:', vehicles.length);
+            
+            const bookingVehicles = vehicles
+                .filter(v => {
+                    const isActive = v.active;
+                    const isVisible = (v.display === 'Frontend & Backend' || v.display === 'Frontend only');
+                    console.log(`Vehicle ${v.name}: active=${isActive}, display=${v.display}, visible=${isVisible}`);
+                    return isActive && isVisible;
+                })
+                .map(v => ({
+                    id: v.id,
+                    name: v.name,
+                    price: Math.floor(Math.random() * 300 + 150), // Random price €150-450
+                    passengers: `1-${v.capacity.passengers} passengers`,
+                    luggage: `1-${v.capacity.luggage} large bags`,
+                    handLuggage: `1-${v.capacity.handLuggage} small bags`,
+                    image: v.image, // This should now include base64 images
+                    // Additional data for booking system
+                    capacity: {
+                        passengers: v.capacity.passengers,
+                        luggage: v.capacity.luggage,
+                        handLuggage: v.capacity.handLuggage,
+                        wheelchairs: v.capacity.wheelchairs || 0,
+                        childSeats: v.capacity.childSeats || 0
+                    },
+                    description: v.description || '',
+                    active: v.active,
+                    lastUpdated: new Date().toISOString()
+                }));
+            
+            console.log('✅ Filtered vehicles for booking system:', bookingVehicles.length);
+            bookingVehicles.forEach(v => console.log(`- ${v.name} (image: ${v.image ? v.image.substring(0,30) + '...' : 'none'})`));
+            
+            // Save to booking system localStorage
+            localStorage.setItem('bookingSystemVehicles', JSON.stringify(bookingVehicles));
+            
+            // Also save full vehicle data for admin panels
+            localStorage.setItem('taxiVehicles', JSON.stringify(vehicles));
+            
+            // Save update timestamp for real-time sync
+            localStorage.setItem('vehiclesLastUpdate', Date.now().toString());
+            
+            console.log('💾 Data saved to localStorage');
+            console.log('📡 Triggering cross-tab sync...');
+            
+            // Notify booking system if it's open
+            try {
+                // Post message to any open booking system windows
+                window.postMessage({ 
+                    type: 'VEHICLES_UPDATED', 
+                    vehicles: bookingVehicles,
+                    timestamp: Date.now()
+                }, '*');
+                
+                // Also trigger storage event for cross-tab communication
+                window.dispatchEvent(new StorageEvent('storage', {
+                    key: 'bookingSystemVehicles',
+                    newValue: JSON.stringify(bookingVehicles),
+                    url: window.location.href
+                }));
+                
+                console.log('✅ Cross-tab sync messages sent');
+            } catch (e) {
+                console.log('⚠️ Cross-tab communication error:', e.message);
+            }
+            
+            // Force immediate refresh of booking system if it's open
+            setTimeout(() => {
+                window.postMessage({ 
+                    type: 'FORCE_VEHICLE_REFRESH', 
+                    vehicles: bookingVehicles,
+                    timestamp: Date.now()
+                }, '*');
+            }, 100);
+        }
+
+        function showSuccess(message) {
+            const el = document.getElementById('successMessage');
+            el.textContent = message;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 5000);
+        }
+
+        function showError(message) {
+            const el = document.getElementById('errorMessage');
+            el.textContent = message;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 5000);
+        }
+
+        // DISABLED auto-sync to prevent overwriting booking system vehicles
+        // Sync only happens manually when vehicles are saved/edited
+        console.log('⚠️ Auto-sync disabled - vehicles only sync when manually saved');
+        
+        // Page load initialization - NO AUTO SYNC to prevent data loss
+        document.addEventListener('DOMContentLoaded', function() {
+            loadVehicles();
+            renderTable();
+            
+            console.log('📱 Admin vehicles page loaded');
+            console.log('⚠️ Auto-sync DISABLED to prevent vehicle loss');
+            console.log('✅ Vehicles will only sync when manually saved/edited');
+            
+            // Check for successful load
+            if (vehicles.length > 0) {
+                console.log(`✅ Successfully loaded ${vehicles.length} vehicles`);
+                showSuccess(`${vehicles.length} voertuigen succesvol geladen`);
+            } else {
+                console.log('📋 No vehicles found - admin must add vehicles manually');
+                console.log('👉 Click "Add New Vehicle" button to start adding vehicles');
+            }
+        });
+    </script>
+</body>
+</html>
