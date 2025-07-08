@@ -42,8 +42,15 @@ cp step3.html step3-backup-$(date +%Y%m%d-%H%M).html
 - GEEN "per km" prijzen getoond
 - GEEN 💰 icoon - alleen "Prijs:"
 - Status indicator voor admin verbinding
+- **🆕 ITEM SURCHARGE SECTIE**: Tussen voertuigen en "Toon kaart"
+  - Automatisch zichtbaar na voertuig selectie
+  - Fixed items: Meet & greet, Child seat, Booster seat, Infant seat
+  - Additional items: Golf-material, Ski-material, Dog, Extra waiting time
+  - Items met €0.00 worden automatisch verborgen
+  - Stopover automatisch berekend per extra stop uit STAP 1
+  - Real-time prijs update van voertuig totaal
 - Terug knop naar STAP 1 (links boven)
-- Opslaat naar localStorage: selectedVehicleStep2
+- Opslaat naar localStorage: selectedVehicleStep2, selectedSurcharges
 - Navigatie: booking-exact.html ← step2.html → step3.html
 
 ### STAP 3: `/Users/marcel/TaxiAppBoekingssysteem/public/step3.html`
@@ -68,6 +75,12 @@ cp step3.html step3-backup-$(date +%Y%m%d-%H%M).html
 **Features**:
 - Distance & Time Pricing configuratie
 - Types of Vehicles beheer met foto upload mogelijkheid
+- **🆕 ITEM SURCHARGE BEHEER**: Settings → Item Surcharge
+  - Fixed items configuratie met prijs controles
+  - Additional items met type en quantity opties
+  - Add/Remove functionaliteit
+  - Automatische sync naar booking systeem
+  - €0.00 items automatisch verborgen in STAP 2
 - Directe verbinding met STAP 2 via localStorage
 - Admin link beschikbaar in STAP 2
 

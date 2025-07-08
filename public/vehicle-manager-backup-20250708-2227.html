@@ -373,10 +373,10 @@
                         id: 'saloon',
                         name: 'Saloon',
                         description: 'Comfortable sedan car',
-                        image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=1000&h=563',
+                        image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=400&h=250',
                         passengers: 3,
-                        luggage: 3,
-                        handLuggage: 3,
+                        luggage: 2,
+                        handLuggage: 2,
                         childSeats: 1,
                         active: true
                     },
@@ -384,10 +384,10 @@
                         id: 'estate',
                         name: 'Estate',
                         description: 'Spacious family car',
-                        image: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=1000&h=563',
+                        image: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&h=250',
                         passengers: 4,
-                        luggage: 6,
-                        handLuggage: 6,
+                        luggage: 3,
+                        handLuggage: 3,
                         childSeats: 2,
                         active: true
                     },
@@ -395,10 +395,10 @@
                         id: 'minivan',
                         name: 'Minivan',
                         description: 'Large capacity vehicle',
-                        image: 'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=1000&h=563',
+                        image: 'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=400&h=250',
                         passengers: 6,
-                        luggage: 8,
-                        handLuggage: 8,
+                        luggage: 6,
+                        handLuggage: 6,
                         childSeats: 3,
                         active: true
                     },
@@ -406,10 +406,10 @@
                         id: 'minivan-long',
                         name: 'Minivan Long',
                         description: 'Extra large capacity vehicle',
-                        image: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=1000&h=563',
+                        image: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=400&h=250',
                         passengers: 8,
-                        luggage: 12,
-                        handLuggage: 12,
+                        luggage: 8,
+                        handLuggage: 8,
                         childSeats: 4,
                         active: true
                     }
@@ -513,7 +513,7 @@
             }
 
             const imagePreview = document.getElementById('imagePreview');
-            const imageUrl = imagePreview.style.display === 'block' ? imagePreview.src : 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=1000&h=563';
+            const imageUrl = imagePreview.style.display === 'block' ? imagePreview.src : 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=400&h=250&fit=crop';
 
             const vehicleData = {
                 id: editingId || generateId(name),

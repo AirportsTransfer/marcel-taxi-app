@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reset Vehicle Data</title>
+</head>
+<body>
+    <h1>Reset Vehicle Data</h1>
+    <button onclick="resetVehicles()">Reset Vehicle Data</button>
+    <p id="result"></p>
+
+    <script>
+        function resetVehicles() {
+            // Clear old vehicle data
+            localStorage.removeItem('taxiVehicles');
+            localStorage.removeItem('bookingSystemVehicles');
+            
+            document.getElementById('result').innerHTML = 
+                '✅ Vehicle data reset! Go to <a href="admin-simple.html">Vehicle Manager</a> to load new default vehicles.';
+        }
+    </script>
+</body>
+</html>

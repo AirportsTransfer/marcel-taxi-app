@@ -1,0 +1,1633 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marcel's Taxi - Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: #2c3e50;
+            color: white;
+            padding: 0;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: #34495e;
+            border-bottom: 1px solid #2c3e50;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+        }
+
+        .nav-item {
+            border-bottom: 1px solid #34495e;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 15px 20px;
+            color: #bdc3c7;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover {
+            background: #34495e;
+            color: white;
+        }
+
+        .nav-submenu {
+            background: #1a252f;
+            display: none;
+        }
+
+        .nav-submenu.show {
+            display: block;
+        }
+
+        .nav-submenu .nav-link {
+            padding: 12px 20px 12px 52px;
+            font-size: 14px;
+        }
+
+        .main-content {
+            flex: 1;
+            background: #f5f7fa;
+        }
+
+        .header {
+            background: white;
+            padding: 15px 30px;
+            border-bottom: 1px solid #e1e8ed;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .content-area {
+            padding: 30px;
+        }
+
+        .content-section {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .test-area {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 2px dashed #dee2e6;
+        }
+
+        /* Booking Edit Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .edit-section {
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .edit-section h3 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+            border-bottom: 2px solid #f8f9fa;
+            padding-bottom: 10px;
+        }
+
+        .edit-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .edit-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .edit-field label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .edit-field input,
+        .edit-field select,
+        .edit-field textarea {
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .edit-field input:focus,
+        .edit-field select:focus,
+        .edit-field textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .modal-actions {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 0 0 12px 12px;
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .modal-btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .modal-btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .modal-btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .modal-btn-success:hover {
+            background: #1e7e34;
+        }
+
+        .modal-btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .modal-btn-danger:hover {
+            background: #c82333;
+        }
+
+        .modal-btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .modal-btn-secondary:hover {
+            background: #545b62;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>🚗 Marcel's Taxi Pro</h2>
+                <p>Professional Admin Panel</p>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showSection('dispatch')">
+                        🚨 Dispatch
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" onclick="toggleMenu('bookings')">
+                        📋 Bookings
+                    </a>
+                    <ul class="nav-submenu" id="bookings-menu">
+                        <li><a class="nav-link" onclick="showSection('next-24h')">Next 24h</a></li>
+                        <li><a class="nav-link" onclick="showSection('latest')">Latest</a></li>
+                        <li><a class="nav-link" onclick="showSection('unconfirmed')">Unconfirmed</a></li>
+                        <li><a class="nav-link" onclick="showSection('completed')">Completed</a></li>
+                        <li><a class="nav-link" onclick="showSection('cancelled')">Cancelled</a></li>
+                        <li><a class="nav-link" onclick="showSection('all-bookings')">All</a></li>
+                        <li><a class="nav-link" onclick="showSection('trash')">Trash</a></li>
+                        <li><a class="nav-link" onclick="showSection('calendar')">Calendar</a></li>
+                        <li><a class="nav-link" onclick="showSection('add-new')">Add New</a></li>
+                    </ul>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" onclick="toggleMenu('reports')">
+                        📈 Reports
+                    </a>
+                    <ul class="nav-submenu" id="reports-menu">
+                        <li><a class="nav-link" onclick="showSection('driver-report')">Driver Report</a></li>
+                        <li><a class="nav-link" onclick="showSection('payment-report')">Payment Report</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showSection('users')">
+                        👥 Users
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showSection('feedback')">
+                        💬 Feedback
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" onclick="toggleMenu('settings')">
+                        ⚙️ Settings
+                    </a>
+                    <ul class="nav-submenu" id="settings-menu">
+                        <li><a class="nav-link" onclick="showSection('general')">⚙️ General Settings</a></li>
+                        <li><a class="nav-link" onclick="showSection('types-of-vehicles')">🚗 Types of Vehicles</a></li>
+                        <li><a class="nav-link" onclick="showSection('payment-methods')">💳 Payment Methods</a></li>
+                        <li><a class="nav-link" onclick="showSection('notifications')">🔔 Notifications</a></li>
+                        <li><a class="nav-link" onclick="showSection('mail')">📧 Email Settings</a></li>
+                        <li><a class="nav-link" onclick="showSection('booking-settings')">📋 Booking Settings</a></li>
+                        <li><a class="nav-link" onclick="showSection('locations')">📍 Locations</a></li>
+                        <li><a class="nav-link" onclick="showSection('services')">🎯 Services</a></li>
+                        <li><a class="nav-link" onclick="showSection('users-settings')">👥 User Management</a></li>
+                    </ul>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" onclick="toggleMenu('pricing')">
+                        💰 Pricing
+                    </a>
+                    <ul class="nav-submenu" id="pricing-menu">
+                        <li><a class="nav-link" onclick="showSection('deposit-payments')">Deposit Payments</a></li>
+                        <li><a class="nav-link" onclick="showSection('distance-time')">Distance & Time</a></li>
+                        <li><a class="nav-link" onclick="showSection('distance-modifier')">Distance Modifier</a></li>
+                        <li><a class="nav-link" onclick="showSection('driver-income')">Driver Income</a></li>
+                        <li><a class="nav-link" onclick="showSection('fixed-prices')">Fixed Prices</a></li>
+                        <li><a class="nav-link" onclick="showSection('holiday-surcharge')">Holiday Surcharge</a></li>
+                        <li><a class="nav-link" onclick="showSection('item-surcharge')">Item Surcharge</a></li>
+                        <li><a class="nav-link" onclick="showSection('location-surcharge')">Location Surcharge</a></li>
+                        <li><a class="nav-link" onclick="showSection('night-surcharge')">Night Surcharge</a></li>
+                        <li><a class="nav-link" onclick="showSection('other-discounts')">Other Discounts</a></li>
+                        <li><a class="nav-link" onclick="showSection('tax')">Tax</a></li>
+                        <li><a class="nav-link" onclick="showSection('voucher-discounts')">Voucher Discounts</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showSection('knowledge-base')">
+                        📚 Knowledge Base
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showSection('updates')">
+                        🔄 Updates
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showSection('profile')">
+                        👤 Profile
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" onclick="logout()">
+                        🚪 Sign Out
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h1 id="pageTitle">Dispatch</h1>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-success" onclick="window.open('/booking-exact.html', '_blank')">👀 View Booking System</button>
+                </div>
+            </div>
+
+            <div class="content-area">
+
+                <!-- Dispatch Section -->
+                <div id="dispatch-section" class="content-section active">
+                    <h2>🚨 Dispatch Center</h2>
+                    <p>Manual taxi booking and dispatch system</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px;">
+                        <div>
+                            <h3>Booking Form</h3>
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                                <p>Pickup Location: <input type="text" placeholder="Enter address" style="width: 100%; padding: 8px; margin: 5px 0;"></p>
+                                <p>Destination: <input type="text" placeholder="Enter destination" style="width: 100%; padding: 8px; margin: 5px 0;"></p>
+                                <p>Date & Time: <input type="datetime-local" style="width: 100%; padding: 8px; margin: 5px 0;"></p>
+                                <button class="btn btn-success" style="width: 100%; margin-top: 10px;">📞 Create Booking</button>
+                            </div>
+                        </div>
+                        <div>
+                            <h3>Live Map</h3>
+                            <div style="background: #e9ecef; height: 200px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                🗺️ Interactive Map Area
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Section -->
+                <div id="general-section" class="content-section">
+                    <h2>⚙️ General Settings</h2>
+                    <p>Configure general system settings</p>
+                </div>
+
+                <div id="types-of-vehicles-section" class="content-section">
+                    <h2>🚗 Types of Vehicles</h2>
+                    <p>Manage your vehicle fleet and specifications</p>
+                    <button class="btn btn-primary" onclick="window.open('/admin-vehicles.html', '_blank')">🚗 Open Vehicle Manager</button>
+                </div>
+
+                <div id="mail-section" class="content-section">
+                    <div style="border-bottom: 2px solid #e1e8ed; margin-bottom: 30px; padding-bottom: 20px;">
+                        <h1 style="color: #2c3e50; font-size: 28px; margin-bottom: 10px;">Marcel's Taxi Pro</h1>
+                        <h2 style="color: #007bff; font-size: 24px; margin-bottom: 5px;">Professional Admin Panel - ⚙️ Settings</h2>
+                        <h3 style="color: #666; font-size: 20px; margin: 0;">📧 Email Settings</h3>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #007bff;">
+                        <h3>Current Configuration</h3>
+                        <div style="margin: 15px 0;">
+                            <div><strong>Status:</strong> <span id="configStatus">Not configured</span></div>
+                            <div><strong>SMTP Host:</strong> <span id="configHost">smtp.gmail.com</span></div>
+                            <div><strong>From Email:</strong> <span id="configEmail">info@airporttransfer.be</span></div>
+                        </div>
+                    </div>
+
+                    <form id="adminEmailSettingsForm">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">From name</label>
+                                <input type="text" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px;" id="adminFromName" value="Airport Transfer" required>
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">From email</label>
+                                <input type="email" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px;" id="adminFromEmail" value="info@airporttransfer.be" required>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Reply to email</label>
+                                <input type="email" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px;" id="adminReplyToEmail" value="info@airporttransfer.be" required>
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Admin email</label>
+                                <input type="email" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px;" id="adminAdminEmail" value="marceltataev@gmail.com" required>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Connection type</label>
+                                <select style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px;" id="adminConnectionType">
+                                    <option value="smtp">SMTP - Your mail server</option>
+                                    <option value="sendmail">Sendmail</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Provider</label>
+                                <select style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px;" id="adminProvider">
+                                    <option value="gmail">Gmail</option>
+                                    <option value="outlook">Outlook</option>
+                                    <option value="yahoo">Yahoo</option>
+                                    <option value="custom">Custom</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">SMTP host</label>
+                                <input type="text" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px;" id="adminSmtpHost" value="smtp.gmail.com" required>
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">SMTP port</label>
+                                <select style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px;" id="adminSmtpPort">
+                                    <option value="587" selected>587</option>
+                                    <option value="465">465</option>
+                                    <option value="25">25</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">SMTP username</label>
+                                <input type="text" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px;" id="adminSmtpUsername" value="info@airporttransfer.be" required>
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">SMTP password</label>
+                                <div style="position: relative;">
+                                    <input type="password" style="width: 100%; padding: 12px; padding-right: 50px; border: 2px solid #e1e5e9; border-radius: 6px;" id="adminSmtpPassword" placeholder="Enter your Gmail App Password" required>
+                                    <button type="button" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 18px;" onclick="toggleAdminPassword()">👁</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; font-weight: 500; margin-bottom: 8px;">SMTP security</label>
+                            <div style="display: flex; gap: 20px;">
+                                <label style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="adminSmtpSecurity" value="none"> None
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="adminSmtpSecurity" value="ssl"> SSL
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="adminSmtpSecurity" value="tls" checked> TLS
+                                </label>
+                            </div>
+                        </div>
+
+                        <div style="border-top: 1px solid #e1e5e9; padding-top: 20px; margin-top: 20px;">
+                            <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 20px;">
+                                <div style="flex: 1;">
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">Send a test email</label>
+                                    <input type="email" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px;" id="adminTestEmail" placeholder="Enter your email address">
+                                </div>
+                                <button type="button" style="background: #007bff; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; margin-top: 32px;" onclick="sendAdminTestEmail()">Send</button>
+                            </div>
+                        </div>
+
+                        <div style="text-align: center; margin-top: 30px;">
+                            <button type="submit" style="background: #28a745; color: white; border: none; padding: 15px 30px; border-radius: 6px; font-size: 16px; cursor: pointer;">
+                                💾 Save Email Settings
+                            </button>
+                        </div>
+                    </form>
+
+                    <div id="adminEmailStatus" style="margin-top: 20px; padding: 15px; border-radius: 6px; display: none;"></div>
+                </div>
+
+                <!-- Bookings Sections -->
+                <div id="next-24h-section" class="content-section">
+                    <h2>📋 Next 24 Hours</h2>
+                    <p>Upcoming bookings in the next 24 hours</p>
+                </div>
+
+                <div id="latest-section" class="content-section">
+                    <h2>📋 Latest Bookings</h2>
+                    <p>Most recent booking requests</p>
+                </div>
+
+                <div id="unconfirmed-section" class="content-section">
+                    <h2>📋 Unconfirmed Bookings</h2>
+                    <p>New bookings awaiting confirmation</p>
+                    
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                        <button style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 8px;" onclick="window.location.href='booking-exact.html'">
+                            ➕ Add new booking
+                        </button>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <button style="background: white; border: 1px solid #dee2e6; padding: 8px 16px; border-radius: 6px; cursor: pointer;" onclick="loadUnconfirmedBookings()">
+                                🔄 <span style="margin-left: 5px;">Refresh</span>
+                            </button>
+                            <button style="background: white; border: 1px solid #dee2e6; padding: 8px 16px; border-radius: 6px; cursor: pointer;">
+                                📥 <span style="margin-left: 5px;">Import</span>
+                            </button>
+                            <button style="background: white; border: 1px solid #dee2e6; padding: 8px 16px; border-radius: 6px; cursor: pointer;">
+                                📤 <span style="margin-left: 5px;">Export</span>
+                            </button>
+                        </div>
+                        <div style="margin-left: auto; display: flex; gap: 10px; align-items: center;">
+                            <input type="text" placeholder="Filter / Search" style="padding: 8px 12px; border: 1px solid #dee2e6; border-radius: 6px; width: 200px;">
+                            <select style="padding: 8px 12px; border: 1px solid #dee2e6; border-radius: 6px;">
+                                <option>🔄 Sync source</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div id="unconfirmedBookingsContainer" style="background: white; border: 1px solid #dee2e6; border-radius: 8px; overflow: hidden;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                            <thead style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                                <tr>
+                                    <th style="padding: 12px; text-align: left; font-weight: 600;">Actions</th>
+                                    <th style="padding: 12px; text-align: left; font-weight: 600;">
+                                        <input type="checkbox" style="margin-right: 8px;">Info
+                                    </th>
+                                    <th style="padding: 12px; text-align: left; font-weight: 600;">Date & Time</th>
+                                    <th style="padding: 12px; text-align: left; font-weight: 600;">Payments</th>
+                                    <th style="padding: 12px; text-align: left; font-weight: 600;">Status ⓘ</th>
+                                    <th style="padding: 12px; text-align: left; font-weight: 600;">Fleet operator</th>
+                                    <th style="padding: 12px; text-align: left; font-weight: 600;">Fleet income ⓘ</th>
+                                    <th style="padding: 12px; text-align: left; font-weight: 600;">Driver</th>
+                                    <th style="padding: 12px; text-align: left; font-weight: 600;">Vehicle</th>
+                                    <th style="padding: 12px; text-align: left; font-weight: 600;">Vehicle type</th>
+                                    <th style="padding: 12px; text-align: left; font-weight: 600;">Total</th>
+                                    <th style="padding: 12px; text-align: left; font-weight: 600;">Driver income ⓘ</th>
+                                    <th style="padding: 12px; text-align: left; font-weight: 600;">Passenger charge ⓘ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="unconfirmedTableBody">
+                                <tr>
+                                    <td colspan="13" style="text-align: center; padding: 40px; color: #6c757d;">
+                                        Loading unconfirmed bookings...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pricing Sections -->
+                <div id="distance-time-section" class="content-section">
+                    <h2>💰 Distance & Time Pricing</h2>
+                    <p>Configure pricing for each vehicle type - prices will be used in the booking system</p>
+                    
+                    <div style="margin: 20px 0; display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn btn-primary" onclick="loadVehiclePricing()">🔄 Load Vehicle Pricing</button>
+                        <button class="btn btn-success" onclick="saveAllPricing()">💾 Save All Changes</button>
+                        <button class="btn" style="background: #6c757d; color: white;" onclick="resetToDefaults()">🔄 Reset to Defaults</button>
+                    </div>
+                    
+                    <div id="vehiclePricingContainer" style="margin-top: 30px;">
+                        <div style="text-align: center; padding: 40px; color: #6c757d; border: 2px dashed #dee2e6; border-radius: 8px;">
+                            <h3>🚗 Loading vehicles from Types of Vehicles...</h3>
+                            <p>Vehicle pricing cards will appear here automatically</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="deposit-payments-section" class="content-section">
+                    <h2>💰 Deposit Payments</h2>
+                    <p>Configure security deposit settings</p>
+                </div>
+
+                <!-- Other sections -->
+                <div id="users-section" class="content-section">
+                    <h2>👥 Users</h2>
+                    <p>Manage users, drivers, and administrators</p>
+                </div>
+
+                <div id="feedback-section" class="content-section">
+                    <h2>💬 Customer Feedback</h2>
+                    <p>View and manage customer feedback</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Edit Modal -->
+    <div class="modal-overlay" id="bookingEditModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📝 Edit Booking - <span id="modalBookingId">BK123456</span></h2>
+                <button class="modal-close" onclick="closeBookingModal()">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Customer Information -->
+                <div class="edit-section">
+                    <h3>👤 Customer Information</h3>
+                    <div class="edit-row">
+                        <div class="edit-field">
+                            <label>First Name</label>
+                            <input type="text" id="editFirstName" placeholder="Enter first name">
+                        </div>
+                        <div class="edit-field">
+                            <label>Last Name</label>
+                            <input type="text" id="editLastName" placeholder="Enter last name">
+                        </div>
+                    </div>
+                    <div class="edit-row">
+                        <div class="edit-field">
+                            <label>Email Address</label>
+                            <input type="email" id="editEmail" placeholder="customer@email.com">
+                        </div>
+                        <div class="edit-field">
+                            <label>Phone Number</label>
+                            <input type="tel" id="editPhone" placeholder="+32 xxx xx xx xx">
+                        </div>
+                    </div>
+                    <div class="edit-row">
+                        <div class="edit-field">
+                            <label>Number of Passengers</label>
+                            <select id="editPassengers">
+                                <option value="1">1 Passenger</option>
+                                <option value="2">2 Passengers</option>
+                                <option value="3">3 Passengers</option>
+                                <option value="4">4 Passengers</option>
+                                <option value="5">5 Passengers</option>
+                                <option value="6">6 Passengers</option>
+                                <option value="7">7 Passengers</option>
+                                <option value="8">8 Passengers</option>
+                            </select>
+                        </div>
+                        <div class="edit-field">
+                            <label>Payment Method</label>
+                            <select id="editPaymentMethod">
+                                <option value="cash">Cash</option>
+                                <option value="card">Credit Card</option>
+                                <option value="paypal">PayPal</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trip Information -->
+                <div class="edit-section">
+                    <h3>🚗 Trip Information</h3>
+                    <div class="edit-row">
+                        <div class="edit-field">
+                            <label>From Location</label>
+                            <input type="text" id="editFromLocation" placeholder="Pickup address">
+                        </div>
+                        <div class="edit-field">
+                            <label>To Location</label>
+                            <input type="text" id="editToLocation" placeholder="Destination address">
+                        </div>
+                    </div>
+                    <div class="edit-row">
+                        <div class="edit-field">
+                            <label>Travel Date</label>
+                            <input type="date" id="editTravelDate">
+                        </div>
+                        <div class="edit-field">
+                            <label>Travel Time</label>
+                            <input type="time" id="editTravelTime">
+                        </div>
+                    </div>
+                    <div class="edit-row">
+                        <div class="edit-field">
+                            <label>Vehicle Type</label>
+                            <select id="editVehicleType">
+                                <option value="saloon">Saloon</option>
+                                <option value="estate">Estate</option>
+                                <option value="minivan">Minivan</option>
+                                <option value="minivan_long">Minivan Long</option>
+                            </select>
+                        </div>
+                        <div class="edit-field">
+                            <label>Return Trip</label>
+                            <select id="editReturnTrip">
+                                <option value="false">One Way</option>
+                                <option value="true">Return Trip</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Details -->
+                <div class="edit-section">
+                    <h3>📋 Booking Details</h3>
+                    <div class="edit-row">
+                        <div class="edit-field">
+                            <label>Booking Status</label>
+                            <select id="editBookingStatus">
+                                <option value="unconfirmed">Unconfirmed</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="edit-field">
+                            <label>Price (€)</label>
+                            <input type="number" id="editPrice" step="0.01" placeholder="50.00">
+                        </div>
+                    </div>
+                    <div class="edit-row">
+                        <div class="edit-field">
+                            <label>Driver</label>
+                            <input type="text" id="editDriver" placeholder="Assign driver">
+                        </div>
+                        <div class="edit-field">
+                            <label>Fleet Operator</label>
+                            <input type="text" id="editFleetOperator" placeholder="Assign fleet">
+                        </div>
+                    </div>
+                    <div class="edit-field">
+                        <label>Special Instructions</label>
+                        <textarea id="editSpecialInstructions" rows="3" placeholder="Add any special instructions or notes..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-secondary" onclick="closeBookingModal()">Cancel</button>
+                <button class="modal-btn modal-btn-danger" onclick="deleteBooking()">Delete Booking</button>
+                <button class="modal-btn modal-btn-success" onclick="confirmBookingFromModal()">✅ Confirm Booking</button>
+                <button class="modal-btn modal-btn-primary" onclick="saveBookingChanges()">💾 Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('🚀 Admin panel JavaScript loaded');
+
+        function showSection(sectionName) {
+            console.log('📍 Showing section:', sectionName);
+            
+            // Hide all sections
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show target section
+            const targetSection = document.getElementById(sectionName + '-section');
+            if (targetSection) {
+                targetSection.classList.add('active');
+                document.getElementById('pageTitle').textContent = sectionName.charAt(0).toUpperCase() + sectionName.slice(1);
+                console.log('✅ Section shown:', sectionName);
+                
+                // If showing distance-time section, load vehicle pricing
+                if (sectionName === 'distance-time') {
+                    console.log('🚗 Loading Distance & Time pricing section...');
+                    updateTestResults('🚗 Opening Distance & Time pricing...');
+                    setTimeout(() => {
+                        loadVehiclePricing(); // Load dynamic pricing from Types of Vehicles
+                    }, 200);
+                }
+                
+                // If showing unconfirmed section, load bookings
+                if (sectionName === 'unconfirmed') {
+                    console.log('📋 Loading Unconfirmed bookings section...');
+                    setTimeout(() => {
+                        loadUnconfirmedBookings();
+                    }, 200);
+                }
+                
+                // Update test results
+                updateTestResults('✅ Section "' + sectionName + '" successfully loaded');
+            } else {
+                console.error('❌ Section not found:', sectionName + '-section');
+                updateTestResults('❌ Section "' + sectionName + '" not found');
+            }
+        }
+
+        function toggleMenu(menuName) {
+            console.log('🔧 Toggling menu:', menuName);
+            
+            const menu = document.getElementById(menuName + '-menu');
+            if (!menu) {
+                console.error('❌ Menu not found:', menuName + '-menu');
+                updateTestResults('❌ Menu "' + menuName + '" not found');
+                return;
+            }
+            
+            // Close other menus
+            const allMenus = document.querySelectorAll('.nav-submenu');
+            allMenus.forEach(m => {
+                if (m.id !== menuName + '-menu') {
+                    m.classList.remove('show');
+                }
+            });
+            
+            // Toggle current menu
+            const isVisible = menu.classList.contains('show');
+            if (isVisible) {
+                menu.classList.remove('show');
+                console.log('❌ Menu hidden:', menuName);
+                updateTestResults('❌ Menu "' + menuName + '" hidden');
+            } else {
+                menu.classList.add('show');
+                console.log('✅ Menu shown:', menuName);
+                updateTestResults('✅ Menu "' + menuName + '" shown');
+            }
+        }
+
+        function updateTestResults(message) {
+            const results = document.getElementById('testResults');
+            if (results) {
+                const timestamp = new Date().toLocaleTimeString();
+                results.innerHTML = `[${timestamp}] ${message}<br>${results.innerHTML}`;
+            }
+        }
+
+
+        function logout() {
+            if (confirm('Are you sure you want to sign out?')) {
+                window.location.href = '/';
+            }
+        }
+
+        // Vehicle Pricing System Functions
+        function loadVehiclePricing() {
+            console.log('🔄 Loading vehicle pricing from Types of Vehicles...');
+            updateTestResults('🔄 Loading vehicles from Types of Vehicles...');
+            
+            // Load vehicles from Types of Vehicles admin panel
+            const savedVehicles = localStorage.getItem('taxiVehicles');
+            let vehicles = [];
+            
+            if (savedVehicles) {
+                try {
+                    vehicles = JSON.parse(savedVehicles);
+                    console.log('✅ Loaded', vehicles.length, 'vehicles from Types of Vehicles');
+                    updateTestResults(`✅ Found ${vehicles.length} vehicles in Types of Vehicles`);
+                } catch (e) {
+                    console.error('❌ Error parsing saved vehicles:', e);
+                    updateTestResults('❌ Error loading vehicles from Types of Vehicles');
+                }
+            }
+            
+            // If no vehicles found, show message to add vehicles first
+            if (vehicles.length === 0) {
+                updateTestResults('⚠️ No vehicles found - need to add vehicles first');
+                const container = document.getElementById('vehiclePricingContainer');
+                if (container) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 60px 40px; border: 2px dashed #dee2e6; border-radius: 12px; background: #f8f9fa;">
+                            <div style="font-size: 48px; margin-bottom: 20px;">🚗</div>
+                            <h3 style="color: #495057; margin-bottom: 15px;">Geen voertuigen gevonden</h3>
+                            <p style="color: #6c757d; margin-bottom: 25px; font-size: 16px;">
+                                Je moet eerst voertuigen toevoegen in <strong>Types of Vehicles</strong><br>
+                                voordat je prijzen kunt instellen.
+                            </p>
+                            <button class="btn btn-primary" onclick="showSection('types-of-vehicles')" style="margin-right: 10px;">
+                                🚗 Ga naar Types of Vehicles
+                            </button>
+                            <button class="btn" style="background: #6c757d; color: white;" onclick="window.open('/admin-vehicles.html', '_blank')">
+                                🔧 Open Vehicle Manager
+                            </button>
+                        </div>
+                    `;
+                }
+                return;
+            }
+            
+            // Load saved pricing data
+            const savedPricing = localStorage.getItem('vehiclePricing');
+            const pricingData = savedPricing ? JSON.parse(savedPricing) : {};
+            
+            const container = document.getElementById('vehiclePricingContainer');
+            if (!container) {
+                console.error('❌ Container not found!');
+                return;
+            }
+            
+            // Create dynamic pricing cards based on actual vehicles from Types of Vehicles
+            let htmlContent = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px;">';
+            
+            vehicles.forEach(vehicle => {
+                // Get existing pricing or set defaults
+                const pricing = pricingData[vehicle.id] || { minimumPrice: 15.00, pricePerKm: 1.50 };
+                
+                // Determine vehicle image source - NEVER overwrite custom uploads
+                let vehicleImage = '🚗'; // fallback emoji
+                if (vehicle.image) {
+                    if (vehicle.image.startsWith('data:')) {
+                        // Base64 image uploaded from laptop - PROTECTED!
+                        vehicleImage = `<img src="${vehicle.image}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;" alt="${vehicle.name}">`;
+                        updateTestResults(`📷 PROTECTED: Using custom uploaded image for ${vehicle.name}`);
+                    } else if (vehicle.image.startsWith('http') && !vehicle.image.includes('unsplash')) {
+                        // Custom external URL image - not default
+                        vehicleImage = `<img src="${vehicle.image}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;" alt="${vehicle.name}">`;
+                        updateTestResults(`🌐 Using custom external image for ${vehicle.name}`);
+                    } else if (vehicle.image.includes('unsplash')) {
+                        // Skip default unsplash images - use emoji instead
+                        vehicleImage = '🚗';
+                        updateTestResults(`⚠️ Skipping default image for ${vehicle.name} - using emoji`);
+                    }
+                } else {
+                    updateTestResults(`📷 No image set for ${vehicle.name} - using emoji`);
+                }
+                
+                htmlContent += `
+                    <div style="background: white; border: 1px solid #e9ecef; border-radius: 12px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+                        <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                            <div style="width: 60px; height: 40px; background: #f8f9fa; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 15px; overflow: hidden;">
+                                ${vehicleImage}
+                            </div>
+                            <div>
+                                <h4 style="margin: 0; font-size: 16px; font-weight: 600; color: #2c3e50;">${vehicle.name}</h4>
+                                <p style="margin: 0; font-size: 12px; color: #6c757d;">${vehicle.description || 'Professional taxi service'}</p>
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div>
+                                <label style="display: block; font-size: 13px; font-weight: 500; color: #6c757d; margin-bottom: 8px;">Minimum prijs</label>
+                                <div style="display: flex; align-items: center; border: 1px solid #e9ecef; border-radius: 8px; overflow: hidden;">
+                                    <button type="button" onclick="adjustDynamicPrice('${vehicle.id}', 'minimum', -0.50)" 
+                                            style="background: #f8f9fa; border: none; padding: 8px 12px; cursor: pointer; color: #6c757d;">-</button>
+                                    <input type="number" id="minimum_${vehicle.id}" value="${pricing.minimumPrice.toFixed(2)}" 
+                                           step="0.50" min="0" 
+                                           style="border: none; text-align: center; padding: 8px; width: 100%; outline: none; font-weight: 500;"
+                                           onchange="updateDynamicPricing('${vehicle.id}', 'minimum', this.value)">
+                                    <button type="button" onclick="adjustDynamicPrice('${vehicle.id}', 'minimum', 0.50)" 
+                                            style="background: #f8f9fa; border: none; padding: 8px 12px; cursor: pointer; color: #6c757d;">+</button>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label style="display: block; font-size: 13px; font-weight: 500; color: #6c757d; margin-bottom: 8px;">Prijs per km</label>
+                                <div style="display: flex; align-items: center; border: 1px solid #e9ecef; border-radius: 8px; overflow: hidden;">
+                                    <button type="button" onclick="adjustDynamicPrice('${vehicle.id}', 'perKm', -0.10)" 
+                                            style="background: #f8f9fa; border: none; padding: 8px 12px; cursor: pointer; color: #6c757d;">-</button>
+                                    <input type="number" id="perKm_${vehicle.id}" value="${pricing.pricePerKm.toFixed(2)}" 
+                                           step="0.10" min="0" 
+                                           style="border: none; text-align: center; padding: 8px; width: 100%; outline: none; font-weight: 500;"
+                                           onchange="updateDynamicPricing('${vehicle.id}', 'perKm', this.value)">
+                                    <button type="button" onclick="adjustDynamicPrice('${vehicle.id}', 'perKm', 0.10)" 
+                                            style="background: #f8f9fa; border: none; padding: 8px 12px; cursor: pointer; color: #6c757d;">+</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #f1f3f4; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 12px; color: #6c757d;">
+                                Capaciteit: ${vehicle.capacity?.passengers || 4} personen
+                            </span>
+                            <span style="font-size: 12px; color: ${vehicle.active ? '#28a745' : '#dc3545'}; font-weight: 500;">
+                                ${vehicle.active ? '✅ Actief' : '❌ Inactief'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            htmlContent += '</div>';
+            container.innerHTML = htmlContent;
+            
+            console.log(`✅ Created pricing cards for ${vehicles.length} vehicles from Types of Vehicles`);
+            updateTestResults(`✅ Pricing loaded for ${vehicles.length} vehicles from Types of Vehicles`);
+        }
+        
+        function adjustDynamicPrice(vehicleId, type, amount) {
+            const inputId = type === 'minimum' ? `minimum_${vehicleId}` : `perKm_${vehicleId}`;
+            const input = document.getElementById(inputId);
+            if (input) {
+                const currentValue = parseFloat(input.value) || 0;
+                const newValue = Math.max(0, currentValue + amount);
+                input.value = newValue.toFixed(2);
+                updateDynamicPricing(vehicleId, type, newValue);
+                
+                // Get vehicle name for display
+                const vehicles = JSON.parse(localStorage.getItem('taxiVehicles') || '[]');
+                const vehicle = vehicles.find(v => v.id === vehicleId);
+                const vehicleName = vehicle ? vehicle.name : vehicleId;
+                
+                updateTestResults(`💰 ${vehicleName} ${type} price: €${newValue.toFixed(2)}`);
+            }
+        }
+        
+        function updateDynamicPricing(vehicleId, type, value) {
+            // Load current pricing data
+            const savedPricing = localStorage.getItem('vehiclePricing');
+            let pricingData = savedPricing ? JSON.parse(savedPricing) : {};
+            
+            // Initialize vehicle pricing if not exists
+            if (!pricingData[vehicleId]) {
+                pricingData[vehicleId] = { minimumPrice: 15.00, pricePerKm: 1.50 };
+            }
+            
+            // Update the specific price
+            if (type === 'minimum') {
+                pricingData[vehicleId].minimumPrice = parseFloat(value) || 0;
+            } else if (type === 'perKm') {
+                pricingData[vehicleId].pricePerKm = parseFloat(value) || 0;
+            }
+            
+            // Save back to localStorage
+            localStorage.setItem('vehiclePricing', JSON.stringify(pricingData));
+            
+            // Trigger sync to booking system
+            syncDynamicPricingToBookingSystem();
+            
+            console.log(`Updated ${type} pricing for vehicle ${vehicleId}: €${value}`);
+        }
+        
+        function syncDynamicPricingToBookingSystem() {
+            const pricingData = JSON.parse(localStorage.getItem('vehiclePricing') || '{}');
+            const vehicles = JSON.parse(localStorage.getItem('taxiVehicles') || '[]');
+            
+            // Create booking system compatible data using real vehicle data
+            const bookingSystemPricing = {};
+            
+            vehicles.forEach(vehicle => {
+                if (vehicle.active) {
+                    const pricing = pricingData[vehicle.id] || { minimumPrice: 15.00, pricePerKm: 1.50 };
+                    bookingSystemPricing[vehicle.id] = {
+                        vehicleId: vehicle.id,
+                        vehicleName: vehicle.name,
+                        minimumPrice: pricing.minimumPrice,
+                        pricePerKm: pricing.pricePerKm,
+                        capacity: vehicle.capacity,
+                        image: vehicle.image,
+                        description: vehicle.description,
+                        active: vehicle.active,
+                        lastUpdated: new Date().toISOString()
+                    };
+                }
+            });
+            
+            // Save for booking system
+            localStorage.setItem('bookingSystemPricing', JSON.stringify(bookingSystemPricing));
+            localStorage.setItem('pricingLastUpdate', Date.now().toString());
+            
+            // Also create vehicle data for booking system - PROTECT custom images
+            const bookingSystemVehicles = vehicles
+                .filter(v => v.active && (v.display === 'Frontend & Backend' || v.display === 'Frontend only'))
+                .map(v => {
+                    const pricing = pricingData[v.id] || { minimumPrice: 25.00, pricePerKm: 2.50 };
+                    
+                    // Protect custom uploaded images - never overwrite them
+                    let protectedImage = v.image;
+                    if (v.image && v.image.includes('unsplash')) {
+                        // Remove default unsplash images - let booking system handle fallback
+                        protectedImage = null;
+                    }
+                    
+                    return {
+                        id: v.id,
+                        name: v.name,
+                        price: pricing.minimumPrice, // Use minimum price as base price
+                        passengers: `1-${v.capacity?.passengers || 4} passengers`,
+                        luggage: `1-${v.capacity?.luggage || 2} large bags`,
+                        handLuggage: `1-${v.capacity?.handLuggage || 2} small bags`,
+                        image: protectedImage, // Protected from overwrites
+                        capacity: {
+                            passengers: v.capacity?.passengers || 4,
+                            luggage: v.capacity?.luggage || 2,
+                            handLuggage: v.capacity?.handLuggage || 2,
+                            wheelchairs: v.capacity?.wheelchairs || 0,
+                            childSeats: v.capacity?.childSeats || 0
+                        },
+                        description: v.description || '',
+                        active: v.active,
+                        lastUpdated: new Date().toISOString()
+                    };
+                });
+            
+            localStorage.setItem('bookingSystemVehicles', JSON.stringify(bookingSystemVehicles));
+            
+            console.log('💰 Dynamic pricing synced to booking system:', bookingSystemPricing);
+            console.log('🚗 Vehicle data synced to booking system:', bookingSystemVehicles.length, 'vehicles');
+            updateTestResults(`🔄 Synced ${Object.keys(bookingSystemPricing).length} vehicles with pricing + ${bookingSystemVehicles.length} vehicles to booking system`);
+            
+            // Update timestamp to trigger booking system refresh
+            localStorage.setItem('pricingLastUpdate', Date.now().toString());
+            
+            // Trigger immediate refresh in booking system if it's open
+            try {
+                window.postMessage({ 
+                    type: 'PRICING_UPDATED', 
+                    vehicles: bookingSystemVehicles,
+                    pricing: bookingSystemPricing,
+                    timestamp: Date.now()
+                }, '*');
+                console.log('📡 Sent pricing update message to booking system');
+            } catch (e) {
+                console.log('⚠️ Could not send refresh message:', e.message);
+            }
+        }
+        
+        function saveAllPricing() {
+            const vehicles = JSON.parse(localStorage.getItem('taxiVehicles') || '[]');
+            let savedCount = 0;
+            
+            vehicles.forEach(vehicle => {
+                const minimumInput = document.getElementById(`minimum_${vehicle.id}`);
+                const perKmInput = document.getElementById(`perKm_${vehicle.id}`);
+                
+                if (minimumInput && perKmInput) {
+                    updateDynamicPricing(vehicle.id, 'minimum', minimumInput.value);
+                    updateDynamicPricing(vehicle.id, 'perKm', perKmInput.value);
+                    savedCount++;
+                }
+            });
+            
+            alert(`✅ Alle prijzen opgeslagen!\n\n${savedCount} voertuigen bijgewerkt\nPrijzen zijn gesynchroniseerd met het boekingssysteem.`);
+            updateTestResults(`✅ Saved pricing for ${savedCount} vehicles from Types of Vehicles`);
+        }
+        
+        function resetToDefaults() {
+            if (confirm('Weet je zeker dat je alle prijzen wilt resetten naar de standaardwaarden?')) {
+                const vehicles = JSON.parse(localStorage.getItem('taxiVehicles') || '[]');
+                
+                vehicles.forEach(vehicle => {
+                    const minimumInput = document.getElementById(`minimum_${vehicle.id}`);
+                    const perKmInput = document.getElementById(`perKm_${vehicle.id}`);
+                    
+                    if (minimumInput && perKmInput) {
+                        minimumInput.value = '15.00';
+                        perKmInput.value = '1.50';
+                        updateDynamicPricing(vehicle.id, 'minimum', 15.00);
+                        updateDynamicPricing(vehicle.id, 'perKm', 1.50);
+                    }
+                });
+                
+                alert('✅ Prijzen gereset naar standaardwaarden (€15 min, €1.50/km)');
+                updateTestResults('🔄 All vehicles reset to default pricing');
+            }
+        }
+        
+        function syncPricingToBookingSystem() {
+            const pricingData = JSON.parse(localStorage.getItem('vehiclePricing') || '{}');
+            const vehicles = JSON.parse(localStorage.getItem('taxiVehicles') || '[]');
+            
+            // Create booking system compatible data
+            const bookingSystemPricing = {};
+            
+            vehicles.forEach(vehicle => {
+                if (vehicle.active) {
+                    const pricing = pricingData[vehicle.id] || { minimumPrice: 15.00, pricePerKm: 1.50 };
+                    bookingSystemPricing[vehicle.id] = {
+                        vehicleId: vehicle.id,
+                        vehicleName: vehicle.name,
+                        minimumPrice: pricing.minimumPrice,
+                        pricePerKm: pricing.pricePerKm,
+                        capacity: vehicle.capacity,
+                        image: vehicle.image,
+                        description: vehicle.description,
+                        active: vehicle.active,
+                        lastUpdated: new Date().toISOString()
+                    };
+                }
+            });
+            
+            // Save for booking system
+            localStorage.setItem('bookingSystemPricing', JSON.stringify(bookingSystemPricing));
+            localStorage.setItem('pricingLastUpdate', Date.now().toString());
+            
+            console.log('Pricing synced to booking system:', bookingSystemPricing);
+        }
+        
+        
+        function adjustStaticPrice(fieldId, amount) {
+            // This function is no longer used - vehicles are loaded dynamically from Types of Vehicles
+            console.log('ℹ️ Please use the dynamic vehicles from Types of Vehicles instead');
+        }
+        
+        function savePricing() {
+            // This function is no longer used with dynamic pricing
+            console.log('ℹ️ Using dynamic pricing - no static save needed');
+        }
+
+        // Unconfirmed Bookings Functions
+        function loadUnconfirmedBookings() {
+            console.log('📋 Loading unconfirmed bookings...');
+            
+            const tableBody = document.getElementById('unconfirmedTableBody');
+            
+            if (!tableBody) {
+                console.error('❌ Unconfirmed table body not found');
+                return;
+            }
+            
+            // Get unconfirmed bookings from localStorage
+            const unconfirmedBookings = JSON.parse(localStorage.getItem('unconfirmedBookings') || '[]');
+            console.log('📋 Found unconfirmed bookings:', unconfirmedBookings.length);
+            
+            if (unconfirmedBookings.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="13" style="text-align: center; padding: 40px; color: #6c757d;">
+                            <h3>📋 No Unconfirmed Bookings</h3>
+                            <p>New bookings will appear here when customers make reservations</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Generate table rows
+            let tableHTML = '';
+            
+            unconfirmedBookings.forEach((booking, index) => {
+                const createdDate = new Date(booking.createdAt || booking.bookingDate);
+                const formattedDate = createdDate.toLocaleDateString('nl-BE');
+                const formattedTime = createdDate.toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' });
+                const travelDateTime = `${booking.trip.travelDate} ${booking.trip.travelHour}:${booking.trip.travelMinute}`;
+                
+                // Get actual price from booking
+                const vehiclePrice = booking.vehicle?.pricing?.minimumPrice || booking.vehicle?.price || 50.00;
+                const total = parseFloat(vehiclePrice).toFixed(2);
+                
+                // Payment method display
+                const paymentDisplay = booking.customer.paymentMethod === 'cash' ? 
+                    '<span style="color: #28a745;">(Cash)</span> - Pending' : 
+                    `<span style="color: #007bff;">(${booking.customer.paymentMethod})</span> - Pending`;
+                
+                tableHTML += `
+                    <tr style="border-bottom: 1px solid #dee2e6;">
+                        <td style="padding: 12px;">
+                            <button style="background: transparent; border: 1px solid #dee2e6; padding: 4px 8px; border-radius: 4px; cursor: pointer;" onclick="showBookingActions('${booking.bookingId}')">
+                                👁 ⋮
+                            </button>
+                        </td>
+                        <td style="padding: 12px;">
+                            <input type="checkbox" style="margin-right: 8px;">
+                            <div style="font-weight: 500;">${booking.customer.firstName} ${booking.customer.lastName}</div>
+                            <div style="font-size: 12px; color: #666;">${booking.trip.fromLocation} → ${booking.trip.toLocation}</div>
+                            <div style="font-size: 12px; color: #666;">📞 ${booking.customer.phone}</div>
+                            <div style="font-size: 12px; color: #666;">✉️ ${booking.customer.email}</div>
+                        </td>
+                        <td style="padding: 12px;">
+                            <div>${formattedDate}</div>
+                            <div style="color: #666; font-size: 12px;">${formattedTime}</div>
+                        </td>
+                        <td style="padding: 12px;">
+                            <div style="color: #e67e22; font-weight: 500;">Unpaid 👁</div>
+                            <div style="font-size: 12px;">€${total} ${paymentDisplay}</div>
+                        </td>
+                        <td style="padding: 12px;">
+                            <span style="background: #ffc107; color: #856404; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: 500;">
+                                Unconfirmed
+                            </span>
+                        </td>
+                        <td style="padding: 12px;">
+                            <button style="background: #f8f9fa; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                                Assign fleet ➕
+                            </button>
+                        </td>
+                        <td style="padding: 12px;">
+                            <div>€0.00 ✏️</div>
+                        </td>
+                        <td style="padding: 12px;">
+                            <button style="background: #f8f9fa; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                                Assign driver ➕
+                            </button>
+                        </td>
+                        <td style="padding: 12px;">
+                            <div>-</div>
+                        </td>
+                        <td style="padding: 12px;">
+                            <div>${booking.vehicle.vehicle?.name || 'Saloon'}</div>
+                        </td>
+                        <td style="padding: 12px;">
+                            <div style="font-weight: 500;">€${total}</div>
+                        </td>
+                        <td style="padding: 12px;">
+                            <div>€0.00 ✏️</div>
+                        </td>
+                        <td style="padding: 12px;">
+                            <div>€0.00 ✏️</div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tableBody.innerHTML = tableHTML;
+            
+            console.log('✅ Unconfirmed bookings loaded successfully');
+        }
+        
+        function confirmBooking(bookingId) {
+            if (!confirm(`Confirm booking ${bookingId}? The customer will be notified.`)) {
+                return;
+            }
+            
+            // Move from unconfirmed to confirmed
+            let unconfirmedBookings = JSON.parse(localStorage.getItem('unconfirmedBookings') || '[]');
+            let confirmedBookings = JSON.parse(localStorage.getItem('confirmedBookings') || '[]');
+            
+            const bookingIndex = unconfirmedBookings.findIndex(b => b.bookingId === bookingId);
+            if (bookingIndex !== -1) {
+                const booking = unconfirmedBookings[bookingIndex];
+                booking.status = 'confirmed';
+                booking.confirmedAt = new Date().toISOString();
+                
+                // Move to confirmed
+                confirmedBookings.unshift(booking);
+                unconfirmedBookings.splice(bookingIndex, 1);
+                
+                // Save back to localStorage
+                localStorage.setItem('unconfirmedBookings', JSON.stringify(unconfirmedBookings));
+                localStorage.setItem('confirmedBookings', JSON.stringify(confirmedBookings));
+                
+                // Reload the display
+                loadUnconfirmedBookings();
+                
+                alert(`✅ Booking ${bookingId} confirmed successfully!`);
+                console.log('✅ Booking confirmed:', bookingId);
+            }
+        }
+        
+        function cancelBooking(bookingId) {
+            if (!confirm(`Cancel booking ${bookingId}? The customer will be notified.`)) {
+                return;
+            }
+            
+            // Move from unconfirmed to cancelled
+            let unconfirmedBookings = JSON.parse(localStorage.getItem('unconfirmedBookings') || '[]');
+            let cancelledBookings = JSON.parse(localStorage.getItem('cancelledBookings') || '[]');
+            
+            const bookingIndex = unconfirmedBookings.findIndex(b => b.bookingId === bookingId);
+            if (bookingIndex !== -1) {
+                const booking = unconfirmedBookings[bookingIndex];
+                booking.status = 'cancelled';
+                booking.cancelledAt = new Date().toISOString();
+                
+                // Move to cancelled
+                cancelledBookings.unshift(booking);
+                unconfirmedBookings.splice(bookingIndex, 1);
+                
+                // Save back to localStorage
+                localStorage.setItem('unconfirmedBookings', JSON.stringify(unconfirmedBookings));
+                localStorage.setItem('cancelledBookings', JSON.stringify(cancelledBookings));
+                
+                // Reload the display
+                loadUnconfirmedBookings();
+                
+                alert(`❌ Booking ${bookingId} cancelled successfully!`);
+                console.log('❌ Booking cancelled:', bookingId);
+            }
+        }
+        
+        function confirmAllBookings() {
+            const unconfirmedBookings = JSON.parse(localStorage.getItem('unconfirmedBookings') || '[]');
+            
+            if (unconfirmedBookings.length === 0) {
+                alert('No unconfirmed bookings to confirm.');
+                return;
+            }
+            
+            if (!confirm(`Confirm all ${unconfirmedBookings.length} unconfirmed bookings?`)) {
+                return;
+            }
+            
+            let confirmedBookings = JSON.parse(localStorage.getItem('confirmedBookings') || '[]');
+            
+            // Move all unconfirmed to confirmed
+            unconfirmedBookings.forEach(booking => {
+                booking.status = 'confirmed';
+                booking.confirmedAt = new Date().toISOString();
+                confirmedBookings.unshift(booking);
+            });
+            
+            // Clear unconfirmed and save confirmed
+            localStorage.setItem('unconfirmedBookings', JSON.stringify([]));
+            localStorage.setItem('confirmedBookings', JSON.stringify(confirmedBookings));
+            
+            // Reload the display
+            loadUnconfirmedBookings();
+            
+            alert(`✅ All ${unconfirmedBookings.length} bookings confirmed successfully!`);
+            console.log('✅ All bookings confirmed');
+        }
+        
+        function showBookingActions(bookingId) {
+            // Show action menu for booking
+            const actions = confirm(`Actions for booking ${bookingId}:\n\n✅ OK = Confirm booking\n❌ Cancel = Cancel booking`);
+            
+            if (actions) {
+                confirmBooking(bookingId);
+            }
+        }
+
+        // Email Settings Functions
+        function toggleAdminPassword() {
+            const passwordInput = document.getElementById('adminSmtpPassword');
+            const toggleBtn = event.target;
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleBtn.textContent = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                toggleBtn.textContent = '👁';
+            }
+        }
+
+        async function sendAdminTestEmail() {
+            const testEmail = document.getElementById('adminTestEmail').value;
+            if (!testEmail) {
+                showAdminEmailStatus('Please enter an email address', 'error');
+                return;
+            }
+
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+
+            try {
+                const config = getAdminEmailConfig();
+                const response = await fetch('/api/test-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ testEmail: testEmail, config: config })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAdminEmailStatus('✅ Test email sent successfully!', 'success');
+                } else {
+                    showAdminEmailStatus('❌ Failed to send test email: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showAdminEmailStatus('❌ Error: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        function getAdminEmailConfig() {
+            const securityValue = document.querySelector('input[name="adminSmtpSecurity"]:checked').value;
+            
+            return {
+                fromName: document.getElementById('adminFromName').value,
+                fromEmail: document.getElementById('adminFromEmail').value,
+                replyToEmail: document.getElementById('adminReplyToEmail').value,
+                adminEmail: document.getElementById('adminAdminEmail').value,
+                connectionType: document.getElementById('adminConnectionType').value,
+                provider: document.getElementById('adminProvider').value,
+                smtpHost: document.getElementById('adminSmtpHost').value,
+                smtpPort: document.getElementById('adminSmtpPort').value,
+                smtpUsername: document.getElementById('adminSmtpUsername').value,
+                smtpPassword: document.getElementById('adminSmtpPassword').value,
+                smtpSecurity: securityValue
+            };
+        }
+
+        function showAdminEmailStatus(message, type) {
+            const indicator = document.getElementById('adminEmailStatus');
+            indicator.textContent = message;
+            
+            // Set colors based on type
+            if (type === 'success') {
+                indicator.style.background = '#d4edda';
+                indicator.style.color = '#155724';
+                indicator.style.border = '1px solid #c3e6cb';
+            } else if (type === 'error') {
+                indicator.style.background = '#f8d7da';
+                indicator.style.color = '#721c24';
+                indicator.style.border = '1px solid #f5c6cb';
+            } else {
+                indicator.style.background = '#d1ecf1';
+                indicator.style.color = '#0c5460';
+                indicator.style.border = '1px solid #bee5eb';
+            }
+            
+            indicator.style.display = 'block';
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                indicator.style.display = 'none';
+            }, 5000);
+        }
+
+        // Email form submission
+        document.addEventListener('DOMContentLoaded', function() {
+            const emailForm = document.getElementById('adminEmailSettingsForm');
+            if (emailForm) {
+                emailForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const config = getAdminEmailConfig();
+                    
+                    if (!config.smtpPassword) {
+                        showAdminEmailStatus('❌ SMTP password is required', 'error');
+                        return;
+                    }
+
+                    const btn = document.querySelector('#adminEmailSettingsForm button[type="submit"]');
+                    const originalText = btn.textContent;
+                    btn.disabled = true;
+                    btn.textContent = 'Saving...';
+
+                    try {
+                        // Save configuration to localStorage
+                        localStorage.setItem('emailConfig', JSON.stringify(config));
+                        
+                        // Update status display
+                        document.getElementById('configStatus').textContent = 'Configured ✅';
+                        document.getElementById('configHost').textContent = config.smtpHost;
+                        document.getElementById('configEmail').textContent = config.fromEmail;
+                        
+                        showAdminEmailStatus('✅ Email configuration saved successfully!', 'success');
+                    } catch (error) {
+                        showAdminEmailStatus('❌ Error saving configuration: ' + error.message, 'error');
+                    } finally {
+                        btn.disabled = false;
+                        btn.textContent = originalText;
+                    }
+                });
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📱 Admin panel initialized');
+            
+            // Auto-load vehicle pricing when Distance & Time section is opened
+            setTimeout(() => {
+                const section = document.getElementById('distance-time-section');
+                if (section && section.classList.contains('active')) {
+                    console.log('🔄 Auto-loading vehicle pricing for Distance & Time...');
+                    loadVehiclePricing();
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

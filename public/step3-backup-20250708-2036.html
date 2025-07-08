@@ -553,18 +553,6 @@
 
             const step2Data = JSON.parse(localStorage.getItem('selectedVehicleStep2') || '{}');
 
-            // Handle both old and new vehicle selection formats
-            let outboundVehicle, returnVehicle;
-            if (step2Data.hasReturnTrip !== undefined) {
-                // New format with separate outbound and return vehicles
-                outboundVehicle = step2Data.outbound;
-                returnVehicle = step2Data.return;
-            } else {
-                // Old format - single vehicle for both trips
-                outboundVehicle = step2Data;
-                returnVehicle = step2Data;
-            }
-
             // Create main booking (heen trip)
             const mainBooking = {
                 customer: customerData,
@@ -573,7 +561,7 @@
                     tripType: 'heen',
                     direction: 'outbound'
                 },
-                vehicle: outboundVehicle,
+                vehicle: step2Data,
                 bookingDate: new Date().toISOString(),
                 bookingId: generateBookingId()
             };
@@ -602,7 +590,7 @@
                         direction: 'inbound',
                         relatedBookingId: mainBooking.bookingId // Link to main booking
                     },
-                    vehicle: returnVehicle,
+                    vehicle: step2Data,
                     bookingDate: new Date().toISOString(),
                     bookingId: generateBookingId()
                 };
@@ -672,7 +660,7 @@ Klant: ${customerData.firstName} ${customerData.lastName}
 Van: ${step1Data.fromLocation}
 Naar: ${step1Data.toLocation}
 Datum: ${step1Data.travelDate} om ${step1Data.travelHour}:${step1Data.travelMinute}
-Voertuig: ${outboundVehicle?.vehicle?.name || 'Niet gespecificeerd'}
+Voertuig: ${step2Data.vehicle?.name}
 Betaalmethode: ${customerData.paymentMethod}`;
 
                 if (returnBooking) {
@@ -683,7 +671,7 @@ Boeking ID: ${returnBooking.bookingId}
 Van: ${step1Data.toLocation}
 Naar: ${step1Data.fromLocation}
 Datum: ${step1Data.returnDate} om ${step1Data.returnHour}:${step1Data.returnMinute}
-Voertuig: ${returnVehicle?.vehicle?.name || 'Niet gespecificeerd'}`;
+Voertuig: ${step2Data.vehicle?.name}`;
                 }
 
                 successMessage += `
@@ -704,7 +692,7 @@ Klant: ${customerData.firstName} ${customerData.lastName}
 Van: ${step1Data.fromLocation}
 Naar: ${step1Data.toLocation}
 Datum: ${step1Data.travelDate} om ${step1Data.travelHour}:${step1Data.travelMinute}
-Voertuig: ${outboundVehicle?.vehicle?.name || 'Niet gespecificeerd'}`;
+Voertuig: ${step2Data.vehicle?.name}`;
 
                 if (returnBooking) {
                     errorMessage += `
@@ -714,7 +702,7 @@ Boeking ID: ${returnBooking.bookingId}
 Van: ${step1Data.toLocation}
 Naar: ${step1Data.fromLocation}
 Datum: ${step1Data.returnDate} om ${step1Data.returnHour}:${step1Data.returnMinute}
-Voertuig: ${returnVehicle?.vehicle?.name || 'Niet gespecificeerd'}`;
+Voertuig: ${step2Data.vehicle?.name}`;
                 }
 
                 errorMessage += `

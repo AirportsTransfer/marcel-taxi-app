@@ -110,15 +110,14 @@
         }
 
         .control-item {
-            border: 2px solid #2196f3;
-            border-radius: 12px;
-            padding: 6px 12px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 8px 12px;
             background: white;
-            box-shadow: 0 2px 8px rgba(33,150,243,0.2);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.3s ease;
         }
 
         .control-header {
@@ -193,19 +192,19 @@
 
         .vehicle-card {
             border: 2px solid #e9ecef;
-            border-radius: 15px;
-            padding: 12px;
+            border-radius: 20px;
+            padding: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
             background: white;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             position: relative;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 12px;
-            min-height: 100px;
-            margin-bottom: 10px;
+            gap: 20px;
+            min-height: 140px;
+            margin-bottom: 15px;
         }
 
         .vehicle-card:hover:not(.selected) {
@@ -213,6 +212,13 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.15);
         }
 
+        .vehicle-card:hover .vehicle-image img {
+            transform: scale(1.05);
+        }
+        
+        .vehicle-card:hover .vehicle-image {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
 
         .vehicle-card.selected {
             background: white;
@@ -230,12 +236,15 @@
         }
 
         .vehicle-image {
-            width: 120px;
-            height: 80px;
+            width: 150px;
+            height: 100px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            border-radius: 12px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
             overflow: hidden;
         }
 
@@ -244,6 +253,7 @@
             height: 100%;
             object-fit: contain;
             object-position: center;
+            border-radius: 8px;
         }
 
         .vehicle-details {
@@ -251,10 +261,10 @@
         }
 
         .vehicle-name {
-            font-size: 20px;
+            font-size: 24px;
             font-weight: 700;
             color: #2c3e50;
-            margin-bottom: 8px;
+            margin-bottom: 15px;
             text-align: left;
         }
 
@@ -265,53 +275,20 @@
         .vehicle-specs {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
         }
 
         .spec-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 14px;
+            gap: 10px;
+            font-size: 16px;
             color: #6c757d;
             font-weight: 500;
         }
 
         .vehicle-card.selected .spec-item {
             color: #000;
-        }
-
-        .vehicle-card.recommended {
-            border: 2px solid #007bff;
-            background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
-            box-shadow: 0 4px 20px rgba(0,123,255,0.15);
-        }
-
-        .vehicle-card.recommended::before {
-            content: "🔹 AANBEVOLEN";
-            position: absolute;
-            top: -2px;
-            right: 15px;
-            background: #007bff;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 0 0 8px 8px;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-        #routeToggle:hover {
-            background: linear-gradient(135deg, #bbdefb 0%, #e3f2fd 100%) !important;
-            border-color: #1976d2 !important;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(33,150,243,0.3) !important;
-        }
-
-        .control-item:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(33,150,243,0.3);
-            border-color: #1976d2;
         }
 
         .spec-icon {
@@ -677,155 +654,6 @@
             color: #2c3e50;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-
-        /* SURCHARGE SECTION */
-        .surcharge-section {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            margin: 20px 0;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            border: 2px solid #e9ecef;
-        }
-
-        .surcharge-header {
-            display: none;
-        }
-
-        .surcharge-title {
-            color: #2c3e50;
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .surcharge-subtitle {
-            color: #6c757d;
-            font-size: 14px;
-            margin: 0;
-            font-weight: 400;
-        }
-
-        .surcharge-items-container {
-            margin-bottom: 15px;
-        }
-
-        .surcharge-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 15px;
-            margin-bottom: 10px;
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .surcharge-item:hover {
-            background: white;
-            border-color: #007bff;
-            box-shadow: 0 2px 8px rgba(0,123,255,0.15);
-        }
-
-        .surcharge-item-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .surcharge-item input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            border: 2px solid #667eea;
-            border-radius: 4px;
-            cursor: pointer;
-            accent-color: #667eea;
-        }
-
-        .surcharge-item label {
-            font-weight: 600;
-            color: #2c3e50;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .surcharge-item-right {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .surcharge-price {
-            font-weight: 700;
-            color: #667eea;
-            font-size: 18px;
-            min-width: 80px;
-            text-align: right;
-        }
-
-        .quantity-controls {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: #f8f9fa;
-            border-radius: 25px;
-            padding: 5px;
-        }
-
-        .quantity-controls button {
-            width: 35px;
-            height: 35px;
-            border: none;
-            background: white;
-            border-radius: 50%;
-            cursor: pointer;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            color: #667eea;
-        }
-
-        .quantity-controls button:hover {
-            background: #667eea;
-            color: white;
-            transform: scale(1.1);
-        }
-
-        .quantity-controls input {
-            width: 45px;
-            text-align: center;
-            border: none;
-            background: transparent;
-            font-weight: 600;
-            color: #2c3e50;
-            font-size: 16px;
-        }
-
-        .surcharge-total {
-            display: none;
-        }
-
-        .surcharge-total-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .surcharge-total-label {
-            font-weight: 600;
-            color: #2c3e50;
-            font-size: 18px;
-        }
-
-        .surcharge-total-amount {
-            font-weight: 700;
-            color: #007bff;
-            font-size: 20px;
-        }
     </style>
     <!-- Google Maps API (only load if needed) -->
     <script src="maps-config.js"></script>
@@ -843,10 +671,14 @@
         
         <div class="step-header">
             <h1 class="step-title">STAP 2: Voertuig Selectie</h1>
+            <p>Kies het gewenste voertuig voor uw rit</p>
             <div class="step-progress">
                 <div class="progress-dot completed" onclick="goToStep(1)" title="Ga naar STAP 1"></div>
                 <div class="progress-dot active"></div>
                 <div class="progress-dot" onclick="goToStep(3)" title="Ga naar STAP 3 (eerst voertuig selecteren)"></div>
+            </div>
+            <div class="status-indicator" id="statusIndicator">
+                📡 Verbinding met Distance & Time Pricing...
             </div>
         </div>
 
@@ -923,58 +755,30 @@
                 </div>
             </div>
             
-        </div>
-
-        <!-- ITEM SURCHARGE SECTION -->
-        <div id="surchargeSection" class="surcharge-section" style="display: none;">
-            <div class="surcharge-header">
-                <h3 class="surcharge-title">Extra Services</h3>
-                <p class="surcharge-subtitle">Selecteer optionele services voor uw reis</p>
-            </div>
-            
-            <!-- Fixed Items -->
-            <div id="fixedSurchargeItems" class="surcharge-items-container"></div>
-            
-            <!-- Additional Items -->
-            <div id="additionalSurchargeItems" class="surcharge-items-container"></div>
-            
-            <!-- Total surcharge display -->
-            <div id="surchargeTotal" class="surcharge-total">
-                <div class="surcharge-total-content">
-                    <span class="surcharge-total-label">Extra Services Totaal:</span>
-                    <span id="surchargeTotalAmount" class="surcharge-total-amount">€0.00</span>
-                </div>
+            <div style="text-align: center; margin-top: 15px;">
+                <a href="admin-simple.html" target="_blank" class="admin-link">
+                    ⚙️ Admin: Configureer voertuigen & prijzen
+                </a>
             </div>
         </div>
 
-        <!-- ROUTE MAP TOGGLE -->
+        <!-- ROUTE MAP -->
         <div class="vehicles-section" style="border-top: 1px solid #e9ecef; padding-top: 20px;">
-            <div id="routeToggle" onclick="toggleRouteMap()" style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 12px; background: white; border-radius: 12px; border: 3px solid #2196f3; margin-bottom: 15px; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                <span id="routeIcon" style="display: flex; align-items: center;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M21 10C21 17 12 23 12 23S3 17 3 10C3 5.02944 7.02944 1 12 1C16.9706 1 21 5.02944 21 10Z" stroke="#6c757d" stroke-width="2"/>
-                        <circle cx="12" cy="10" r="3" stroke="#6c757d" stroke-width="2"/>
-                    </svg>
-                </span>
-                <span id="routeToggleText" style="font-weight: 600; color: #2c3e50;">Toon kaart</span>
-            </div>
-            
-            <div id="routeMapSection" style="display: none;">
-                <div id="mapContainer" style="width: 100%; height: 300px; border-radius: 12px; overflow: hidden; border: 2px solid #e9ecef; background: #f8f9fa; display: flex; align-items: center; justify-content: center; color: #6c757d;">
-                    <div id="mapLoading">
-                        <div style="text-align: center;">
-                            <div style="font-size: 18px; margin-bottom: 10px;">🗺️ Route wordt geladen...</div>
-                            <div style="font-size: 14px;">Van: <span id="routeFrom">-</span></div>
-                            <div style="font-size: 14px;">Naar: <span id="routeTo">-</span></div>
-                        </div>
+            <h2 class="section-title">Route overzicht</h2>
+            <div id="mapContainer" style="width: 100%; height: 300px; border-radius: 12px; overflow: hidden; border: 2px solid #e9ecef; background: #f8f9fa; display: flex; align-items: center; justify-content: center; color: #6c757d;">
+                <div id="mapLoading">
+                    <div style="text-align: center;">
+                        <div style="font-size: 18px; margin-bottom: 10px;">🗺️ Route wordt geladen...</div>
+                        <div style="font-size: 14px;">Van: <span id="routeFrom">-</span></div>
+                        <div style="font-size: 14px;">Naar: <span id="routeTo">-</span></div>
                     </div>
-                    <div id="map" style="width: 100%; height: 100%; display: none;"></div>
                 </div>
-                <div id="routeInfo" style="display: flex; justify-content: space-between; margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 14px;">
-                    <div><strong>Afstand:</strong> <span id="routeDistance">Berekenen...</span></div>
-                    <div><strong>Tijd:</strong> <span id="routeDuration">Berekenen...</span></div>
-                    <div><strong>Route type:</strong> <span id="routeType">Snelste route</span></div>
-                </div>
+                <div id="map" style="width: 100%; height: 100%; display: none;"></div>
+            </div>
+            <div id="routeInfo" style="display: flex; justify-content: space-between; margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 14px;">
+                <div><strong>Afstand:</strong> <span id="routeDistance">Berekenen...</span></div>
+                <div><strong>Tijd:</strong> <span id="routeDuration">Berekenen...</span></div>
+                <div><strong>Route type:</strong> <span id="routeType">Snelste route</span></div>
             </div>
         </div>
 
@@ -983,7 +787,6 @@
             <strong>✅ Geselecteerd:</strong> <span id="selectedVehicleName"></span><br>
             <strong>Prijs:</strong> <span id="selectedMinPrice"></span>
         </div>
-
 
         <!-- ACTION BUTTONS -->
         <div class="action-buttons">
@@ -1003,19 +806,20 @@
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 STAP 2 - Page initializing...');
+            updateStatus('🔄 Loading system...', '#17a2b8');
             checkReturnTrip();
             loadSystemData();
             // Set default passengers to 1
             selectPassengers(1);
             // Load route information
             loadRouteInfo();
-            // Load surcharge items immediately
-            console.log('📄 Loading surcharge items...');
-            loadSurchargeItems();
-            console.log('✅ STAP 2 - Page initialized');
         });
 
+        function updateStatus(message, color = '#17a2b8') {
+            const indicator = document.getElementById('statusIndicator');
+            indicator.textContent = message;
+            indicator.style.background = color;
+        }
 
         function checkReturnTrip() {
             const returnActive = localStorage.getItem('returnActive');
@@ -1023,8 +827,10 @@
             
             if (hasReturnTrip) {
                 document.getElementById('tripTypeSelector').style.display = 'block';
+                console.log('✅ Return trip detected - showing trip type selector');
             } else {
                 document.getElementById('tripTypeSelector').style.display = 'none';
+                console.log('📍 Single trip - hiding trip type selector');
             }
         }
 
@@ -1049,15 +855,20 @@
             // Update selected info display
             updateSelectedInfo();
             
+            console.log('🔄 Switched to trip type:', tripType);
         }
 
         function loadSystemData() {
+            console.log('🚀 STAP 2: Loading vehicle and pricing data...');
             
             // Load vehicles from Types of Vehicles (admin system)
             const savedVehicles = localStorage.getItem('taxiVehicles');
             if (savedVehicles) {
                 vehicles = JSON.parse(savedVehicles);
+                console.log('✅ Loaded vehicles from Types of Vehicles:', vehicles.length, 'vehicles');
+                updateStatus(`✅ ${vehicles.length} voertuigen geladen van Types of Vehicles`, '#28a745');
             } else {
+                console.log('⚠️ No vehicles found, creating defaults');
                 createDefaultVehicles();
             }
 
@@ -1065,7 +876,10 @@
             const savedPricing = localStorage.getItem('vehiclePricing');
             if (savedPricing) {
                 pricingData = JSON.parse(savedPricing);
+                console.log('✅ Loaded pricing from Distance & Time:', Object.keys(pricingData).length, 'configurations');
+                updateStatus(`✅ Verbonden met Distance & Time Pricing systeem`, '#28a745');
             } else {
+                console.log('⚠️ No pricing found, creating defaults');
                 createDefaultPricing();
             }
 
@@ -1158,6 +972,7 @@
                         </a>
                     </div>
                 `;
+                updateStatus('⚠️ Geen voertuigen beschikbaar', '#dc3545');
                 return;
             }
 
@@ -1277,6 +1092,8 @@
                 grid.appendChild(card);
             });
 
+            updateStatus(`${activeVehicles.length} voertuigen geladen`, '#28a745');
+            console.log(`✅ Rendered ${activeVehicles.length} vehicles for ${tripType} trip`);
         }
 
         function selectVehicle(vehicle, pricing, tripType) {
@@ -1305,9 +1122,8 @@
             // Update continue button state
             updateContinueButton();
 
-            // Show surcharge section after vehicle selection
-            showSurchargeSection();
-
+            console.log(`✅ Vehicle selected for ${tripType}:`, vehicle.name, 'with pricing:', pricing);
+            updateStatus(`${vehicle.name} geselecteerd voor ${tripType === 'outbound' ? 'heen' : 'terug'} reis`, '#28a745');
         }
 
         function updateSelectedInfo() {
@@ -1390,6 +1206,7 @@
             const recommendation = document.getElementById('passengerRecommendation');
             recommendation.textContent = recommendationText;
             
+            console.log(`✅ Updated counts: ${suggestedPassengers} passagiers, ${suggestedKoffers} koffers, ${suggestedHandbagage} handbagage for ${vehicleId}`);
         }
 
         function continueToStep3() {
@@ -1422,33 +1239,8 @@
             };
             localStorage.setItem('passengerDetails', JSON.stringify(passengerDetails));
 
-            // Save selected surcharges including automatic stopover charges
-            const extraStopCount = parseInt(localStorage.getItem('extraStopCount') || '0');
-            let automaticStopoverCharges = {};
-            
-            if (extraStopCount > 0) {
-                const stopoverItem = surchargeItems.fixed.find(item => item.id === 'stopover');
-                if (stopoverItem) {
-                    automaticStopoverCharges = {
-                        'stopover': {
-                            name: stopoverItem.name,
-                            price: stopoverItem.price,
-                            quantity: extraStopCount,
-                            type: 'automatic',
-                            total: stopoverItem.price * extraStopCount
-                        }
-                    };
-                }
-            }
-            
-            const surchargeData = {
-                selectedSurcharges: selectedSurcharges,
-                automaticCharges: automaticStopoverCharges,
-                surchargeTotal: surchargeTotal,
-                extraStopCount: extraStopCount
-            };
-            localStorage.setItem('selectedSurcharges', JSON.stringify(surchargeData));
-
+            console.log('✅ Continuing to STAP 3 with vehicle selections:', vehicleSelections);
+            console.log('✅ Passenger details saved:', passengerDetails);
             
             // Go to STAP 3
             window.location.href = 'step3.html';
@@ -1527,109 +1319,9 @@
             localStorage.setItem('selectedKoffers', counters.koffers);
             localStorage.setItem('selectedHandbagage', counters.handbagage);
             
-            // Trigger vehicle filtering for any counter change
-            filterAndRenderVehicles();
-        }
-
-        // Filter and render vehicles based on passenger/luggage requirements
-        function filterAndRenderVehicles() {
-            const passengers = counters.passengers;
-            const koffers = counters.koffers;
-            const handbagage = counters.handbagage;
-            
-            
-            // Dynamic vehicle selection based on actual vehicle capacities
-            const recommendation = document.getElementById('passengerRecommendation');
-            let recommendedVehicle = null;
-            const totalLuggage = koffers + handbagage;
-
-            // Get actual vehicle capacities from loaded vehicles (support both data structures)
-            const vehicleCapacities = {};
-            vehicles.forEach(vehicle => {
-                vehicleCapacities[vehicle.id] = {
-                    passengers: vehicle.passengers || vehicle.capacity?.passengers || 4,
-                    luggage: (vehicle.luggage || 0) + (vehicle.handLuggage || 0) || vehicle.capacity?.luggage || 2
-                };
-            });
-
-
-            // Find best vehicle based on actual capacities
-            let bestVehicle = null;
-            let bestScore = -1;
-
-            vehicles.filter(v => v.active).forEach(vehicle => {
-                const capacity = vehicleCapacities[vehicle.id];
-                let score = 0;
-
-                // Check if vehicle can handle requirements
-                if (capacity.passengers >= passengers && capacity.luggage >= totalLuggage) {
-                    // Give higher score to vehicles that fit better (not oversized)
-                    score = 100 - (capacity.passengers - passengers) - (capacity.luggage - totalLuggage);
-                    
-                    if (score > bestScore) {
-                        bestScore = score;
-                        bestVehicle = vehicle;
-                    }
-                }
-            });
-
-            if (bestVehicle) {
-                const capacity = vehicleCapacities[bestVehicle.id];
-                let reason = '';
-                
-                if (passengers > 4) {
-                    reason = `(${passengers} passagiers)`;
-                } else if (totalLuggage > 3) {
-                    reason = `(${totalLuggage} bagage)`;
-                }
-                
-                recommendation.textContent = `Aanbevolen: ${bestVehicle.name} ${reason}`;
-                recommendedVehicle = bestVehicle.id;
-                
-            } else {
-                // No vehicle can handle requirements - recommend largest vehicle
-                const largestVehicle = vehicles
-                    .filter(v => v.active)
-                    .sort((a, b) => {
-                        const aCapacity = vehicleCapacities[a.id];
-                        const bCapacity = vehicleCapacities[b.id];
-                        return (bCapacity.passengers + bCapacity.luggage) - (aCapacity.passengers + aCapacity.luggage);
-                    })[0];
-                
-                if (largestVehicle) {
-                    recommendation.textContent = `⚠️ ${largestVehicle.name} (grootste beschikbare)`;
-                    recommendedVehicle = largestVehicle.id;
-                } else {
-                    recommendation.textContent = '⚠️ Geen voertuigen beschikbaar';
-                    recommendedVehicle = null;
-                }
-            }
-
-            // Re-render vehicles to reflect changes
-            renderVehicles();
-
-            // Auto-select recommended vehicle AND highlight it
-            setTimeout(() => {
-                if (recommendedVehicle) {
-                    autoSelectRecommendedVehicle(recommendedVehicle);
-                    highlightRecommendedVehicle(recommendedVehicle);
-                }
-            }, 200);
-        }
-
-        // Highlight recommended vehicle without auto-selecting
-        function highlightRecommendedVehicle(vehicleId) {
-            // Remove previous recommendations
-            document.querySelectorAll('.vehicle-card').forEach(card => {
-                card.classList.remove('recommended');
-            });
-
-            if (vehicleId) {
-                // Add recommendation highlight to suggested vehicle
-                const targetCard = document.querySelector(`[onclick*="${vehicleId}"]`);
-                if (targetCard) {
-                    targetCard.classList.add('recommended');
-                }
+            // Trigger passenger selection logic for vehicle recommendation
+            if (type === 'passengers') {
+                selectPassengers(newValue);
             }
         }
 
@@ -1642,8 +1334,35 @@
             // Save passenger count
             localStorage.setItem('selectedPassengers', count);
 
-            // Use the new filtering function
-            filterAndRenderVehicles();
+            // Show recommendation and auto-select vehicle
+            const recommendation = document.getElementById('passengerRecommendation');
+            let recommendedVehicle = null;
+
+            if (count >= 1 && count <= 3) {
+                recommendation.textContent = 'Aanbevolen: Saloon wagen';
+                recommendedVehicle = 'saloon';
+            } else if (count === 4) {
+                recommendation.textContent = 'Aanbevolen: Estate wagen';
+                recommendedVehicle = 'estate';
+            } else if (count >= 5 && count <= 6) {
+                recommendation.textContent = 'Aanbevolen: Minivan';
+                recommendedVehicle = 'minivan';
+            } else if (count >= 7 && count <= 8) {
+                recommendation.textContent = 'Aanbevolen: Minivan Long (verplicht voor 7-8 passagiers)';
+                recommendedVehicle = 'minivan_long';
+            }
+
+            // Auto-select recommended vehicle after vehicles are loaded
+            setTimeout(() => {
+                autoSelectRecommendedVehicle(recommendedVehicle);
+                
+                // For 7-8 passengers, disable other vehicles
+                if (count >= 7) {
+                    disableIncompatibleVehicles(count);
+                } else {
+                    enableAllVehicles();
+                }
+            }, 1000);
         }
 
         function autoSelectRecommendedVehicle(vehicleId) {
@@ -1660,6 +1379,8 @@
                     selectVehicleForTrip(targetVehicle, pricing, 'return');
                 }
                 
+                console.log('✅ Auto-selected vehicle:', targetVehicle.name);
+                updateStatus(`${targetVehicle.name} automatisch geselecteerd`, '#28a745');
             }
         }
 
@@ -1883,243 +1604,13 @@
                     document.getElementById('mapLoading').style.display = 'none';
                     document.getElementById('map').style.display = 'block';
                     
+                    console.log('✅ Google Maps route loaded:', route.distance.text, route.duration.text);
                 } else {
+                    console.log('⚠️ Google Maps route failed, using fallback');
                     calculateSimpleRoute(from, to);
                 }
             });
         }
-
-        // Toggle route map visibility
-        function toggleRouteMap() {
-            const mapSection = document.getElementById('routeMapSection');
-            const text = document.getElementById('routeToggleText');
-            const isVisible = mapSection.style.display !== 'none';
-
-            if (isVisible) {
-                // Hide map
-                mapSection.style.display = 'none';
-                text.textContent = 'Toon kaart';
-            } else {
-                // Show map
-                mapSection.style.display = 'block';
-                text.textContent = 'Verberg kaart';
-            }
-        }
-
-        // Item Surcharge Management
-        let surchargeItems = { fixed: [], additional: [] };
-        let selectedSurcharges = {};
-        let surchargeTotal = 0;
-
-        function loadSurchargeItems() {
-            let saved = localStorage.getItem('bookingSurchargeItems');
-            
-            // If no saved data, create default surcharge items
-            if (!saved) {
-                console.log('📄 No surcharge items found, creating default ones...');
-                const defaultSurchargeItems = {
-                    fixed: [
-                        { id: 'meet-greet', name: 'Meet and greet', price: 5, enabled: true },
-                        { id: 'child-seat', name: 'Child seat', price: 3, enabled: true },
-                        { id: 'booster-seat', name: 'Booster seat', price: 3, enabled: true },
-                        { id: 'infant-seat', name: 'Infant seat', price: 3, enabled: true },
-                        { id: 'wheelchair', name: 'Wheelchair', price: 0, enabled: true },
-                        { id: 'waiting-time', name: 'Waiting time after landing', price: 0, enabled: true },
-                        { id: 'stopover', name: 'Stopover (Via)', price: 10, enabled: true }
-                    ],
-                    additional: [
-                        { id: 'golf-material', name: 'Golf-material', price: 5, type: 'Amount', quantity: 1 },
-                        { id: 'ski-material', name: 'Ski-material', price: 5, type: 'Amount', quantity: 1 },
-                        { id: 'dog', name: 'Dog', price: 3, type: 'Amount', quantity: 1 },
-                        { id: 'oversize-luggage', name: 'Oversize luggage', price: 0, type: 'Amount', quantity: 1 },
-                        { id: 'extra-waiting', name: 'Extra waiting time (1 hour)', price: 30, type: 'Amount', quantity: 1 }
-                    ]
-                };
-                
-                localStorage.setItem('bookingSurchargeItems', JSON.stringify(defaultSurchargeItems));
-                surchargeItems = defaultSurchargeItems;
-            } else {
-                surchargeItems = JSON.parse(saved);
-            }
-            
-            console.log('📄 Loaded surcharge items:', surchargeItems);
-            renderSurchargeItems();
-            // Only show if a vehicle is already selected
-            if (selectedVehicleOutbound) {
-                document.getElementById('surchargeSection').style.display = 'block';
-            }
-        }
-
-        function renderSurchargeItems() {
-            renderFixedSurchargeItems();
-            renderAdditionalSurchargeItems();
-            updateSurchargeTotal();
-        }
-
-        function renderFixedSurchargeItems() {
-            const container = document.getElementById('fixedSurchargeItems');
-            container.innerHTML = '';
-
-            if (surchargeItems.fixed && surchargeItems.fixed.length > 0) {
-                surchargeItems.fixed.forEach(item => {
-                    // Hide stopover from customer view - it's automatically calculated
-                    if (item.id === 'stopover') {
-                        return;
-                    }
-                    
-                    // Hide items with €0.00 price
-                    if (item.price === 0) {
-                        return;
-                    }
-                    
-                    const itemDiv = document.createElement('div');
-                    itemDiv.className = 'surcharge-item';
-                    itemDiv.innerHTML = `
-                        <div class="surcharge-item-left">
-                            <input type="checkbox" id="surcharge_${item.id}" onchange="toggleSurcharge('${item.id}', ${item.price}, 'fixed')">
-                            <label for="surcharge_${item.id}">${item.name}</label>
-                        </div>
-                        <div class="surcharge-item-right">
-                            <div class="surcharge-price">€${item.price.toFixed(2)}</div>
-                        </div>
-                    `;
-                    container.appendChild(itemDiv);
-                });
-            }
-        }
-
-        function renderAdditionalSurchargeItems() {
-            const container = document.getElementById('additionalSurchargeItems');
-            container.innerHTML = '';
-
-            if (surchargeItems.additional && surchargeItems.additional.length > 0) {
-                surchargeItems.additional.forEach(item => {
-                    // Hide items with €0.00 price
-                    if (item.price === 0) {
-                        return;
-                    }
-                    
-                    const itemDiv = document.createElement('div');
-                    itemDiv.className = 'surcharge-item';
-                    itemDiv.innerHTML = `
-                        <div class="surcharge-item-left">
-                            <input type="checkbox" id="surcharge_${item.id}" onchange="toggleSurcharge('${item.id}', ${item.price}, 'additional')">
-                            <label for="surcharge_${item.id}">${item.name}</label>
-                        </div>
-                        <div class="surcharge-item-right">
-                            <div class="surcharge-price">€${item.price.toFixed(2)}</div>
-                            <div class="quantity-controls">
-                                <button onclick="adjustSurchargeQuantity('${item.id}', -1)">-</button>
-                                <input type="number" id="quantity_${item.id}" value="1" min="1" max="10" 
-                                       onchange="updateSurchargeQuantity('${item.id}', this.value)">
-                                <button onclick="adjustSurchargeQuantity('${item.id}', 1)">+</button>
-                            </div>
-                        </div>
-                    `;
-                    container.appendChild(itemDiv);
-                });
-            }
-        }
-
-        function toggleSurcharge(itemId, price, type) {
-            const checkbox = document.getElementById(`surcharge_${itemId}`);
-            const quantity = type === 'additional' ? parseInt(document.getElementById(`quantity_${itemId}`).value) : 1;
-            
-            if (checkbox.checked) {
-                selectedSurcharges[itemId] = {
-                    name: getSurchargeItemName(itemId),
-                    price: price,
-                    quantity: quantity,
-                    type: type
-                };
-            } else {
-                delete selectedSurcharges[itemId];
-            }
-            
-            updateSurchargeTotal();
-        }
-
-        function getSurchargeItemName(itemId) {
-            const fixedItem = surchargeItems.fixed.find(item => item.id === itemId);
-            if (fixedItem) return fixedItem.name;
-            
-            const additionalItem = surchargeItems.additional.find(item => item.id === itemId);
-            if (additionalItem) return additionalItem.name;
-            
-            return 'Unknown Item';
-        }
-
-        function adjustSurchargeQuantity(itemId, delta) {
-            const quantityInput = document.getElementById(`quantity_${itemId}`);
-            const currentQuantity = parseInt(quantityInput.value);
-            const newQuantity = Math.max(1, Math.min(10, currentQuantity + delta));
-            quantityInput.value = newQuantity;
-            updateSurchargeQuantity(itemId, newQuantity);
-        }
-
-        function updateSurchargeQuantity(itemId, quantity) {
-            if (selectedSurcharges[itemId]) {
-                selectedSurcharges[itemId].quantity = parseInt(quantity);
-                updateSurchargeTotal();
-            }
-        }
-
-        function updateSurchargeTotal() {
-            surchargeTotal = 0;
-            
-            // Add selected surcharges
-            for (const itemId in selectedSurcharges) {
-                const item = selectedSurcharges[itemId];
-                surchargeTotal += item.price * item.quantity;
-            }
-            
-            // Automatically add stopover charges based on extra stops from STAP 1
-            const extraStopCount = parseInt(localStorage.getItem('extraStopCount') || '0');
-            if (extraStopCount > 0) {
-                const stopoverItem = surchargeItems.fixed.find(item => item.id === 'stopover');
-                if (stopoverItem) {
-                    const stopoverTotal = stopoverItem.price * extraStopCount;
-                    surchargeTotal += stopoverTotal;
-                    console.log(`📍 Auto-added stopover charges: ${extraStopCount} stops × €${stopoverItem.price} = €${stopoverTotal}`);
-                }
-            }
-            
-            document.getElementById('surchargeTotalAmount').textContent = `€${surchargeTotal.toFixed(2)}`;
-            
-            // Update main price display if vehicle is selected
-            if (selectedVehicleOutbound) {
-                updateTotalPrice();
-            }
-        }
-
-        function updateTotalPrice() {
-            const basePrice = selectedVehicleOutbound.pricing.minimumPrice;
-            const totalPrice = basePrice + surchargeTotal;
-            
-            // Update the selected price display
-            document.getElementById('selectedMinPrice').textContent = `€${totalPrice.toFixed(2)}`;
-        }
-
-        // Load surcharge items when vehicle is selected
-        function showSurchargeSection() {
-            console.log('🚗 Vehicle selected, showing surcharge section');
-            loadSurchargeItems();
-            document.getElementById('surchargeSection').style.display = 'block';
-        }
-
-        // Debug function
-        function debugSurchargeSection() {
-            console.log('🔍 DEBUG: Surcharge section status:');
-            console.log('- Section element:', document.getElementById('surchargeSection'));
-            console.log('- Section display:', document.getElementById('surchargeSection')?.style.display);
-            console.log('- Fixed items container:', document.getElementById('fixedSurchargeItems'));
-            console.log('- Additional items container:', document.getElementById('additionalSurchargeItems'));
-            console.log('- localStorage bookingSurchargeItems:', localStorage.getItem('bookingSurchargeItems'));
-            console.log('- surchargeItems variable:', surchargeItems);
-        }
-
-        // Call debug function after page load
-        setTimeout(debugSurchargeSection, 2000);
     </script>
 </body>
 </html>

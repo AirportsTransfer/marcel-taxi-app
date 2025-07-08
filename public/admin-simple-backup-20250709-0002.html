@@ -455,7 +455,6 @@
                         <li><a class="nav-link" onclick="showSection('general')">⚙️ General Settings</a></li>
                         <li><a class="nav-link" onclick="showSection('types-of-vehicles')">🚗 Types of Vehicles</a></li>
                         <li><a class="nav-link" onclick="showSection('payment-methods')">💳 Payment Methods</a></li>
-                        <li><a class="nav-link" onclick="showSection('item-surcharge')">💰 Item Surcharge</a></li>
                         <li><a class="nav-link" onclick="showSection('notifications')">🔔 Notifications</a></li>
                         <li><a class="nav-link" onclick="showSection('mail')">📧 Email Settings</a></li>
                         <li><a class="nav-link" onclick="showSection('booking-settings')">📋 Booking Settings</a></li>
@@ -1211,31 +1210,6 @@
                         <div style="text-align: center; padding: 40px; color: #6c757d; border: 2px dashed #dee2e6; border-radius: 8px;">
                             <h3>🚗 Loading vehicles from Types of Vehicles...</h3>
                             <p>Vehicle pricing cards will appear here automatically</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Item Surcharge Section -->
-                <div id="item-surcharge-section" class="content-section">
-                    <h2>💰 Item Surcharge</h2>
-                    <p>All prices are displayed in EUR (€) currency.</p>
-                    
-                    <!-- Fixed Items -->
-                    <div style="margin: 30px 0;">
-                        <div id="fixedItemsContainer">
-                            <!-- Fixed items will be rendered here -->
-                        </div>
-                    </div>
-                    
-                    <!-- Additional Options -->
-                    <div style="margin: 30px 0;">
-                        <h3>Additional options (e.g. Newspaper, Bottle of water, etc.)</h3>
-                        <div id="additionalOptionsContainer">
-                            <!-- Additional options will be rendered here -->
-                        </div>
-                        <div style="margin: 20px 0;">
-                            <button class="btn btn-success" onclick="addNewSurchargeItem()">+ New</button>
-                            <button class="btn btn-primary" onclick="saveSurchargeItems()" style="margin-left: 10px;">💾 Save</button>
                         </div>
                     </div>
                 </div>
@@ -4755,159 +4729,7 @@ Both bookings added to confirmed bookings list!`;
                         loadVehicleManagerData();
                     }, 100);
                 }
-                
-                if (sectionName === 'item-surcharge') {
-                    setTimeout(() => {
-                        loadSurchargeItems();
-                    }, 100);
-                }
             };
-        }
-
-        // Item Surcharge Management
-        let surchargeItems = {
-            fixed: [
-                { id: 'meet-greet', name: 'Meet and greet', price: 5, enabled: true },
-                { id: 'child-seat', name: 'Child seat', price: 3, enabled: true },
-                { id: 'booster-seat', name: 'Booster seat', price: 3, enabled: true },
-                { id: 'infant-seat', name: 'Infant seat', price: 3, enabled: true },
-                { id: 'wheelchair', name: 'Wheelchair', price: 0, enabled: true },
-                { id: 'waiting-time', name: 'Waiting time after landing', price: 0, enabled: true },
-                { id: 'stopover', name: 'Stopover (Via)', price: 10, enabled: true }
-            ],
-            additional: [
-                { id: 'golf-material', name: 'Golf-material', price: 5, type: 'Amount', quantity: 1 },
-                { id: 'ski-material', name: 'Ski-material', price: 5, type: 'Amount', quantity: 1 },
-                { id: 'dog', name: 'Dog', price: 3, type: 'Amount', quantity: 1 },
-                { id: 'oversize-luggage', name: 'Oversize luggage', price: 0, type: 'Amount', quantity: 1 },
-                { id: 'extra-waiting', name: 'Extra waiting time (1 hour w', price: 30, type: 'Amount', quantity: 1 }
-            ]
-        };
-
-        function loadSurchargeItems() {
-            const saved = localStorage.getItem('surchargeItems');
-            if (saved) {
-                surchargeItems = JSON.parse(saved);
-            }
-            renderSurchargeItems();
-        }
-
-        function renderSurchargeItems() {
-            renderFixedItems();
-            renderAdditionalItems();
-        }
-
-        function renderFixedItems() {
-            const container = document.getElementById('fixedItemsContainer');
-            container.innerHTML = '';
-
-            surchargeItems.fixed.forEach(item => {
-                const itemDiv = document.createElement('div');
-                itemDiv.style.cssText = 'display: flex; align-items: center; margin-bottom: 15px; padding: 10px; border: 1px solid #e9ecef; border-radius: 8px;';
-                itemDiv.innerHTML = `
-                    <div style="flex: 1; color: #6c757d;">${item.name}</div>
-                    <div style="width: 80px; margin-right: 15px;">
-                        <input type="number" value="${item.price}" style="width: 100%; padding: 8px; border: 1px solid #e9ecef; border-radius: 4px; text-align: center;" 
-                               onchange="updateFixedItemPrice('${item.id}', this.value)">
-                    </div>
-                    <div style="display: flex; gap: 5px;">
-                        <button style="width: 30px; height: 30px; border: 1px solid #e9ecef; background: white; border-radius: 4px; cursor: pointer;" 
-                                onclick="adjustFixedItemPrice('${item.id}', 1)">+</button>
-                        <button style="width: 30px; height: 30px; border: 1px solid #e9ecef; background: white; border-radius: 4px; cursor: pointer;" 
-                                onclick="adjustFixedItemPrice('${item.id}', -1)">-</button>
-                    </div>
-                `;
-                container.appendChild(itemDiv);
-            });
-        }
-
-        function renderAdditionalItems() {
-            const container = document.getElementById('additionalOptionsContainer');
-            container.innerHTML = `
-                <div style="display: flex; background: #f8f9fa; padding: 10px; border-radius: 4px; margin-bottom: 10px; font-weight: 600;">
-                    <div style="flex: 1;">Name</div>
-                    <div style="width: 100px;">Price</div>
-                    <div style="width: 100px;">Type</div>
-                    <div style="width: 80px;">Options</div>
-                    <div style="width: 50px;"></div>
-                </div>
-            `;
-
-            surchargeItems.additional.forEach((item, index) => {
-                const itemDiv = document.createElement('div');
-                itemDiv.style.cssText = 'display: flex; align-items: center; margin-bottom: 10px; padding: 10px; border: 1px solid #e9ecef; border-radius: 4px;';
-                itemDiv.innerHTML = `
-                    <input type="text" value="${item.name}" style="flex: 1; margin-right: 10px; padding: 8px; border: 1px solid #e9ecef; border-radius: 4px;" 
-                           onchange="updateAdditionalItem(${index}, 'name', this.value)">
-                    <input type="number" value="${item.price}" style="width: 90px; margin-right: 10px; padding: 8px; border: 1px solid #e9ecef; border-radius: 4px;" 
-                           onchange="updateAdditionalItem(${index}, 'price', this.value)">
-                    <select style="width: 90px; margin-right: 10px; padding: 8px; border: 1px solid #e9ecef; border-radius: 4px;" 
-                            onchange="updateAdditionalItem(${index}, 'type', this.value)">
-                        <option value="Amount" ${item.type === 'Amount' ? 'selected' : ''}>Amount</option>
-                        <option value="Percentage" ${item.type === 'Percentage' ? 'selected' : ''}>Percentage</option>
-                    </select>
-                    <input type="number" value="${item.quantity}" style="width: 70px; margin-right: 10px; padding: 8px; border: 1px solid #e9ecef; border-radius: 4px;" 
-                           onchange="updateAdditionalItem(${index}, 'quantity', this.value)">
-                    <button style="width: 40px; height: 32px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;" 
-                            onclick="removeAdditionalItem(${index})">🗑️</button>
-                `;
-                container.appendChild(itemDiv);
-            });
-        }
-
-        function updateFixedItemPrice(itemId, price) {
-            const item = surchargeItems.fixed.find(i => i.id === itemId);
-            if (item) {
-                item.price = parseFloat(price) || 0;
-            }
-        }
-
-        function adjustFixedItemPrice(itemId, delta) {
-            const item = surchargeItems.fixed.find(i => i.id === itemId);
-            if (item) {
-                item.price = Math.max(0, item.price + delta);
-                renderFixedItems();
-            }
-        }
-
-        function updateAdditionalItem(index, field, value) {
-            if (surchargeItems.additional[index]) {
-                surchargeItems.additional[index][field] = field === 'price' || field === 'quantity' ? parseFloat(value) || 0 : value;
-            }
-        }
-
-        function addNewSurchargeItem() {
-            surchargeItems.additional.push({
-                id: 'new-item-' + Date.now(),
-                name: 'New Item',
-                price: 0,
-                type: 'Amount',
-                quantity: 1
-            });
-            renderAdditionalItems();
-        }
-
-        function removeAdditionalItem(index) {
-            surchargeItems.additional.splice(index, 1);
-            renderAdditionalItems();
-        }
-
-        function saveSurchargeItems() {
-            localStorage.setItem('surchargeItems', JSON.stringify(surchargeItems));
-            alert('✅ Surcharge items saved successfully!');
-            
-            // Sync to booking system
-            syncSurchargeToBookingSystem();
-        }
-
-        function syncSurchargeToBookingSystem() {
-            // Create booking system compatible data
-            const bookingSurcharge = {
-                fixed: surchargeItems.fixed.filter(item => item.enabled),
-                additional: surchargeItems.additional
-            };
-            localStorage.setItem('bookingSurchargeItems', JSON.stringify(bookingSurcharge));
-            console.log('✅ Surcharge items synced to booking system:', bookingSurcharge);
         }
 
         // Make functions globally available
@@ -4921,14 +4743,6 @@ Both bookings added to confirmed bookings list!`;
         window.saveBookingChanges = saveBookingChanges;
         window.toggleStatusDropdown = toggleStatusDropdown;
         window.changeBookingStatus = changeBookingStatus;
-        window.loadSurchargeItems = loadSurchargeItems;
-        window.renderSurchargeItems = renderSurchargeItems;
-        window.updateFixedItemPrice = updateFixedItemPrice;
-        window.adjustFixedItemPrice = adjustFixedItemPrice;
-        window.updateAdditionalItem = updateAdditionalItem;
-        window.addNewSurchargeItem = addNewSurchargeItem;
-        window.removeAdditionalItem = removeAdditionalItem;
-        window.saveSurchargeItems = saveSurchargeItems;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
@@ -4945,10 +4759,6 @@ Both bookings added to confirmed bookings list!`;
                     loadVehiclePricing();
                 }
             }, 1000);
-
-            // Initialize surcharge items and sync to booking system
-            loadSurchargeItems();
-            syncSurchargeToBookingSystem();
         });
     </script>
 </body>
