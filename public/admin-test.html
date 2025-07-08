@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section {
+            display: none;
+            padding: 20px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .section.active {
+            display: block;
+        }
+        .nav-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .nav-button:hover {
+            background: #0056b3;
+        }
+        .unconfirmed-booking {
+            background: #fff;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🚗 Marcel's Taxi - Admin Panel Test</h1>
+        
+        <div style="margin: 20px 0;">
+            <button class="nav-button" onclick="showSection('dispatch')">🚨 Dispatch</button>
+            <button class="nav-button" onclick="showSection('unconfirmed')">📋 Unconfirmed</button>
+            <button class="nav-button" onclick="showSection('email')">📧 Email</button>
+            <button class="nav-button" onclick="testBookingSystem()">🧪 Test Booking</button>
+        </div>
+
+        <!-- Dispatch Section -->
+        <div id="dispatch-section" class="section active">
+            <h2>🚨 Dispatch Center</h2>
+            <p>Manual booking and dispatch controls</p>
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                <h3>Quick Booking</h3>
+                <p>Pickup: <input type="text" placeholder="Address" style="width: 200px; padding: 5px;"></p>
+                <p>Destination: <input type="text" placeholder="Address" style="width: 200px; padding: 5px;"></p>
+                <button class="nav-button">📞 Create Booking</button>
+            </div>
+        </div>
+
+        <!-- Unconfirmed Section -->
+        <div id="unconfirmed-section" class="section">
+            <h2>📋 Unconfirmed Bookings</h2>
+            <p>New bookings awaiting confirmation</p>
+            
+            <div style="margin: 20px 0;">
+                <button class="nav-button" onclick="loadUnconfirmedBookings()">🔄 Refresh</button>
+                <span id="booking-count" style="background: #f8f9fa; padding: 10px; border-radius: 5px;">0 bookings</span>
+            </div>
+            
+            <div id="bookings-container">
+                <p>Loading bookings...</p>
+            </div>
+        </div>
+
+        <!-- Email Section -->
+        <div id="email-section" class="section">
+            <h2>📧 Email Settings</h2>
+            <p>Configure email notifications</p>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                <h3>SMTP Settings</h3>
+                <p>Host: <input type="text" value="smtp.gmail.com" style="width: 200px; padding: 5px;"></p>
+                <p>Username: <input type="text" value="info@airporttransfer.be" style="width: 200px; padding: 5px;"></p>
+                <p>Password: <input type="password" placeholder="Gmail App Password" style="width: 200px; padding: 5px;"></p>
+                <button class="nav-button">💾 Save Settings</button>
+            </div>
+        </div>
+
+        <div style="margin-top: 40px; padding: 20px; background: #d1ecf1; border-radius: 8px;">
+            <h3>System Status</h3>
+            <div id="status-log">
+                <p>✅ Admin panel loaded</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('🚀 Admin test panel loaded');
+
+        function showSection(sectionName) {
+            console.log('Showing section:', sectionName);
+            
+            // Hide all sections
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(s => s.classList.remove('active'));
+            
+            // Show target section
+            const target = document.getElementById(sectionName + '-section');
+            if (target) {
+                target.classList.add('active');
+                addToLog('✅ Showing section: ' + sectionName);
+                
+                // Auto-load data for specific sections
+                if (sectionName === 'unconfirmed') {
+                    loadUnconfirmedBookings();
+                }
+            } else {
+                addToLog('❌ Section not found: ' + sectionName);
+            }
+        }
+
+        function loadUnconfirmedBookings() {
+            console.log('Loading unconfirmed bookings...');
+            addToLog('🔄 Loading unconfirmed bookings...');
+            
+            const container = document.getElementById('bookings-container');
+            const counter = document.getElementById('booking-count');
+            
+            // Get bookings from localStorage
+            const bookings = JSON.parse(localStorage.getItem('unconfirmedBookings') || '[]');
+            console.log('Found bookings:', bookings);
+            
+            counter.textContent = bookings.length + ' unconfirmed bookings';
+            
+            if (bookings.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666;">No unconfirmed bookings found</p>';
+                addToLog('📋 No unconfirmed bookings');
+                return;
+            }
+            
+            let html = '';
+            bookings.forEach((booking, index) => {
+                const date = new Date(booking.createdAt || booking.bookingDate).toLocaleString();
+                html += `
+                    <div class="unconfirmed-booking">
+                        <h4>🚨 ${booking.bookingId}</h4>
+                        <p><strong>Customer:</strong> ${booking.customer?.firstName} ${booking.customer?.lastName}</p>
+                        <p><strong>From:</strong> ${booking.trip?.fromLocation}</p>
+                        <p><strong>To:</strong> ${booking.trip?.toLocation}</p>
+                        <p><strong>Date:</strong> ${booking.trip?.travelDate} at ${booking.trip?.travelHour}:${booking.trip?.travelMinute}</p>
+                        <p><strong>Phone:</strong> ${booking.customer?.phone}</p>
+                        <p><strong>Received:</strong> ${date}</p>
+                        <div style="margin-top: 10px;">
+                            <button class="nav-button" style="background: #28a745;" onclick="confirmBooking('${booking.bookingId}')">✅ Confirm</button>
+                            <button class="nav-button" style="background: #dc3545;" onclick="cancelBooking('${booking.bookingId}')">❌ Cancel</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            addToLog('✅ Loaded ' + bookings.length + ' unconfirmed bookings');
+        }
+
+        function confirmBooking(bookingId) {
+            if (confirm('Confirm booking ' + bookingId + '?')) {
+                // Move from unconfirmed to confirmed
+                let unconfirmed = JSON.parse(localStorage.getItem('unconfirmedBookings') || '[]');
+                let confirmed = JSON.parse(localStorage.getItem('confirmedBookings') || '[]');
+                
+                const booking = unconfirmed.find(b => b.bookingId === bookingId);
+                if (booking) {
+                    booking.status = 'confirmed';
+                    booking.confirmedAt = new Date().toISOString();
+                    
+                    confirmed.unshift(booking);
+                    unconfirmed = unconfirmed.filter(b => b.bookingId !== bookingId);
+                    
+                    localStorage.setItem('unconfirmedBookings', JSON.stringify(unconfirmed));
+                    localStorage.setItem('confirmedBookings', JSON.stringify(confirmed));
+                    
+                    loadUnconfirmedBookings();
+                    addToLog('✅ Booking ' + bookingId + ' confirmed');
+                    alert('Booking confirmed!');
+                }
+            }
+        }
+
+        function cancelBooking(bookingId) {
+            if (confirm('Cancel booking ' + bookingId + '?')) {
+                // Move from unconfirmed to cancelled
+                let unconfirmed = JSON.parse(localStorage.getItem('unconfirmedBookings') || '[]');
+                let cancelled = JSON.parse(localStorage.getItem('cancelledBookings') || '[]');
+                
+                const booking = unconfirmed.find(b => b.bookingId === bookingId);
+                if (booking) {
+                    booking.status = 'cancelled';
+                    booking.cancelledAt = new Date().toISOString();
+                    
+                    cancelled.unshift(booking);
+                    unconfirmed = unconfirmed.filter(b => b.bookingId !== bookingId);
+                    
+                    localStorage.setItem('unconfirmedBookings', JSON.stringify(unconfirmed));
+                    localStorage.setItem('cancelledBookings', JSON.stringify(cancelled));
+                    
+                    loadUnconfirmedBookings();
+                    addToLog('❌ Booking ' + bookingId + ' cancelled');
+                    alert('Booking cancelled!');
+                }
+            }
+        }
+
+        function testBookingSystem() {
+            // Create a test booking
+            const testBooking = {
+                bookingId: 'TEST' + Date.now(),
+                customer: {
+                    firstName: 'John',
+                    lastName: 'Doe',
+                    email: 'john@example.com',
+                    phone: '+32 123 45 67 89',
+                    passengers: '2'
+                },
+                trip: {
+                    fromLocation: 'Brussels Airport',
+                    toLocation: 'Brussels Central Station',
+                    travelDate: new Date().toLocaleDateString('nl-BE'),
+                    travelHour: '14',
+                    travelMinute: '30'
+                },
+                vehicle: {
+                    vehicle: { name: 'Saloon' }
+                },
+                status: 'unconfirmed',
+                createdAt: new Date().toISOString(),
+                bookingDate: new Date().toISOString()
+            };
+            
+            // Add to unconfirmed bookings
+            let unconfirmed = JSON.parse(localStorage.getItem('unconfirmedBookings') || '[]');
+            unconfirmed.unshift(testBooking);
+            localStorage.setItem('unconfirmedBookings', JSON.stringify(unconfirmed));
+            
+            addToLog('🧪 Test booking created: ' + testBooking.bookingId);
+            
+            // If unconfirmed section is active, reload it
+            if (document.getElementById('unconfirmed-section').classList.contains('active')) {
+                loadUnconfirmedBookings();
+            }
+            
+            alert('Test booking created! Check the Unconfirmed section.');
+        }
+
+        function addToLog(message) {
+            const log = document.getElementById('status-log');
+            const p = document.createElement('p');
+            p.textContent = new Date().toLocaleTimeString() + ' - ' + message;
+            log.appendChild(p);
+            console.log(message);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            addToLog('📱 Admin test panel initialized');
+            loadUnconfirmedBookings();
+        });
+    </script>
+</body>
+</html>

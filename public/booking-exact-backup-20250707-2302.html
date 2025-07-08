@@ -394,6 +394,7 @@
         <div class="datetime-section">
             <div class="datetime-row">
                 <div class="date-section">
+                    <div class="section-label">Datum</div>
                     <div class="date-input-container">
                         <input type="text" 
                                class="date-input" 
@@ -405,6 +406,7 @@
                 </div>
                 
                 <div class="time-section">
+                    <div class="section-label">Tijd</div>
                     <div class="time-inputs">
                         <input type="number" 
                                class="time-input" 
@@ -707,7 +709,7 @@
             
             if (returnActive) {
                 btn.classList.add('active');
-                btn.querySelector('span').textContent = '✅ Retour';
+                btn.querySelector('span').textContent = '✅ Retour Toegevoegd';
                 container.style.display = 'block';
                 
                 // Set default return date (same day, 4 hours later)
@@ -740,8 +742,8 @@
                 return;
             }
             
-            if (!travelHour || !travelMinute) {
-                alert('⚠️ Vul uur en minuut in');
+            if (!travelDate || !travelHour || !travelMinute) {
+                alert('⚠️ Vul alle velden in: datum, uur en minuut');
                 return;
             }
             
@@ -758,10 +760,16 @@
             window.location.href = 'step2.html';
         }
 
-        // Initialize page with DATUM text
+        // Initialize page with today's date
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('travelDate').value = 'Datum';
-            console.log('✅ Date field set to DATUM text');
+            const today = new Date();
+            const dd = String(today.getDate()).padStart(2, '0');
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const yyyy = today.getFullYear();
+            const todayFormatted = `${dd}/${mm}/${yyyy}`;
+            
+            document.getElementById('travelDate').value = todayFormatted;
+            console.log('✅ Date automatically set to today:', todayFormatted);
         });
     </script>
 </body>

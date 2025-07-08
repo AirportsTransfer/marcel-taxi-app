@@ -394,6 +394,7 @@
         <div class="datetime-section">
             <div class="datetime-row">
                 <div class="date-section">
+                    <div class="section-label">Datum</div>
                     <div class="date-input-container">
                         <input type="text" 
                                class="date-input" 
@@ -405,20 +406,9 @@
                 </div>
                 
                 <div class="time-section">
-                    <div class="time-inputs">
-                        <input type="number" 
-                               class="time-input" 
-                               id="travelHour" 
-                               value="12" 
-                               min="0" 
-                               max="23">
-                        <div class="time-separator">:</div>
-                        <input type="number" 
-                               class="time-input" 
-                               id="travelMinute" 
-                               value="00" 
-                               min="0" 
-                               max="59">
+                    <div class="section-label">Tijd</div>
+                    <div style="padding: 15px; border: 2px solid #ddd; border-radius: 10px; background: #f8f9fa; font-size: 16px; font-weight: 500; color: #666;">
+                        12:00
                     </div>
                 </div>
             </div>
@@ -707,7 +697,7 @@
             
             if (returnActive) {
                 btn.classList.add('active');
-                btn.querySelector('span').textContent = '✅ Retour';
+                btn.querySelector('span').textContent = '✅ Retour Toegevoegd';
                 container.style.display = 'block';
                 
                 // Set default return date (same day, 4 hours later)
@@ -732,16 +722,14 @@
             const fromLocation = document.getElementById('fromLocation').value;
             const toLocation = document.getElementById('toLocation').value;
             const travelDate = document.getElementById('travelDate').value;
-            const travelHour = document.getElementById('travelHour').value;
-            const travelMinute = document.getElementById('travelMinute').value;
             
             if (!fromLocation || !toLocation) {
                 alert('⚠️ Vul beide adressen in: Van waar en Naar waar');
                 return;
             }
             
-            if (!travelHour || !travelMinute) {
-                alert('⚠️ Vul uur en minuut in');
+            if (!travelDate) {
+                alert('⚠️ Selecteer een datum');
                 return;
             }
             
@@ -749,8 +737,8 @@
             localStorage.setItem('fromLocation', fromLocation);
             localStorage.setItem('toLocation', toLocation);
             localStorage.setItem('travelDate', travelDate);
-            localStorage.setItem('travelHour', travelHour);
-            localStorage.setItem('travelMinute', travelMinute);
+            localStorage.setItem('travelHour', '12');
+            localStorage.setItem('travelMinute', '00');
             localStorage.setItem('extraStopCount', extraStopCount);
             localStorage.setItem('returnActive', returnActive);
             
@@ -758,10 +746,16 @@
             window.location.href = 'step2.html';
         }
 
-        // Initialize page with DATUM text
+        // Initialize page with today's date
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('travelDate').value = 'Datum';
-            console.log('✅ Date field set to DATUM text');
+            const today = new Date();
+            const dd = String(today.getDate()).padStart(2, '0');
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const yyyy = today.getFullYear();
+            const todayFormatted = `${dd}/${mm}/${yyyy}`;
+            
+            document.getElementById('travelDate').value = todayFormatted;
+            console.log('✅ Date automatically set to today:', todayFormatted);
         });
     </script>
 </body>

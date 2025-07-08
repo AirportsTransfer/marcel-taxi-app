@@ -292,6 +292,128 @@
                     <button class="btn btn-primary" onclick="window.open('/admin-vehicles.html', '_blank')">🚗 Open Vehicle Manager</button>
                 </div>
 
+                <div id="mail-section" class="content-section">
+                    <div style="border-bottom: 2px solid #e1e8ed; margin-bottom: 30px; padding-bottom: 20px;">
+                        <h1 style="color: #2c3e50; font-size: 28px; margin-bottom: 10px;">Marcel's Taxi Pro</h1>
+                        <h2 style="color: #007bff; font-size: 24px; margin-bottom: 5px;">Professional Admin Panel - ⚙️ Settings</h2>
+                        <h3 style="color: #666; font-size: 20px; margin: 0;">📧 Email Settings</h3>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #007bff;">
+                        <h3>Current Configuration</h3>
+                        <div style="margin: 15px 0;">
+                            <div><strong>Status:</strong> <span id="configStatus">Not configured</span></div>
+                            <div><strong>SMTP Host:</strong> <span id="configHost">smtp.gmail.com</span></div>
+                            <div><strong>From Email:</strong> <span id="configEmail">info@airporttransfer.be</span></div>
+                        </div>
+                    </div>
+
+                    <form id="adminEmailSettingsForm">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">From name</label>
+                                <input type="text" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px;" id="adminFromName" value="Airport Transfer" required>
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">From email</label>
+                                <input type="email" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px;" id="adminFromEmail" value="info@airporttransfer.be" required>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Reply to email</label>
+                                <input type="email" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px;" id="adminReplyToEmail" value="info@airporttransfer.be" required>
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Admin email</label>
+                                <input type="email" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px;" id="adminAdminEmail" value="marceltataev@gmail.com" required>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Connection type</label>
+                                <select style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px;" id="adminConnectionType">
+                                    <option value="smtp">SMTP - Your mail server</option>
+                                    <option value="sendmail">Sendmail</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Provider</label>
+                                <select style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px;" id="adminProvider">
+                                    <option value="gmail">Gmail</option>
+                                    <option value="outlook">Outlook</option>
+                                    <option value="yahoo">Yahoo</option>
+                                    <option value="custom">Custom</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">SMTP host</label>
+                                <input type="text" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px;" id="adminSmtpHost" value="smtp.gmail.com" required>
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">SMTP port</label>
+                                <select style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px;" id="adminSmtpPort">
+                                    <option value="587" selected>587</option>
+                                    <option value="465">465</option>
+                                    <option value="25">25</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">SMTP username</label>
+                                <input type="text" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px;" id="adminSmtpUsername" value="info@airporttransfer.be" required>
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">SMTP password</label>
+                                <div style="position: relative;">
+                                    <input type="password" style="width: 100%; padding: 12px; padding-right: 50px; border: 2px solid #e1e5e9; border-radius: 6px;" id="adminSmtpPassword" placeholder="Enter your Gmail App Password" required>
+                                    <button type="button" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 18px;" onclick="toggleAdminPassword()">👁</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; font-weight: 500; margin-bottom: 8px;">SMTP security</label>
+                            <div style="display: flex; gap: 20px;">
+                                <label style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="adminSmtpSecurity" value="none"> None
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="adminSmtpSecurity" value="ssl"> SSL
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="adminSmtpSecurity" value="tls" checked> TLS
+                                </label>
+                            </div>
+                        </div>
+
+                        <div style="border-top: 1px solid #e1e5e9; padding-top: 20px; margin-top: 20px;">
+                            <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 20px;">
+                                <div style="flex: 1;">
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">Send a test email</label>
+                                    <input type="email" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px;" id="adminTestEmail" placeholder="Enter your email address">
+                                </div>
+                                <button type="button" style="background: #007bff; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; margin-top: 32px;" onclick="sendAdminTestEmail()">Send</button>
+                            </div>
+                        </div>
+
+                        <div style="text-align: center; margin-top: 30px;">
+                            <button type="submit" style="background: #28a745; color: white; border: none; padding: 15px 30px; border-radius: 6px; font-size: 16px; cursor: pointer;">
+                                💾 Save Email Settings
+                            </button>
+                        </div>
+                    </form>
+
+                    <div id="adminEmailStatus" style="margin-top: 20px; padding: 15px; border-radius: 6px; display: none;"></div>
+                </div>
+
                 <!-- Bookings Sections -->
                 <div id="next-24h-section" class="content-section">
                     <h2>📋 Next 24 Hours</h2>
@@ -301,6 +423,24 @@
                 <div id="latest-section" class="content-section">
                     <h2>📋 Latest Bookings</h2>
                     <p>Most recent booking requests</p>
+                </div>
+
+                <div id="unconfirmed-section" class="content-section">
+                    <h2>📋 Unconfirmed Bookings</h2>
+                    <p>New bookings awaiting confirmation</p>
+                    
+                    <div style="margin: 20px 0; display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn btn-primary" onclick="loadUnconfirmedBookings()">🔄 Refresh Bookings</button>
+                        <button class="btn btn-success" onclick="confirmAllBookings()">✅ Confirm All</button>
+                        <span id="unconfirmedCount" style="padding: 10px; background: #f8f9fa; border-radius: 5px; color: #666;">0 unconfirmed bookings</span>
+                    </div>
+                    
+                    <div id="unconfirmedBookingsContainer" style="margin-top: 30px;">
+                        <div style="text-align: center; padding: 40px; color: #6c757d; border: 2px dashed #dee2e6; border-radius: 8px;">
+                            <h3>📋 Loading unconfirmed bookings...</h3>
+                            <p>Bookings will appear here when customers make new reservations</p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Pricing Sections -->
@@ -366,6 +506,14 @@
                     updateTestResults('🚗 Opening Distance & Time pricing...');
                     setTimeout(() => {
                         loadVehiclePricing(); // Load dynamic pricing from Types of Vehicles
+                    }, 200);
+                }
+                
+                // If showing unconfirmed section, load bookings
+                if (sectionName === 'unconfirmed') {
+                    console.log('📋 Loading Unconfirmed bookings section...');
+                    setTimeout(() => {
+                        loadUnconfirmedBookings();
                     }, 200);
                 }
                 
@@ -776,6 +924,318 @@
             // This function is no longer used with dynamic pricing
             console.log('ℹ️ Using dynamic pricing - no static save needed');
         }
+
+        // Unconfirmed Bookings Functions
+        function loadUnconfirmedBookings() {
+            console.log('📋 Loading unconfirmed bookings...');
+            
+            const container = document.getElementById('unconfirmedBookingsContainer');
+            const countDisplay = document.getElementById('unconfirmedCount');
+            
+            if (!container) {
+                console.error('❌ Unconfirmed bookings container not found');
+                return;
+            }
+            
+            // Get unconfirmed bookings from localStorage
+            const unconfirmedBookings = JSON.parse(localStorage.getItem('unconfirmedBookings') || '[]');
+            console.log('📋 Found unconfirmed bookings:', unconfirmedBookings.length);
+            
+            // Update counter
+            countDisplay.textContent = `${unconfirmedBookings.length} unconfirmed bookings`;
+            
+            if (unconfirmedBookings.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #6c757d; border: 2px dashed #dee2e6; border-radius: 8px;">
+                        <h3>📋 No Unconfirmed Bookings</h3>
+                        <p>New bookings will appear here when customers make reservations</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Generate booking cards
+            let bookingsHTML = '<div style="display: grid; gap: 20px;">';
+            
+            unconfirmedBookings.forEach((booking, index) => {
+                const bookingDate = new Date(booking.createdAt).toLocaleString();
+                const travelDate = `${booking.trip.travelDate} at ${booking.trip.travelHour}:${booking.trip.travelMinute}`;
+                
+                bookingsHTML += `
+                    <div style="background: white; border: 2px solid #ffc107; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(255,193,7,0.2);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                            <div>
+                                <h3 style="color: #e67e22; margin: 0; font-size: 18px;">🚨 ${booking.bookingId}</h3>
+                                <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">Received: ${bookingDate}</p>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn btn-success" style="padding: 8px 16px; font-size: 14px;" onclick="confirmBooking('${booking.bookingId}')">✅ Confirm</button>
+                                <button class="btn" style="background: #dc3545; color: white; padding: 8px 16px; font-size: 14px;" onclick="cancelBooking('${booking.bookingId}')">❌ Cancel</button>
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 15px;">
+                            <div>
+                                <h4 style="color: #2c3e50; margin: 0 0 10px 0;">🚗 Trip Details</h4>
+                                <div style="font-size: 14px; line-height: 1.6;">
+                                    <div><strong>From:</strong> ${booking.trip.fromLocation}</div>
+                                    <div><strong>To:</strong> ${booking.trip.toLocation}</div>
+                                    <div><strong>Date & Time:</strong> ${travelDate}</div>
+                                    <div><strong>Vehicle:</strong> ${booking.vehicle.vehicle?.name || 'Standard'}</div>
+                                    <div><strong>Return:</strong> ${booking.trip.returnActive === 'true' ? 'Yes' : 'No'}</div>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 style="color: #2c3e50; margin: 0 0 10px 0;">👤 Customer Details</h4>
+                                <div style="font-size: 14px; line-height: 1.6;">
+                                    <div><strong>Name:</strong> ${booking.customer.firstName} ${booking.customer.lastName}</div>
+                                    <div><strong>Email:</strong> <a href="mailto:${booking.customer.email}">${booking.customer.email}</a></div>
+                                    <div><strong>Phone:</strong> <a href="tel:${booking.customer.phone}">${booking.customer.phone}</a></div>
+                                    <div><strong>Passengers:</strong> ${booking.customer.passengers}</div>
+                                    <div><strong>Payment:</strong> ${booking.customer.paymentMethod}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107;">
+                            <strong>⚠️ Action Required:</strong> Please confirm or cancel this booking to notify the customer.
+                        </div>
+                    </div>
+                `;
+            });
+            
+            bookingsHTML += '</div>';
+            container.innerHTML = bookingsHTML;
+            
+            console.log('✅ Unconfirmed bookings loaded successfully');
+        }
+        
+        function confirmBooking(bookingId) {
+            if (!confirm(`Confirm booking ${bookingId}? The customer will be notified.`)) {
+                return;
+            }
+            
+            // Move from unconfirmed to confirmed
+            let unconfirmedBookings = JSON.parse(localStorage.getItem('unconfirmedBookings') || '[]');
+            let confirmedBookings = JSON.parse(localStorage.getItem('confirmedBookings') || '[]');
+            
+            const bookingIndex = unconfirmedBookings.findIndex(b => b.bookingId === bookingId);
+            if (bookingIndex !== -1) {
+                const booking = unconfirmedBookings[bookingIndex];
+                booking.status = 'confirmed';
+                booking.confirmedAt = new Date().toISOString();
+                
+                // Move to confirmed
+                confirmedBookings.unshift(booking);
+                unconfirmedBookings.splice(bookingIndex, 1);
+                
+                // Save back to localStorage
+                localStorage.setItem('unconfirmedBookings', JSON.stringify(unconfirmedBookings));
+                localStorage.setItem('confirmedBookings', JSON.stringify(confirmedBookings));
+                
+                // Reload the display
+                loadUnconfirmedBookings();
+                
+                alert(`✅ Booking ${bookingId} confirmed successfully!`);
+                console.log('✅ Booking confirmed:', bookingId);
+            }
+        }
+        
+        function cancelBooking(bookingId) {
+            if (!confirm(`Cancel booking ${bookingId}? The customer will be notified.`)) {
+                return;
+            }
+            
+            // Move from unconfirmed to cancelled
+            let unconfirmedBookings = JSON.parse(localStorage.getItem('unconfirmedBookings') || '[]');
+            let cancelledBookings = JSON.parse(localStorage.getItem('cancelledBookings') || '[]');
+            
+            const bookingIndex = unconfirmedBookings.findIndex(b => b.bookingId === bookingId);
+            if (bookingIndex !== -1) {
+                const booking = unconfirmedBookings[bookingIndex];
+                booking.status = 'cancelled';
+                booking.cancelledAt = new Date().toISOString();
+                
+                // Move to cancelled
+                cancelledBookings.unshift(booking);
+                unconfirmedBookings.splice(bookingIndex, 1);
+                
+                // Save back to localStorage
+                localStorage.setItem('unconfirmedBookings', JSON.stringify(unconfirmedBookings));
+                localStorage.setItem('cancelledBookings', JSON.stringify(cancelledBookings));
+                
+                // Reload the display
+                loadUnconfirmedBookings();
+                
+                alert(`❌ Booking ${bookingId} cancelled successfully!`);
+                console.log('❌ Booking cancelled:', bookingId);
+            }
+        }
+        
+        function confirmAllBookings() {
+            const unconfirmedBookings = JSON.parse(localStorage.getItem('unconfirmedBookings') || '[]');
+            
+            if (unconfirmedBookings.length === 0) {
+                alert('No unconfirmed bookings to confirm.');
+                return;
+            }
+            
+            if (!confirm(`Confirm all ${unconfirmedBookings.length} unconfirmed bookings?`)) {
+                return;
+            }
+            
+            let confirmedBookings = JSON.parse(localStorage.getItem('confirmedBookings') || '[]');
+            
+            // Move all unconfirmed to confirmed
+            unconfirmedBookings.forEach(booking => {
+                booking.status = 'confirmed';
+                booking.confirmedAt = new Date().toISOString();
+                confirmedBookings.unshift(booking);
+            });
+            
+            // Clear unconfirmed and save confirmed
+            localStorage.setItem('unconfirmedBookings', JSON.stringify([]));
+            localStorage.setItem('confirmedBookings', JSON.stringify(confirmedBookings));
+            
+            // Reload the display
+            loadUnconfirmedBookings();
+            
+            alert(`✅ All ${unconfirmedBookings.length} bookings confirmed successfully!`);
+            console.log('✅ All bookings confirmed');
+        }
+
+        // Email Settings Functions
+        function toggleAdminPassword() {
+            const passwordInput = document.getElementById('adminSmtpPassword');
+            const toggleBtn = event.target;
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleBtn.textContent = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                toggleBtn.textContent = '👁';
+            }
+        }
+
+        async function sendAdminTestEmail() {
+            const testEmail = document.getElementById('adminTestEmail').value;
+            if (!testEmail) {
+                showAdminEmailStatus('Please enter an email address', 'error');
+                return;
+            }
+
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+
+            try {
+                const config = getAdminEmailConfig();
+                const response = await fetch('/api/test-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ testEmail: testEmail, config: config })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAdminEmailStatus('✅ Test email sent successfully!', 'success');
+                } else {
+                    showAdminEmailStatus('❌ Failed to send test email: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showAdminEmailStatus('❌ Error: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        function getAdminEmailConfig() {
+            const securityValue = document.querySelector('input[name="adminSmtpSecurity"]:checked').value;
+            
+            return {
+                fromName: document.getElementById('adminFromName').value,
+                fromEmail: document.getElementById('adminFromEmail').value,
+                replyToEmail: document.getElementById('adminReplyToEmail').value,
+                adminEmail: document.getElementById('adminAdminEmail').value,
+                connectionType: document.getElementById('adminConnectionType').value,
+                provider: document.getElementById('adminProvider').value,
+                smtpHost: document.getElementById('adminSmtpHost').value,
+                smtpPort: document.getElementById('adminSmtpPort').value,
+                smtpUsername: document.getElementById('adminSmtpUsername').value,
+                smtpPassword: document.getElementById('adminSmtpPassword').value,
+                smtpSecurity: securityValue
+            };
+        }
+
+        function showAdminEmailStatus(message, type) {
+            const indicator = document.getElementById('adminEmailStatus');
+            indicator.textContent = message;
+            
+            // Set colors based on type
+            if (type === 'success') {
+                indicator.style.background = '#d4edda';
+                indicator.style.color = '#155724';
+                indicator.style.border = '1px solid #c3e6cb';
+            } else if (type === 'error') {
+                indicator.style.background = '#f8d7da';
+                indicator.style.color = '#721c24';
+                indicator.style.border = '1px solid #f5c6cb';
+            } else {
+                indicator.style.background = '#d1ecf1';
+                indicator.style.color = '#0c5460';
+                indicator.style.border = '1px solid #bee5eb';
+            }
+            
+            indicator.style.display = 'block';
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                indicator.style.display = 'none';
+            }, 5000);
+        }
+
+        // Email form submission
+        document.addEventListener('DOMContentLoaded', function() {
+            const emailForm = document.getElementById('adminEmailSettingsForm');
+            if (emailForm) {
+                emailForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const config = getAdminEmailConfig();
+                    
+                    if (!config.smtpPassword) {
+                        showAdminEmailStatus('❌ SMTP password is required', 'error');
+                        return;
+                    }
+
+                    const btn = document.querySelector('#adminEmailSettingsForm button[type="submit"]');
+                    const originalText = btn.textContent;
+                    btn.disabled = true;
+                    btn.textContent = 'Saving...';
+
+                    try {
+                        // Save configuration to localStorage
+                        localStorage.setItem('emailConfig', JSON.stringify(config));
+                        
+                        // Update status display
+                        document.getElementById('configStatus').textContent = 'Configured ✅';
+                        document.getElementById('configHost').textContent = config.smtpHost;
+                        document.getElementById('configEmail').textContent = config.fromEmail;
+                        
+                        showAdminEmailStatus('✅ Email configuration saved successfully!', 'success');
+                    } catch (error) {
+                        showAdminEmailStatus('❌ Error saving configuration: ' + error.message, 'error');
+                    } finally {
+                        btn.disabled = false;
+                        btn.textContent = originalText;
+                    }
+                });
+            }
+        });
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {

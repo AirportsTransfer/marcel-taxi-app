@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug LocalStorage</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 8px; }
+        .data { background: #f8f9fa; padding: 10px; border-radius: 4px; white-space: pre-wrap; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .count { background: #28a745; color: white; padding: 5px 10px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 LocalStorage Debug Tool</h1>
+    
+    <div class="section">
+        <h2>Unconfirmed Bookings</h2>
+        <button onclick="checkUnconfirmed()">🔄 Check Unconfirmed</button>
+        <button onclick="clearUnconfirmed()">🗑️ Clear All</button>
+        <span id="unconfirmedCount" class="count">0</span>
+        <div id="unconfirmedData" class="data">Click "Check Unconfirmed" to load...</div>
+    </div>
+
+    <div class="section">
+        <h2>Confirmed Bookings</h2>
+        <button onclick="checkConfirmed()">🔄 Check Confirmed</button>
+        <span id="confirmedCount" class="count">0</span>
+        <div id="confirmedData" class="data">Click "Check Confirmed" to load...</div>
+    </div>
+
+    <div class="section">
+        <h2>All LocalStorage Keys</h2>
+        <button onclick="showAllKeys()">🔍 Show All Keys</button>
+        <div id="allKeysData" class="data">Click "Show All Keys" to load...</div>
+    </div>
+
+    <div class="section">
+        <h2>Create Test Booking</h2>
+        <button onclick="createTestBooking()">🧪 Create Test Booking</button>
+        <div id="testResult" class="data">Click button to create test booking...</div>
+    </div>
+
+    <script>
+        function checkUnconfirmed() {
+            const data = localStorage.getItem('unconfirmedBookings');
+            const bookings = JSON.parse(data || '[]');
+            
+            document.getElementById('unconfirmedCount').textContent = bookings.length;
+            document.getElementById('unconfirmedData').textContent = 
+                'Raw data: ' + data + '\n\nParsed (' + bookings.length + ' bookings):\n' + 
+                JSON.stringify(bookings, null, 2);
+                
+            console.log('Unconfirmed bookings:', bookings);
+        }
+
+        function checkConfirmed() {
+            const data = localStorage.getItem('confirmedBookings');
+            const bookings = JSON.parse(data || '[]');
+            
+            document.getElementById('confirmedCount').textContent = bookings.length;
+            document.getElementById('confirmedData').textContent = 
+                'Raw data: ' + data + '\n\nParsed (' + bookings.length + ' bookings):\n' + 
+                JSON.stringify(bookings, null, 2);
+        }
+
+        function showAllKeys() {
+            const keys = Object.keys(localStorage);
+            let result = 'All localStorage keys (' + keys.length + '):\n\n';
+            
+            keys.forEach(key => {
+                const value = localStorage.getItem(key);
+                result += key + ': ' + (value.length > 100 ? value.substring(0, 100) + '...' : value) + '\n\n';
+            });
+            
+            document.getElementById('allKeysData').textContent = result;
+        }
+
+        function clearUnconfirmed() {
+            if (confirm('Clear all unconfirmed bookings?')) {
+                localStorage.removeItem('unconfirmedBookings');
+                checkUnconfirmed();
+                alert('Unconfirmed bookings cleared!');
+            }
+        }
+
+        function createTestBooking() {
+            const testBooking = {
+                bookingId: 'TEST' + Date.now(),
+                customer: {
+                    firstName: 'Marcel',
+                    lastName: 'Test',
+                    email: 'marcel@test.com',
+                    phone: '+32 123 45 67 89',
+                    passengers: '2',
+                    paymentMethod: 'cash'
+                },
+                trip: {
+                    fromLocation: 'Brussels Airport',
+                    toLocation: 'Brussels Central',
+                    travelDate: new Date().toLocaleDateString('nl-BE'),
+                    travelHour: '14',
+                    travelMinute: '30',
+                    returnActive: 'false',
+                    extraStopCount: '0'
+                },
+                vehicle: {
+                    vehicle: { name: 'Saloon' }
+                },
+                status: 'unconfirmed',
+                createdAt: new Date().toISOString(),
+                bookingDate: new Date().toISOString()
+            };
+            
+            // Add to unconfirmed bookings using the same logic as step3.html
+            let unconfirmedBookings = JSON.parse(localStorage.getItem('unconfirmedBookings') || '[]');
+            
+            const bookingWithStatus = {
+                ...testBooking,
+                status: 'unconfirmed',
+                createdAt: new Date().toISOString(),
+                lastUpdated: new Date().toISOString()
+            };
+            
+            unconfirmedBookings.unshift(bookingWithStatus);
+            localStorage.setItem('unconfirmedBookings', JSON.stringify(unconfirmedBookings));
+            
+            document.getElementById('testResult').textContent = 
+                'Test booking created!\n\nBooking ID: ' + testBooking.bookingId + 
+                '\nAdded to unconfirmed list\nTotal unconfirmed: ' + unconfirmedBookings.length;
+                
+            console.log('Test booking created:', testBooking);
+            
+            // Auto-refresh unconfirmed display
+            checkUnconfirmed();
+        }
+
+        // Auto-load on page load
+        window.onload = function() {
+            checkUnconfirmed();
+            checkConfirmed();
+        };
+    </script>
+</body>
+</html>

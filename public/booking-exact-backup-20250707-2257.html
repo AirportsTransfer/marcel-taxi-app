@@ -394,6 +394,7 @@
         <div class="datetime-section">
             <div class="datetime-row">
                 <div class="date-section">
+                    <div class="section-label">Datum</div>
                     <div class="date-input-container">
                         <input type="text" 
                                class="date-input" 
@@ -405,18 +406,19 @@
                 </div>
                 
                 <div class="time-section">
+                    <div class="section-label">Tijd</div>
                     <div class="time-inputs">
                         <input type="number" 
                                class="time-input" 
                                id="travelHour" 
-                               value="12" 
+                               placeholder="UU" 
                                min="0" 
                                max="23">
                         <div class="time-separator">:</div>
                         <input type="number" 
                                class="time-input" 
                                id="travelMinute" 
-                               value="00" 
+                               placeholder="MM" 
                                min="0" 
                                max="59">
                     </div>
@@ -659,7 +661,7 @@
                            placeholder="📍 Voer extra stop adres in..."
                            style="cursor: text; flex: 1;">
                     <button onclick="removeExtraStop(this)" 
-                            style="background: white; color: #dc3545; border: 1px solid #dc3545; border-radius: 8px; padding: 12px 16px; cursor: pointer; font-size: 14px;">
+                            style="background: #dc3545; color: white; border: none; border-radius: 8px; padding: 12px 16px; cursor: pointer; font-size: 14px;">
                         ❌
                     </button>
                 </div>
@@ -707,7 +709,7 @@
             
             if (returnActive) {
                 btn.classList.add('active');
-                btn.querySelector('span').textContent = '✅ Retour';
+                btn.querySelector('span').textContent = '✅ Retour Toegevoegd';
                 container.style.display = 'block';
                 
                 // Set default return date (same day, 4 hours later)
@@ -740,8 +742,8 @@
                 return;
             }
             
-            if (!travelHour || !travelMinute) {
-                alert('⚠️ Vul uur en minuut in');
+            if (!travelDate || !travelHour || !travelMinute) {
+                alert('⚠️ Vul alle velden in: datum, uur en minuut');
                 return;
             }
             
@@ -757,12 +759,6 @@
             console.log('✅ Validation passed, continuing to vehicles...');
             window.location.href = 'step2.html';
         }
-
-        // Initialize page with DATUM text
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('travelDate').value = 'Datum';
-            console.log('✅ Date field set to DATUM text');
-        });
     </script>
 </body>
 </html>

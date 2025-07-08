@@ -96,217 +96,138 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
-        /* PASSENGER/LUGGAGE CONTROLS */
-        .controls-section {
-            background: #fff;
-            padding: 25px 20px;
-        }
-
-        .controls-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-
-        .control-item {
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            padding: 8px 12px;
-            background: white;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .control-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .control-icon {
-            font-size: 14px;
-        }
-
-        .control-label {
-            font-size: 12px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-
-        .control-counter {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            background: #2c3e50;
-            border-radius: 15px;
-            padding: 4px 8px;
-        }
-
-        .counter-btn {
-            width: 20px;
-            height: 20px;
-            border: none;
-            border-radius: 50%;
-            background: white;
-            color: #2c3e50;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-
-        .counter-btn:hover {
-            background: #ffc107;
-            color: white;
-            transform: scale(1.05);
-        }
-
-        .counter-value {
-            color: white;
-            font-size: 12px;
-            font-weight: 600;
-            min-width: 12px;
-            text-align: center;
-        }
-
         /* VEHICLE SECTION */
         .vehicles-section {
             background: #fff;
-            padding: 0 20px 25px 20px;
+            padding: 25px 20px;
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
         }
 
         .vehicle-grid {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 15px;
             max-width: 600px;
             margin: 0 auto;
         }
 
         .vehicle-card {
             border: 2px solid #e9ecef;
-            border-radius: 15px;
-            padding: 15px;
+            border-radius: 20px;
+            padding: 25px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            background: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
             position: relative;
+            overflow: hidden;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 15px;
+            gap: 25px;
+            backdrop-filter: blur(10px);
         }
 
         .vehicle-card:hover:not(.selected) {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            border-color: #667eea;
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 20px 50px rgba(102, 126, 234, 0.3);
+            background: linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%);
         }
 
         .vehicle-card.selected {
-            background: white;
-            color: #000;
-            border: 3px solid #28a745;
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(40,167,69,0.3);
+            border-color: #28a745;
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            transform: translateY(-12px) scale(1.05);
+            box-shadow: 0 25px 60px rgba(40,167,69,0.4);
+            position: relative;
         }
 
-        .vehicle-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex: 1;
+        .vehicle-card.selected::before {
+            content: "✅ Geselecteerd";
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #28a745;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(40,167,69,0.3);
+        }
+
+        .vehicle-card.selected .vehicle-name {
+            color: #155724;
+            font-weight: 800;
+        }
+
+        .vehicle-card.selected .vehicle-price {
+            color: #155724;
+            font-weight: 900;
         }
 
         .vehicle-image {
-            width: 90px;
-            height: 60px;
+            width: 120px;
+            height: 90px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow: hidden;
+            border: 2px solid #dee2e6;
+            position: relative;
             flex-shrink: 0;
-            border-radius: 8px;
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
         .vehicle-image img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            border-radius: 6px;
+            border-radius: 10px;
         }
 
-        .vehicle-details {
+        .vehicle-emoji {
+            font-size: 40px;
+            color: #6c757d;
+        }
+
+        .vehicle-info {
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .vehicle-name {
-            font-size: 18px;
-            font-weight: 700;
+            font-size: 20px;
+            font-weight: 800;
             color: #2c3e50;
-            margin-bottom: 8px;
-        }
-
-        .vehicle-card.selected .vehicle-name {
-            color: #000;
-        }
-
-        .vehicle-specs {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .spec-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            color: #495057;
-            font-weight: 500;
-        }
-
-        .vehicle-card.selected .spec-item {
-            color: #000;
-        }
-
-        .spec-icon {
-            font-size: 14px;
-            width: 16px;
-        }
-
-        .vehicle-right {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 10px;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
         }
 
         .vehicle-price {
-            font-size: 22px;
-            font-weight: 700;
-            color: #2c3e50;
+            font-size: 24px;
+            font-weight: 900;
+            color: #667eea;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            letter-spacing: -0.5px;
         }
 
         .vehicle-card.selected .vehicle-price {
-            color: #000;
-        }
-
-        .trip-type {
-            background: #2c3e50;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
+            color: #28a745;
         }
 
         .vehicle-card.disabled {
@@ -322,9 +243,15 @@
         }
 
         .vehicle-specs {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
+            font-size: 14px;
+            color: #495057;
+            line-height: 1.6;
+            margin-bottom: 8px;
+            font-weight: 600;
+            background: rgba(102, 126, 234, 0.1);
+            padding: 8px 12px;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
         }
 
         .vehicle-description {
@@ -510,93 +437,69 @@
             font-weight: 600;
         }
 
-        /* DROPDOWN LAYOUT */
-        .dropdown-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .dropdown-row {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .dropdown-item {
-            min-height: 35px;
-        }
-
         /* COUNTER CONTROLS */
         .counter-control {
             background: white;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-            transition: all 0.3s ease;
-        }
-
-        .counter-control:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
         }
 
         .counter-header {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
 
         .counter-icon {
-            font-size: 16px;
+            font-size: 18px;
         }
 
         .counter-label {
-            font-size: 13px;
+            font-size: 16px;
             font-weight: 600;
-            color: #2c3e50;
+            color: #495057;
         }
 
         .counter-buttons {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 15px;
             background: #2c3e50;
-            border-radius: 15px;
-            padding: 3px 10px;
+            border-radius: 20px;
+            padding: 5px;
         }
 
         .counter-btn {
-            width: 24px;
-            height: 24px;
+            width: 30px;
+            height: 30px;
             border: none;
             border-radius: 50%;
-            background: white;
-            color: #2c3e50;
-            font-size: 14px;
+            background: #34495e;
+            color: white;
+            font-size: 18px;
             font-weight: 600;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
         .counter-btn:hover {
             background: #ffc107;
-            color: white;
-            transform: scale(1.05);
+            color: #2c3e50;
+            transform: scale(1.1);
         }
 
         .counter-value {
             color: white;
-            font-size: 12px;
+            font-size: 16px;
             font-weight: 600;
-            min-width: 12px;
+            min-width: 20px;
             text-align: center;
         }
     </style>
@@ -627,43 +530,53 @@
             </div>
         </div>
 
-
         <!-- PASSENGER SELECTION -->
-        <div class="controls-section">
-            <div class="controls-grid">
-                <div class="control-item">
-                    <div class="control-header">
-                        <span class="control-icon">👥</span>
-                        <span class="control-label">Passagiers</span>
+        <div class="vehicles-section" style="border-bottom: 1px solid #e9ecef; padding-bottom: 20px;">
+            <div class="dropdown-container">
+                <div class="dropdown-row">
+                    <div class="dropdown-item">
+                        <div class="counter-control">
+                            <div class="counter-header">
+                                <span class="counter-icon">👥</span>
+                                <span class="counter-label">Passagiers</span>
+                            </div>
+                            <div class="counter-buttons">
+                                <button class="counter-btn" onclick="changeCount('passengers', -1)">-</button>
+                                <span class="counter-value" id="passengersCount">1</span>
+                                <button class="counter-btn" onclick="changeCount('passengers', 1)">+</button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="control-counter">
-                        <button class="counter-btn" onclick="changeCount('passengers', -1)">-</button>
-                        <span class="counter-value" id="passengersCount">1</span>
-                        <button class="counter-btn" onclick="changeCount('passengers', 1)">+</button>
+                    <div class="dropdown-item">
+                        <div class="counter-control">
+                            <div class="counter-header">
+                                <span class="counter-icon">🧳</span>
+                                <span class="counter-label">Koffers</span>
+                            </div>
+                            <div class="counter-buttons">
+                                <button class="counter-btn" onclick="changeCount('koffers', -1)">-</button>
+                                <span class="counter-value" id="koffersCount">0</span>
+                                <button class="counter-btn" onclick="changeCount('koffers', 1)">+</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="control-item">
-                    <div class="control-header">
-                        <span class="control-icon">🧳</span>
-                        <span class="control-label">Koffers</span>
+                <div class="dropdown-row">
+                    <div class="dropdown-item">
+                        <div class="counter-control">
+                            <div class="counter-header">
+                                <span class="counter-icon">💼</span>
+                                <span class="counter-label">Handbagage</span>
+                            </div>
+                            <div class="counter-buttons">
+                                <button class="counter-btn" onclick="changeCount('handbagage', -1)">-</button>
+                                <span class="counter-value" id="handbagageCount">0</span>
+                                <button class="counter-btn" onclick="changeCount('handbagage', 1)">+</button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="control-counter">
-                        <button class="counter-btn" onclick="changeCount('koffers', -1)">-</button>
-                        <span class="counter-value" id="koffersCount">0</span>
-                        <button class="counter-btn" onclick="changeCount('koffers', 1)">+</button>
-                    </div>
-                </div>
-                
-                <div class="control-item">
-                    <div class="control-header">
-                        <span class="control-icon">💼</span>
-                        <span class="control-label">Handbagage</span>
-                    </div>
-                    <div class="control-counter">
-                        <button class="counter-btn" onclick="changeCount('handbagage', -1)">-</button>
-                        <span class="counter-value" id="handbagageCount">0</span>
-                        <button class="counter-btn" onclick="changeCount('handbagage', 1)">+</button>
+                    <div class="dropdown-item">
+                        <!-- Empty space for symmetry -->
                     </div>
                 </div>
             </div>
@@ -827,16 +740,8 @@
             const grid = document.getElementById('vehicleGrid');
             grid.innerHTML = '';
 
-            // Filter active vehicles and sort with Saloon first
-            const activeVehicles = vehicles
-                .filter(vehicle => vehicle.active !== false)
-                .sort((a, b) => {
-                    // Force Saloon to be first
-                    if (a.id === 'saloon' && b.id !== 'saloon') return -1;
-                    if (b.id === 'saloon' && a.id !== 'saloon') return 1;
-                    // If both are saloon or neither is saloon, sort alphabetically
-                    return a.name.localeCompare(b.name);
-                });
+            // Filter active vehicles
+            const activeVehicles = vehicles.filter(vehicle => vehicle.active !== false);
 
             if (activeVehicles.length === 0) {
                 grid.innerHTML = `
@@ -868,48 +773,31 @@
                     // External image URL
                     imageContent = `<img src="${vehicle.image}" alt="${vehicle.name}">`;
                 } else {
-                    // Use professional vehicle representations
-                    const vehicleImages = {
-                        'saloon': 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjYwIiB2aWV3Qm94PSIwIDAgMTAwIDYwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBkPSJNMTAgMzBIMTVMMjAgMjBIODBMMzUgMzBIOTBWNDBINDVWNTBIMTVWNDBIMTBWMzBaIiBmaWxsPSIjMzQ0OTVlIi8+CjxjaXJjbGUgY3g9IjI1IiBjeT0iNDUiIHI9IjUiIGZpbGw9IiMyYzNlNTAiLz4KPGNpcmNsZSBjeD0iNzUiIGN5PSI0NSIgcj0iNSIgZmlsbD0iIzJjM2U1MCIvPgo8L3N2Zz4K',
-                        'estate': 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjYwIiB2aWV3Qm94PSIwIDAgMTAwIDYwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBkPSJNMTAgMzBIMTVMMjAgMjBIODBMMzUgMzBIOTBWNDBINDVWNTBIMTVWNDBIMTBWMzBaIiBmaWxsPSIjMzQ0OTVlIi8+CjxwYXRoIGQ9Ik04NSAzMEg5MFY0MEg4NVYzMFoiIGZpbGw9IiMyYzNlNTAiLz4KPGNpcmNsZSBjeD0iMjUiIGN5PSI0NSIgcj0iNSIgZmlsbD0iIzJjM2U1MCIvPgo8Y2lyY2xlIGN4PSI3NSIgY3k9IjQ1IiByPSI1IiBmaWxsPSIjMmMzZTUwIi8+Cjwvc3ZnPgo=',
-                        'minivan': 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjYwIiB2aWV3Qm94PSIwIDAgMTAwIDYwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBkPSJNMTAgMjVIMTVMMjAgMTVIODBMMzUgMjVIOTBWNDBINDVWNTBIMTVWNDBIMTBWMjVaIiBmaWxsPSIjMzQ0OTVlIi8+CjxwYXRoIGQ9Ik04NSAyNUg5MFY0MEg4NVYyNVoiIGZpbGw9IiMyYzNlNTAiLz4KPHBhdGggZD0iTTgwIDI1SDg1VjQwSDgwVjI1WiIgZmlsbD0iIzJjM2U1MCIvPgo8Y2lyY2xlIGN4PSIyNSIgY3k9IjQ1IiByPSI1IiBmaWxsPSIjMmMzZTUwIi8+CjxjaXJjbGUgY3g9Ijc1IiBjeT0iNDUiIHI9IjUiIGZpbGw9IiMyYzNlNTAiLz4KPC9zdmc+Cg==',
-                        'minivan_long': 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjYwIiB2aWV3Qm94PSIwIDAgMTAwIDYwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBkPSJNNSAyNUgxMEwxNSAxNUg4NUwzMCAyNUg5NVY0MEg1MFY1MEgxMFY0MEg1VjI1WiIgZmlsbD0iIzM0NDk1ZSIvPgo8cGF0aCBkPSJNOTAgMjVIOTVWNDBIOTBWMjVaIiBmaWxsPSIjMmMzZTUwIi8+CjxwYXRoIGQ9Ik04NSAyNUg5MFY0MEg4NVYyNVoiIGZpbGw9IiMyYzNlNTAiLz4KPHBhdGggZD0iTTgwIDI1SDg1VjQwSDgwVjI1WiIgZmlsbD0iIzJjM2U1MCIvPgo8Y2lyY2xlIGN4PSIyMCIgY3k9IjQ1IiByPSI1IiBmaWxsPSIjMmMzZTUwIi8+CjxjaXJjbGUgY3g9IjgwIiBjeT0iNDUiIHI9IjUiIGZpbGw9IiMyYzNlNTAiLz4KPC9zdmc+Cg=='
+                    // Use emoji based on vehicle type
+                    const emojis = {
+                        'saloon': '🚗',
+                        'estate': '🚙', 
+                        'minivan': '🚐',
+                        'minivan_long': '🚌'
                     };
-                    
-                    const vehicleImage = vehicleImages[vehicle.id] || vehicleImages['saloon'];
-                    imageContent = `<img src="${vehicleImage}" alt="${vehicle.name}" style="width: 100%; height: 100%; object-fit: contain;">`;
+                    imageContent = `<div class="vehicle-emoji">${emojis[vehicle.id] || '🚗'}</div>`;
                 }
                 
                 // Get baggage info based on vehicle type
                 const bagageInfo = getBagageInfo(vehicle.id);
                 
                 card.innerHTML = `
-                    <div class="vehicle-left">
-                        <div class="vehicle-image">
-                            ${imageContent}
-                        </div>
-                        <div class="vehicle-details">
-                            <div class="vehicle-name">${vehicle.name}</div>
-                            <div class="vehicle-specs">
-                                <div class="spec-item">
-                                    <span class="spec-icon">👥</span>
-                                    <span>${bagageInfo.passengers} Passengers</span>
-                                </div>
-                                <div class="spec-item">
-                                    <span class="spec-icon">🧳</span>
-                                    <span>${bagageInfo.luggages} Luggages</span>
-                                </div>
-                                <div class="spec-item">
-                                    <span class="spec-icon">💼</span>
-                                    <span>${bagageInfo.bags} Bags</span>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="vehicle-image">
+                        ${imageContent}
                     </div>
-                    <div class="vehicle-right">
-                        <div class="vehicle-price">€${pricing.minimumPrice.toFixed(0)}</div>
-                        <div class="trip-type">One way</div>
+                    <div class="vehicle-name">${vehicle.name}</div>
+                    <div class="vehicle-price">€${pricing.minimumPrice.toFixed(2)}</div>
+                    <div class="vehicle-specs">
+                        👥 ${bagageInfo.passengers} Passengers<br>
+                        🧳 ${bagageInfo.luggages} Luggages (25kg each)<br>
+                        💼 ${bagageInfo.bags} Bags (10kg each)
                     </div>
+                    <div class="vehicle-description">${vehicle.description}</div>
                 `;
                 
                 grid.appendChild(card);

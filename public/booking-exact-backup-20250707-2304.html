@@ -394,6 +394,7 @@
         <div class="datetime-section">
             <div class="datetime-row">
                 <div class="date-section">
+                    <div class="section-label">Datum</div>
                     <div class="date-input-container">
                         <input type="text" 
                                class="date-input" 
@@ -405,6 +406,7 @@
                 </div>
                 
                 <div class="time-section">
+                    <div class="section-label">Tijd</div>
                     <div class="time-inputs">
                         <input type="number" 
                                class="time-input" 
@@ -707,7 +709,7 @@
             
             if (returnActive) {
                 btn.classList.add('active');
-                btn.querySelector('span').textContent = '✅ Retour';
+                btn.querySelector('span').textContent = '✅ Retour Toegevoegd';
                 container.style.display = 'block';
                 
                 // Set default return date (same day, 4 hours later)

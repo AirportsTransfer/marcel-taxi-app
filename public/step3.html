@@ -116,8 +116,8 @@
         }
 
         .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
+            flex-direction: column;
             gap: 15px;
         }
 
@@ -255,6 +255,65 @@
             background: #5a6268;
             transform: translateY(-2px);
         }
+
+        /* PHONE INPUT WITH FLAG */
+        .phone-input-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .phone-flag {
+            position: absolute;
+            left: 15px;
+            font-size: 20px;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .phone-input {
+            padding-left: 50px !important;
+        }
+
+        /* PAYMENT METHODS */
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .payment-method {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .payment-method:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .payment-method.selected {
+            border-color: #667eea;
+            background: #e3f2fd;
+        }
+
+        .payment-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .payment-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
     </style>
 </head>
 <body>
@@ -276,79 +335,42 @@
             <h2 class="section-title">Persoonlijke gegevens</h2>
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label" for="firstName">Voornaam *</label>
-                    <input type="text" class="form-input" id="firstName" required placeholder="Uw voornaam">
+                    <input type="text" class="form-input" id="firstName" required placeholder="Voornaam">
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="lastName">Achternaam *</label>
-                    <input type="text" class="form-input" id="lastName" required placeholder="Uw achternaam">
+                    <input type="text" class="form-input" id="lastName" required placeholder="Achternaam">
                 </div>
-            </div>
-            <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label" for="email">Email *</label>
                     <input type="email" class="form-input" id="email" required placeholder="uw@email.com">
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="phone">Telefoon *</label>
-                    <input type="tel" class="form-input" id="phone" required placeholder="+32 xxx xx xx xx">
+                    <div class="phone-input-container">
+                        <span class="phone-flag" id="phoneFlag">🇧🇪</span>
+                        <input type="tel" class="form-input phone-input" id="phone" required placeholder="+32 xxx xx xx xx">
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- REISGEGEVENS -->
+        <!-- PAYMENT METHOD -->
         <div class="form-section">
-            <h2 class="section-title">Extra reisgegevens</h2>
-            <div class="form-group">
-                <label class="form-label" for="specialRequests">Bijzondere verzoeken</label>
-                <textarea class="form-input form-textarea" id="specialRequests" placeholder="Bijv. kinderzitje, extra bagage, bijzondere instructies..."></textarea>
+            <h2 class="section-title">Payment method</h2>
+            <div class="payment-methods">
+                <div class="payment-method" onclick="selectPayment('cash')">
+                    <div class="payment-icon">💵</div>
+                    <div class="payment-name">Cash</div>
+                </div>
+                <div class="payment-method" onclick="selectPayment('card')">
+                    <div class="payment-icon">💳</div>
+                    <div class="payment-name">Credit card</div>
+                </div>
+                <div class="payment-method" onclick="selectPayment('paypal')">
+                    <div class="payment-icon">🅿️</div>
+                    <div class="payment-name">PayPal</div>
+                </div>
             </div>
         </div>
 
-        <!-- BOOKING SUMMARY -->
-        <div class="booking-summary">
-            <h3 class="summary-title">Boeking Overzicht</h3>
-            <div class="summary-row">
-                <span class="summary-label">Van:</span>
-                <span class="summary-value" id="summaryFrom">-</span>
-            </div>
-            <div class="summary-row">
-                <span class="summary-label">Naar:</span>
-                <span class="summary-value" id="summaryTo">-</span>
-            </div>
-            <div class="summary-row">
-                <span class="summary-label">Datum & Tijd:</span>
-                <span class="summary-value" id="summaryDateTime">-</span>
-            </div>
-            <div class="summary-row">
-                <span class="summary-label">Voertuig:</span>
-                <span class="summary-value" id="summaryVehicle">-</span>
-            </div>
-            <div class="summary-row">
-                <span class="summary-label">Passagiers:</span>
-                <span class="summary-value" id="summaryPassengers">1</span>
-            </div>
-            <div class="summary-row">
-                <span class="summary-label">Koffers:</span>
-                <span class="summary-value" id="summaryKoffers">0</span>
-            </div>
-            <div class="summary-row">
-                <span class="summary-label">Handbagage:</span>
-                <span class="summary-value" id="summaryHandbagage">0</span>
-            </div>
-            <div class="summary-row">
-                <span class="summary-label">Extra stops:</span>
-                <span class="summary-value" id="summaryExtraStops">Geen</span>
-            </div>
-            <div class="summary-row">
-                <span class="summary-label">Retour:</span>
-                <span class="summary-value" id="summaryReturn">Nee</span>
-            </div>
-            <div class="summary-row">
-                <span class="summary-label">Totaalprijs:</span>
-                <span class="summary-value" id="summaryPrice">€0.00</span>
-            </div>
-        </div>
 
         <!-- ACTION BUTTONS -->
         <div class="action-buttons">
@@ -359,49 +381,13 @@
         </div>
     </div>
 
+    <script src="../email-config.js"></script>
     <script>
         // Load booking data from previous steps
         document.addEventListener('DOMContentLoaded', function() {
-            loadBookingSummary();
             initializeForm();
         });
 
-        function loadBookingSummary() {
-            console.log('🚀 STAP 3: Loading booking summary...');
-            
-            // Load data from localStorage (set by previous steps)
-            const step1Data = {
-                fromLocation: localStorage.getItem('fromLocation') || 'Niet ingevuld',
-                toLocation: localStorage.getItem('toLocation') || 'Niet ingevuld',
-                travelDate: localStorage.getItem('travelDate') || 'Niet ingevuld',
-                travelTime: `${localStorage.getItem('travelHour') || 'XX'}:${localStorage.getItem('travelMinute') || 'XX'}`,
-                extraStops: parseInt(localStorage.getItem('extraStopCount')) || 0,
-                returnTrip: localStorage.getItem('returnActive') === 'true'
-            };
-
-            const step2Data = JSON.parse(localStorage.getItem('selectedVehicleStep2') || '{}');
-            const passengerDetails = JSON.parse(localStorage.getItem('passengerDetails') || '{}');
-            
-            // Update summary display
-            document.getElementById('summaryFrom').textContent = step1Data.fromLocation;
-            document.getElementById('summaryTo').textContent = step1Data.toLocation;
-            document.getElementById('summaryDateTime').textContent = `${step1Data.travelDate} om ${step1Data.travelTime}`;
-            document.getElementById('summaryVehicle').textContent = step2Data.vehicle?.name || 'Niet geselecteerd';
-            document.getElementById('summaryPassengers').textContent = passengerDetails.passengers || '1';
-            document.getElementById('summaryKoffers').textContent = passengerDetails.koffers || '0';
-            document.getElementById('summaryHandbagage').textContent = passengerDetails.handbagage || '0';
-            document.getElementById('summaryExtraStops').textContent = step1Data.extraStops > 0 ? `${step1Data.extraStops} stops` : 'Geen';
-            document.getElementById('summaryReturn').textContent = step1Data.returnTrip ? 'Ja' : 'Nee';
-            
-            // Calculate total price
-            let totalPrice = step2Data.pricing?.minimumPrice || 0;
-            if (step1Data.returnTrip) {
-                totalPrice *= 1.5; // Return trip multiplier
-            }
-            document.getElementById('summaryPrice').textContent = `€${totalPrice.toFixed(2)}`;
-
-            console.log('✅ Booking summary loaded', { step1Data, step2Data, totalPrice });
-        }
 
         function initializeForm() {
             // Form validation
@@ -415,7 +401,102 @@
                 });
             });
             
+            // Initialize phone input with flag detection
+            initializePhoneInput();
+            
+            // Initialize payment method selection
+            initializePaymentMethods();
+            
             validateForm();
+        }
+
+        function initializePaymentMethods() {
+            // Set default payment method to Cash
+            selectPayment('cash');
+        }
+
+        function selectPayment(method) {
+            // Remove selected class from all payment methods
+            document.querySelectorAll('.payment-method').forEach(pm => {
+                pm.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked method
+            document.querySelector(`[onclick="selectPayment('${method}')"]`).classList.add('selected');
+            
+            // Store selected payment method
+            localStorage.setItem('selectedPaymentMethod', method);
+            
+            console.log('Payment method selected:', method);
+        }
+
+
+        function initializePhoneInput() {
+            const phoneInput = document.getElementById('phone');
+            const phoneFlag = document.getElementById('phoneFlag');
+
+            // Country codes and their flags
+            const countryFlags = {
+                '+32': '🇧🇪', // Belgium
+                '+31': '🇳🇱', // Netherlands
+                '+33': '🇫🇷', // France
+                '+49': '🇩🇪', // Germany
+                '+44': '🇬🇧', // UK
+                '+1': '🇺🇸',   // USA
+                '+34': '🇪🇸',  // Spain
+                '+39': '🇮🇹',  // Italy
+                '+41': '🇨🇭',  // Switzerland
+                '+43': '🇦🇹',  // Austria
+                '+45': '🇩🇰',  // Denmark
+                '+46': '🇸🇪',  // Sweden
+                '+47': '🇳🇴',  // Norway
+                '+48': '🇵🇱',  // Poland
+                '+351': '🇵🇹', // Portugal
+                '+420': '🇨🇿', // Czech Republic
+                '+36': '🇭🇺',  // Hungary
+                '+30': '🇬🇷',  // Greece
+                '+90': '🇹🇷',  // Turkey
+                '+7': '🇷🇺',   // Russia
+                '+86': '🇨🇳',  // China
+                '+81': '🇯🇵',  // Japan
+                '+82': '🇰🇷',  // South Korea
+                '+91': '🇮🇳',  // India
+                '+61': '🇦🇺',  // Australia
+                '+64': '🇳🇿',  // New Zealand
+                '+27': '🇿🇦',  // South Africa
+                '+55': '🇧🇷',  // Brazil
+                '+52': '🇲🇽',  // Mexico
+                '+54': '🇦🇷',  // Argentina
+                '+56': '🇨🇱',  // Chile
+            };
+
+            phoneInput.addEventListener('input', function() {
+                const value = this.value.trim();
+                console.log('Phone input changed:', value); // Debug log
+                
+                // Sort country codes by length (longest first) to prevent conflicts
+                const sortedCodes = Object.entries(countryFlags).sort((a, b) => b[0].length - a[0].length);
+                
+                // Check for country code matches
+                let flagFound = false;
+                for (const [code, flag] of sortedCodes) {
+                    if (value.startsWith(code)) {
+                        phoneFlag.textContent = flag;
+                        console.log('Flag changed to:', flag, 'for code:', code); // Debug log
+                        flagFound = true;
+                        break;
+                    }
+                }
+                
+                // Default to Belgium flag if no match or empty
+                if (!flagFound || !value.startsWith('+')) {
+                    phoneFlag.textContent = '🇧🇪';
+                    console.log('Reset to Belgium flag'); // Debug log
+                }
+            });
+
+            // Set default Belgium flag and placeholder
+            phoneFlag.textContent = '🇧🇪';
         }
 
         function validateForm() {
@@ -440,7 +521,7 @@
             completeBtn.disabled = !allValid;
         }
 
-        function completeBooking() {
+        async function completeBooking() {
             // Get passenger details from STAP 2
             const passengerDetails = JSON.parse(localStorage.getItem('passengerDetails') || '{}');
             
@@ -453,7 +534,7 @@
                 passengers: passengerDetails.passengers || '1',
                 koffers: passengerDetails.koffers || '0',
                 handbagage: passengerDetails.handbagage || '0',
-                specialRequests: document.getElementById('specialRequests').value
+                paymentMethod: localStorage.getItem('selectedPaymentMethod') || 'cash'
             };
 
             // Get booking data
@@ -479,12 +560,59 @@
 
             // Save complete booking
             localStorage.setItem('completedBooking', JSON.stringify(completeBooking));
+            
+            // Add to unconfirmed bookings list for admin panel
+            console.log('📋 About to add booking to unconfirmed list:', completeBooking.bookingId);
+            addToUnconfirmedBookings(completeBooking);
+            
+            // Verify it was added
+            const unconfirmedCheck = JSON.parse(localStorage.getItem('unconfirmedBookings') || '[]');
+            console.log('📋 Unconfirmed bookings after adding:', unconfirmedCheck.length);
 
             console.log('✅ Booking completed!', completeBooking);
 
-            // Show confirmation
-            alert(`✅ Boeking Bevestigd!
-            
+            // Send emails
+            try {
+                // Show processing message
+                const originalBtn = document.getElementById('completeBookingBtn');
+                originalBtn.disabled = true;
+                originalBtn.textContent = 'Verzenden...';
+                
+                // Send emails via server
+                const response = await fetch('http://localhost:3001/api/send-booking-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(completeBooking)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    console.log('✅ Emails sent successfully:', result);
+                } else {
+                    throw new Error(result.error || 'Email sending failed');
+                }
+                
+                // Show success confirmation
+                alert(`✅ Boeking Bevestigd!
+                
+Boeking ID: ${completeBooking.bookingId}
+Klant: ${customerData.firstName} ${customerData.lastName}
+Van: ${step1Data.fromLocation}
+Naar: ${step1Data.toLocation}
+Datum: ${step1Data.travelDate} om ${step1Data.travelHour}:${step1Data.travelMinute}
+Voertuig: ${step2Data.vehicle?.name}
+Betaalmethode: ${customerData.paymentMethod}
+
+✅ Bevestigingsmail verzonden naar: ${customerData.email}
+✅ Notificatie verzonden naar admin`);
+                
+            } catch (error) {
+                console.error('❌ Email sending failed:', error);
+                alert(`✅ Boeking Bevestigd!
+                
 Boeking ID: ${completeBooking.bookingId}
 Klant: ${customerData.firstName} ${customerData.lastName}
 Van: ${step1Data.fromLocation}
@@ -492,7 +620,8 @@ Naar: ${step1Data.toLocation}
 Datum: ${step1Data.travelDate} om ${step1Data.travelHour}:${step1Data.travelMinute}
 Voertuig: ${step2Data.vehicle?.name}
 
-Een bevestigingsmail wordt verzonden naar: ${customerData.email}`);
+⚠️ Email kon niet worden verzonden. We nemen contact met u op.`);
+            }
 
             // Reset form and redirect
             setTimeout(() => {
@@ -500,11 +629,36 @@ Een bevestigingsmail wordt verzonden naar: ${customerData.email}`);
                 clearBookingData();
                 // Redirect to step 1 for new booking
                 window.location.href = 'booking-exact.html';
-            }, 2000);
+            }, 3000);
         }
 
         function generateBookingId() {
             return 'BK' + Date.now().toString().slice(-8) + Math.floor(Math.random() * 100).toString().padStart(2, '0');
+        }
+
+        function addToUnconfirmedBookings(booking) {
+            // Get existing unconfirmed bookings
+            let unconfirmedBookings = JSON.parse(localStorage.getItem('unconfirmedBookings') || '[]');
+            
+            // Add new booking with status
+            const bookingWithStatus = {
+                ...booking,
+                status: 'unconfirmed',
+                createdAt: new Date().toISOString(),
+                lastUpdated: new Date().toISOString()
+            };
+            
+            unconfirmedBookings.unshift(bookingWithStatus); // Add to beginning of array
+            
+            // Keep only last 100 bookings to prevent storage overflow
+            if (unconfirmedBookings.length > 100) {
+                unconfirmedBookings = unconfirmedBookings.slice(0, 100);
+            }
+            
+            // Save back to localStorage
+            localStorage.setItem('unconfirmedBookings', JSON.stringify(unconfirmedBookings));
+            
+            console.log('📋 Booking added to unconfirmed list:', booking.bookingId);
         }
 
         function clearBookingData() {
