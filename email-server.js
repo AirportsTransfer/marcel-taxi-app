@@ -6,7 +6,8 @@ const app = express();
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' })); // Increase limit for large bookings with images
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static('public'));
 
 // Email configuration for info@airporttransfer.be (based on your screenshot settings)
@@ -76,7 +77,14 @@ function generateCustomerConfirmationEmail(booking) {
             <div class="content">
                 <h2>Dear ${booking.customer.firstName} ${booking.customer.lastName},</h2>
                 
-                <p>Thank you for choosing Airport Transfer! Your booking has been confirmed and we will contact you shortly.</p>
+                <p>Thank you for choosing Airport Transfer! Your booking has been successfully received and is currently <strong>awaiting confirmation</strong>.</p>
+                
+                <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <p style="margin: 0; color: #856404;">
+                        <strong>⏳ Status: Awaiting Confirmation</strong><br>
+                        We will review your booking request and confirm availability shortly. You will receive a confirmation email once your booking is confirmed.
+                    </p>
+                </div>
                 
                 <div class="booking-card">
                     <div class="booking-id">Booking ID: ${booking.bookingId}</div>
@@ -113,10 +121,13 @@ function generateCustomerConfirmationEmail(booking) {
                 </div>
                 
                 <div class="contact-info">
-                    <h3>Contact Information</h3>
+                    <h3>What happens next?</h3>
+                    <p>1. We will review your booking request</p>
+                    <p>2. You will receive a confirmation email within 30 minutes</p>
+                    <p>3. We will contact you 30 minutes before pickup</p>
+                    <p style="margin-top: 15px;"><strong>Questions?</strong> Contact us:</p>
                     <p><strong>Email:</strong> info@airporttransfer.be</p>
                     <p><strong>Phone:</strong> +32 xxx xx xx xx</p>
-                    <p class="important">We will contact you 30 minutes before pickup to confirm details.</p>
                 </div>
             </div>
             
@@ -240,7 +251,7 @@ app.post('/api/send-booking-email', async (req, res) => {
         const customerEmail = {
             from: `${emailConfig.fromName} <${emailConfig.fromEmail}>`,
             to: booking.customer.email,
-            subject: `Booking Confirmation - ${booking.bookingId} | Airport Transfer`,
+            subject: `Booking Received - ${booking.bookingId} | Airport Transfer (Awaiting Confirmation)`,
             html: generateCustomerConfirmationEmail(booking),
             replyTo: emailConfig.replyToEmail
         };

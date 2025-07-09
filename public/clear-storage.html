@@ -1,0 +1,24 @@
+<\!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Storage</title>
+</head>
+<body>
+    <h1>Clearing localStorage...</h1>
+    <script>
+        // Clear all relevant storage
+        localStorage.removeItem('bookingSurchargeItems');
+        localStorage.removeItem('surchargeItems');
+        localStorage.removeItem('taxiVehicles');
+        localStorage.removeItem('vehiclePricing');
+        
+        alert('✅ localStorage cleared\! Now open step2.html to see the new baby seat structure.');
+        
+        // Redirect to step2.html
+        setTimeout(() => {
+            window.location.href = 'step2.html';
+        }, 2000);
+    </script>
+</body>
+</html>
+EOF < /dev/null

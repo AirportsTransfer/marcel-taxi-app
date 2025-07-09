@@ -689,48 +689,7 @@
         }
 
         /* BABY SEAT DROPDOWN */
-        .child-seat-multi-dropdown {
-            display: none !important;
-            margin-top: 10px;
-            margin-left: 35px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border: 1px solid #e9ecef;
-        }
-
-        .child-seat-multi-option {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 10px;
-            margin-bottom: 5px;
-            background: white;
-            border-radius: 6px;
-            transition: all 0.3s ease;
-        }
-
-        .child-seat-multi-option:hover {
-            background: #e3f2fd;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .child-seat-multi-option input[type="checkbox"] {
-            margin-right: 10px;
-        }
-
-        .child-seat-multi-option label {
-            flex: 1;
-            cursor: pointer;
-            font-size: 14px;
-            color: #495057;
-        }
-
-        .child-seat-multi-price {
-            font-weight: 600;
-            color: #667eea;
-            font-size: 14px;
-        }
+        /* CSS for baby seat options removed - no longer needed */
 
         .surcharge-header {
             display: none;
@@ -2000,8 +1959,7 @@
                     const defaultSurchargeItems = {
                         fixed: [
                             { id: 'meet-greet', name: 'Meet and greet', price: 5, enabled: false },
-                            { id: 'child-seat', name: 'Child seat', price: 3, enabled: true, hasDropdown: true, dropdownOptions: [{ id: 'maxi_cosi', name: 'Maxi Cosi (baby can\'t sit)', price: 3 }, { id: 'baby_seat', name: 'Baby seat', price: 3 }, { id: 'verhoostoel', name: 'Verhoostoel', price: 3 }] },
-                            { id: 'dog', name: 'Dog', price: 3, enabled: true, hasDropdown: true, dropdownOptions: [{ id: 'kleine_hond', name: 'Kleine hond', price: 3 }, { id: 'groten_hond', name: 'Groten hond', price: 5 }] },
+                            { id: 'child-seat', name: 'Child seat', price: 3, enabled: true, hasDropdown: true },
                             { id: 'wheelchair', name: 'Wheelchair', price: 0, enabled: true },
                             { id: 'waiting-time', name: 'Waiting time after landing', price: 0, enabled: true },
                             { id: 'stopover', name: 'Stopover (Via)', price: 10, enabled: true }
@@ -2009,6 +1967,7 @@
                         additional: [
                             { id: 'golf-material', name: 'Golf-material', price: 5, type: 'Amount', quantity: 1 },
                             { id: 'ski-material', name: 'Ski-material', price: 5, type: 'Amount', quantity: 1 },
+                            { id: 'dog', name: 'Dog', price: 3, type: 'Amount', quantity: 1, hasDropdown: true },
                             { id: 'water', name: 'Water', price: 2, type: 'Amount', quantity: 1, hasDropdown: true },
                             { id: 'newspaper', name: 'Newspaper', price: 1, type: 'Amount', quantity: 1, hasDropdown: true },
                             { id: 'oversize-luggage', name: 'Oversize luggage', price: 0, type: 'Amount', quantity: 1 },
@@ -2059,47 +2018,31 @@
                     const itemDiv = document.createElement('div');
                     itemDiv.className = 'surcharge-item';
                     
-                    // Special handling for items with multiple selection dropdown
-                    if (item.hasDropdown && (item.id === 'child-seat' || item.id === 'dog')) {
-                        itemDiv.innerHTML = `
-                            <div class="surcharge-item-left">
-                                <input type="checkbox" id="surcharge_${item.id}" onchange="toggleChildSeatMultiOption('${item.id}', ${item.price}, 'fixed')">
-                                <label for="surcharge_${item.id}">${item.name}</label>
-                            </div>
-                            <div class="surcharge-item-right">
-                                <div class="surcharge-price"><!-- Geen prijs hier - individuele prijzen in dropdown --></div>
-                            </div>
-                        `;
+                    // Special handling for child seat item - show as separate options
+                    if (item.hasDropdown && item.id === 'child-seat') {
+                        // Create three separate child seat options
+                        const childSeatOptions = [
+                            { id: 'maxi-cosi', name: 'Maxi Cosi (baby can\'t sit)', price: 3 },
+                            { id: 'baby-seat', name: 'Baby seat', price: 3 },
+                            { id: 'verhoostoel', name: 'Verhoostoel', price: 3 }
+                        ];
                         
-                        // Add multi-selection dropdown using configured options
-                        const dropdownDiv = document.createElement('div');
-                        dropdownDiv.className = 'child-seat-multi-dropdown';
-                        dropdownDiv.id = `childSeatMultiDropdown_${item.id}`;
+                        childSeatOptions.forEach(option => {
+                            const optionDiv = document.createElement('div');
+                            optionDiv.className = 'surcharge-item';
+                            optionDiv.innerHTML = `
+                                <div class="surcharge-item-left">
+                                    <input type="checkbox" id="surcharge_${option.id}" onchange="toggleChildSeatOption('${option.id}', ${option.price}, 'fixed')">
+                                    <label for="surcharge_${option.id}">${option.name}</label>
+                                </div>
+                                <div class="surcharge-item-right">
+                                    <div class="surcharge-price">€${option.price.toFixed(2)}</div>
+                                </div>
+                            `;
+                            container.appendChild(optionDiv);
+                        });
                         
-                        // Get configured options or use defaults based on item type
-                        let dropdownOptions;
-                        if (item.id === 'child-seat') {
-                            dropdownOptions = item.dropdownOptions || [
-                                { id: 'maxi_cosi', name: 'Maxi Cosi (baby can\'t sit)', price: 3 },
-                                { id: 'baby_seat', name: 'Baby seat', price: 3 },
-                                { id: 'verhoostoel', name: 'Verhoostoel', price: 3 }
-                            ];
-                        } else if (item.id === 'dog') {
-                            dropdownOptions = item.dropdownOptions || [
-                                { id: 'kleine_hond', name: 'Kleine hond', price: 3 },
-                                { id: 'groten_hond', name: 'Groten hond', price: 5 }
-                            ];
-                        }
-                        
-                        dropdownDiv.innerHTML = dropdownOptions.map(option => `
-                            <div class="child-seat-multi-option">
-                                <input type="checkbox" id="${item.id}_${option.id}" onchange="selectMultiVariant('${item.id}', '${option.id}', this.checked, ${option.price})">
-                                <label for="${item.id}_${option.id}">${option.name}</label>
-                                <div class="child-seat-multi-price">€${option.price.toFixed(2)}</div>
-                            </div>
-                        `).join('');
-                        
-                        itemDiv.appendChild(dropdownDiv);
+                        return; // Skip the normal rendering
                     } else {
                         // Regular items
                         itemDiv.innerHTML = `
@@ -2132,15 +2075,15 @@
                     const itemDiv = document.createElement('div');
                     itemDiv.className = 'surcharge-item';
                     
-                    // Special handling for items with dropdown - only show if dropdown options exist
-                    if (item.hasDropdown && item.dropdownOptions && item.dropdownOptions.length > 0) {
+                    // Special handling for items with dropdown
+                    if (item.hasDropdown) {
                         itemDiv.innerHTML = `
                             <div class="surcharge-item-left">
                                 <input type="checkbox" id="surcharge_${item.id}" onchange="toggleAdditionalOption('${item.id}', ${item.price}, 'additional')">
                                 <label for="surcharge_${item.id}">${item.name}</label>
                             </div>
                             <div class="surcharge-item-right">
-                                <div class="surcharge-price"><!-- Geen prijs hier - individuele prijzen in dropdown --></div>
+                                <div class="surcharge-price">€${item.price.toFixed(2)}</div>
                                 <div class="quantity-controls">
                                     <button onclick="adjustSurchargeQuantity('${item.id}', -1)">-</button>
                                     <input type="number" id="quantity_${item.id}" value="1" min="1" max="10" 
@@ -2157,7 +2100,25 @@
                         
                         // Create different options based on item type
                         let dropdownOptions = '';
-                        if (item.id === 'water') {
+                        if (item.id === 'dog') {
+                            dropdownOptions = `
+                                <div class="baby-seat-option">
+                                    <input type="radio" id="${item.id}_small" name="${item.id}Type" value="small" onchange="selectAdditionalVariant('${item.id}', 'small')">
+                                    <label for="${item.id}_small">Kleine hond</label>
+                                    <div class="baby-seat-price">€${item.price.toFixed(2)}</div>
+                                </div>
+                                <div class="baby-seat-option">
+                                    <input type="radio" id="${item.id}_medium" name="${item.id}Type" value="medium" onchange="selectAdditionalVariant('${item.id}', 'medium')">
+                                    <label for="${item.id}_medium">Middelgrote hond</label>
+                                    <div class="baby-seat-price">€${(item.price + 2).toFixed(2)}</div>
+                                </div>
+                                <div class="baby-seat-option">
+                                    <input type="radio" id="${item.id}_large" name="${item.id}Type" value="large" onchange="selectAdditionalVariant('${item.id}', 'large')">
+                                    <label for="${item.id}_large">Grote hond</label>
+                                    <div class="baby-seat-price">€${(item.price + 5).toFixed(2)}</div>
+                                </div>
+                            `;
+                        } else if (item.id === 'water') {
                             dropdownOptions = `
                                 <div class="baby-seat-option">
                                     <input type="radio" id="${item.id}_still" name="${item.id}Type" value="still" onchange="selectAdditionalVariant('${item.id}', 'still')">
@@ -2239,78 +2200,35 @@
             updateSurchargeTotal();
         }
 
-        function toggleChildSeatMultiOption(itemId, price, type) {
+        function toggleChildSeatOption(itemId, price, type) {
             const checkbox = document.getElementById(`surcharge_${itemId}`);
-            const dropdown = document.getElementById(`childSeatMultiDropdown_${itemId}`);
             
             if (checkbox.checked) {
-                // Show dropdown
-                dropdown.style.display = 'block';
-                dropdown.style.setProperty('display', 'block', 'important');
+                // Add child seat to selected surcharges
+                selectedSurcharges[itemId] = {
+                    name: getChildSeatName(itemId),
+                    price: price,
+                    quantity: 1,
+                    type: type
+                };
             } else {
-                // Hide dropdown
-                dropdown.style.display = 'none';
-                dropdown.style.setProperty('display', 'none', 'important');
-                
-                // Remove all selections (dynamic based on configured options)
-                const item = surchargeItems.fixed.find(item => item.id === itemId);
-                let defaultOptions = [];
-                if (itemId === 'child-seat') {
-                    defaultOptions = [{ id: 'maxi_cosi' }, { id: 'baby_seat' }, { id: 'verhoostoel' }];
-                } else if (itemId === 'dog') {
-                    defaultOptions = [{ id: 'kleine_hond' }, { id: 'groten_hond' }];
-                }
-                
-                const options = item?.dropdownOptions || defaultOptions;
-                options.forEach(option => {
-                    delete selectedSurcharges[`${itemId}_${option.id}`];
-                });
-                
-                // Clear checkboxes
-                dropdown.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                    checkbox.checked = false;
-                });
-                
-                updateSurchargeTotal();
+                // Remove child seat from selected surcharges
+                delete selectedSurcharges[itemId];
             }
+            
+            updateSurchargeTotal();
         }
         
-        function selectMultiVariant(itemId, variant, isChecked, price) {
-            const item = surchargeItems.fixed.find(item => item.id === itemId);
-            const variantKey = `${itemId}_${variant}`;
-            
-            if (item) {
-                if (isChecked) {
-                    // Find the configured option name and price
-                    let defaultOptions = [];
-                    if (itemId === 'child-seat') {
-                        defaultOptions = [
-                            { id: 'maxi_cosi', name: 'Maxi Cosi (baby can\'t sit)', price: 3 },
-                            { id: 'baby_seat', name: 'Baby seat', price: 3 },
-                            { id: 'verhoostoel', name: 'Verhoostoel', price: 3 }
-                        ];
-                    } else if (itemId === 'dog') {
-                        defaultOptions = [
-                            { id: 'kleine_hond', name: 'Kleine hond', price: 3 },
-                            { id: 'groten_hond', name: 'Groten hond', price: 5 }
-                        ];
-                    }
-                    
-                    const options = item.dropdownOptions || defaultOptions;
-                    const option = options.find(opt => opt.id === variant);
-                    
-                    selectedSurcharges[variantKey] = {
-                        name: option ? option.name : variant,
-                        price: price || (option ? option.price : 3),
-                        quantity: 1,
-                        type: 'fixed',
-                        variant: variant
-                    };
-                } else {
-                    delete selectedSurcharges[variantKey];
-                }
-                
-                updateSurchargeTotal();
+        function getChildSeatName(itemId) {
+            switch(itemId) {
+                case 'maxi-cosi':
+                    return 'Maxi Cosi (baby can\'t sit)';
+                case 'baby-seat':
+                    return 'Baby seat';
+                case 'verhoostoel':
+                    return 'Verhoostoel';
+                default:
+                    return 'Child seat';
             }
         }
 
@@ -2419,7 +2337,22 @@
                 const quantity = parseInt(document.getElementById(`quantity_${itemId}`).value) || 1;
                 
                 // Different pricing and naming based on item and variant
-                if (itemId === 'water') {
+                if (itemId === 'dog') {
+                    switch(variant) {
+                        case 'small':
+                            price = additionalItem.price;
+                            variantName = 'Kleine hond';
+                            break;
+                        case 'medium':
+                            price = additionalItem.price + 2;
+                            variantName = 'Middelgrote hond';
+                            break;
+                        case 'large':
+                            price = additionalItem.price + 5;
+                            variantName = 'Grote hond';
+                            break;
+                    }
+                } else if (itemId === 'water') {
                     switch(variant) {
                         case 'still':
                             price = additionalItem.price;

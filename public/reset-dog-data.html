@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reset Dog Data</title>
+</head>
+<body>
+    <h1>Dog data wordt gereset...</h1>
+    <p>Dog is verplaatst van Additional naar Fixed items.</p>
+    <script>
+        // Clear all surcharge data to force reload with new dog structure
+        localStorage.removeItem('bookingSurchargeItems');
+        localStorage.removeItem('surchargeItems');
+        localStorage.removeItem('surchargeItemsUpdateTime');
+        localStorage.removeItem('bookingSurchargeItemsUpdateTime');
+        
+        alert('✅ Dog data gereset! Nu heeft admin 2 dog opties en booking ook 2.');
+        
+        // Redirect to admin to save new structure
+        setTimeout(() => {
+            window.location.href = 'admin-simple.html';
+        }, 2000);
+    </script>
+</body>
+</html>

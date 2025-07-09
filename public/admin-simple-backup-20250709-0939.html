@@ -4768,8 +4768,7 @@ Both bookings added to confirmed bookings list!`;
         let surchargeItems = {
             fixed: [
                 { id: 'meet-greet', name: 'Meet and greet', price: 5, enabled: true },
-                { id: 'child-seat', name: 'Child seat', price: 3, enabled: true, hasDropdown: true },
-                { id: 'dog', name: 'Dog', price: 3, enabled: true, hasDropdown: true },
+                { id: 'baby-seat', name: 'Baby seat', price: 3, enabled: true },
                 { id: 'wheelchair', name: 'Wheelchair', price: 0, enabled: true },
                 { id: 'waiting-time', name: 'Waiting time after landing', price: 0, enabled: true },
                 { id: 'stopover', name: 'Stopover (Via)', price: 10, enabled: true }
@@ -4777,10 +4776,9 @@ Both bookings added to confirmed bookings list!`;
             additional: [
                 { id: 'golf-material', name: 'Golf-material', price: 5, type: 'Amount', quantity: 1 },
                 { id: 'ski-material', name: 'Ski-material', price: 5, type: 'Amount', quantity: 1 },
-                { id: 'water', name: 'Water', price: 2, type: 'Amount', quantity: 1, hasDropdown: true },
-                { id: 'newspaper', name: 'Newspaper', price: 1, type: 'Amount', quantity: 1, hasDropdown: true },
+                { id: 'dog', name: 'Dog', price: 3, type: 'Amount', quantity: 1 },
                 { id: 'oversize-luggage', name: 'Oversize luggage', price: 0, type: 'Amount', quantity: 1 },
-                { id: 'extra-waiting', name: 'Extra waiting time (1 hour)', price: 30, type: 'Amount', quantity: 1 }
+                { id: 'extra-waiting', name: 'Extra waiting time (1 hour w', price: 30, type: 'Amount', quantity: 1 }
             ]
         };
 
@@ -4796,47 +4794,6 @@ Both bookings added to confirmed bookings list!`;
             renderFixedItems();
             renderAdditionalItems();
         }
-        
-        function updateDropdownOptionName(itemId, optionIndex, newName) {
-            const item = surchargeItems.fixed.find(item => item.id === itemId) || surchargeItems.additional.find(item => item.id === itemId);
-            if (item && item.dropdownOptions && item.dropdownOptions[optionIndex]) {
-                item.dropdownOptions[optionIndex].name = newName;
-                console.log('Updated dropdown option name:', newName);
-            }
-        }
-        
-        function updateDropdownOptionPrice(itemId, optionIndex, newPrice) {
-            const item = surchargeItems.fixed.find(item => item.id === itemId) || surchargeItems.additional.find(item => item.id === itemId);
-            if (item && item.dropdownOptions && item.dropdownOptions[optionIndex]) {
-                item.dropdownOptions[optionIndex].price = parseFloat(newPrice) || 0;
-                console.log('Updated dropdown option price:', newPrice);
-            }
-        }
-        
-        function addDropdownOption(itemId) {
-            const item = surchargeItems.fixed.find(item => item.id === itemId) || surchargeItems.additional.find(item => item.id === itemId);
-            if (item && item.dropdownOptions) {
-                const newOption = {
-                    id: `custom_${Date.now()}`,
-                    name: 'Nieuwe optie',
-                    price: 3
-                };
-                item.dropdownOptions.push(newOption);
-                renderSurchargeItems();
-                console.log('Added new dropdown option:', newOption);
-            }
-        }
-        
-        function removeDropdownOption(itemId, optionIndex) {
-            const item = surchargeItems.fixed.find(item => item.id === itemId) || surchargeItems.additional.find(item => item.id === itemId);
-            if (item && item.dropdownOptions && item.dropdownOptions.length > 1) {
-                item.dropdownOptions.splice(optionIndex, 1);
-                renderSurchargeItems();
-                console.log('Removed dropdown option at index:', optionIndex);
-            } else {
-                alert('Minimaal 1 optie moet blijven!');
-            }
-        }
 
         function renderFixedItems() {
             const container = document.getElementById('fixedItemsContainer');
@@ -4846,46 +4803,24 @@ Both bookings added to confirmed bookings list!`;
                 const itemDiv = document.createElement('div');
                 itemDiv.style.cssText = 'display: flex; align-items: center; margin-bottom: 15px; padding: 10px; border: 1px solid #e9ecef; border-radius: 8px;';
                 
-                // Special handling for items with configurable dropdown options
-                if (item.hasDropdown && (item.id === 'child-seat' || item.id === 'dog')) {
-                    if (!item.dropdownOptions) {
-                        if (item.id === 'child-seat') {
-                            item.dropdownOptions = [
-                                { id: 'maxi_cosi', name: 'Maxi Cosi (baby can\'t sit)', price: 3 },
-                                { id: 'baby_seat', name: 'Baby seat', price: 3 },
-                                { id: 'verhoostoel', name: 'Verhoostoel', price: 3 }
-                            ];
-                        } else if (item.id === 'dog') {
-                            item.dropdownOptions = [
-                                { id: 'kleine_hond', name: 'Kleine hond', price: 3 },
-                                { id: 'groten_hond', name: 'Groten hond', price: 5 }
-                            ];
-                        }
-                    }
-                    
+                // Special handling for baby seat
+                if (item.id === 'baby-seat') {
                     itemDiv.innerHTML = `
                         <div style="flex: 1; color: #6c757d;">
                             ${item.name}
                             <div style="font-size: 12px; color: #868e96; margin-top: 5px;">
-                                Dropdown opties configureerbaar:
-                            </div>
-                            <div id="dropdownOptions_${item.id}" style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px;">
-                                ${item.dropdownOptions.map((option, index) => `
-                                    <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
-                                        <input type="text" value="${option.name}" onchange="updateDropdownOptionName('${item.id}', ${index}, this.value)" style="flex: 1; padding: 4px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;">
-                                        <span style="font-size: 12px; color: #6c757d;">€</span>
-                                        <input type="number" value="${option.price}" step="0.01" onchange="updateDropdownOptionPrice('${item.id}', ${index}, this.value)" style="width: 60px; padding: 4px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;">
-                                        <button onclick="removeDropdownOption('${item.id}', ${index})" style="background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">❌</button>
-                                    </div>
-                                `).join('')}
-                                <button onclick="addDropdownOption('${item.id}')" style="background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-top: 5px;">+ Optie Toevoegen</button>
+                                Includes: Baby seat, Verhoostoel, Maxi Cosi
                             </div>
                         </div>
-                        <div style="width: 80px; margin-right: 15px; text-align: center; padding: 8px; color: #6c757d; font-size: 12px;">
-                            Individuele<br>prijzen
+                        <div style="width: 80px; margin-right: 15px;">
+                            <input type="number" value="${item.price}" style="width: 100%; padding: 8px; border: 1px solid #e9ecef; border-radius: 4px; text-align: center;" 
+                                   onchange="updateFixedItemPrice('${item.id}', this.value)">
                         </div>
-                        <div style="display: flex; gap: 5px; align-items: center; justify-content: center;">
-                            <span style="font-size: 12px; color: #6c757d;">✓ Per optie</span>
+                        <div style="display: flex; gap: 5px;">
+                            <button style="width: 30px; height: 30px; border: 1px solid #e9ecef; background: white; border-radius: 4px; cursor: pointer;" 
+                                    onclick="adjustFixedItemPrice('${item.id}', 1)">+</button>
+                            <button style="width: 30px; height: 30px; border: 1px solid #e9ecef; background: white; border-radius: 4px; cursor: pointer;" 
+                                    onclick="adjustFixedItemPrice('${item.id}', -1)">-</button>
                         </div>
                     `;
                 } else {
@@ -4922,80 +4857,22 @@ Both bookings added to confirmed bookings list!`;
 
             surchargeItems.additional.forEach((item, index) => {
                 const itemDiv = document.createElement('div');
-                itemDiv.style.cssText = 'margin-bottom: 15px; padding: 15px; border: 1px solid #e9ecef; border-radius: 8px;';
-                
-                // Special handling for items with dropdown options
-                if (item.hasDropdown) {
-                    if (!item.dropdownOptions) {
-                        if (item.id === 'dog') {
-                            item.dropdownOptions = [
-                                { id: 'kleine_hond', name: 'Kleine hond', price: 3 },
-                                { id: 'groten_hond', name: 'Groten hond', price: 5 }
-                            ];
-                        } else if (item.id === 'water') {
-                            item.dropdownOptions = [
-                                { id: 'still', name: 'Still water', price: 2 },
-                                { id: 'sparkling', name: 'Sparkling water', price: 3 }
-                            ];
-                        } else if (item.id === 'newspaper') {
-                            item.dropdownOptions = [
-                                { id: 'local', name: 'Lokale krant', price: 1 },
-                                { id: 'national', name: 'Nationale krant', price: 2 }
-                            ];
-                        }
-                    }
-                    
-                    itemDiv.innerHTML = `
-                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                            <div style="flex: 1; color: #6c757d;">
-                                <input type="text" value="${item.name}" style="width: 100%; padding: 8px; border: 1px solid #e9ecef; border-radius: 4px; font-weight: 600;" 
-                                       onchange="updateAdditionalItem(${index}, 'name', this.value)">
-                                <div style="font-size: 12px; color: #868e96; margin-top: 5px;">
-                                    Dropdown opties configureerbaar:
-                                </div>
-                                <div id="dropdownOptions_${item.id}" style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px;">
-                                    ${item.dropdownOptions.map((option, optionIndex) => `
-                                        <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
-                                            <input type="text" value="${option.name}" onchange="updateDropdownOptionName('${item.id}', ${optionIndex}, this.value)" style="flex: 1; padding: 4px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;">
-                                            <span style="font-size: 12px; color: #6c757d;">€</span>
-                                            <input type="number" value="${option.price}" step="0.01" onchange="updateDropdownOptionPrice('${item.id}', ${optionIndex}, this.value)" style="width: 60px; padding: 4px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;">
-                                            <button onclick="removeDropdownOption('${item.id}', ${optionIndex})" style="background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">❌</button>
-                                        </div>
-                                    `).join('')}
-                                    <button onclick="addDropdownOption('${item.id}')" style="background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-top: 5px;">+ Optie Toevoegen</button>
-                                </div>
-                            </div>
-                            <div style="width: 80px; margin-right: 15px; text-align: center; padding: 8px; color: #6c757d; font-size: 12px;">
-                                Individuele<br>prijzen
-                            </div>
-                            <div style="display: flex; gap: 5px; align-items: center; justify-content: center;">
-                                <button style="width: 40px; height: 32px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;" 
-                                        onclick="removeAdditionalItem(${index})">🗑️</button>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    // Regular items without dropdown
-                    itemDiv.innerHTML = `
-                        <div style="display: flex; align-items: center;">
-                            <div style="flex: 1; margin-right: 10px;">
-                                <input type="text" value="${item.name}" style="width: 100%; padding: 8px; border: 1px solid #e9ecef; border-radius: 4px;" 
-                                       onchange="updateAdditionalItem(${index}, 'name', this.value)">
-                            </div>
-                            <input type="number" value="${item.price}" style="width: 90px; margin-right: 10px; padding: 8px; border: 1px solid #e9ecef; border-radius: 4px;" 
-                                   onchange="updateAdditionalItem(${index}, 'price', this.value)">
-                            <select style="width: 90px; margin-right: 10px; padding: 8px; border: 1px solid #e9ecef; border-radius: 4px;" 
-                                    onchange="updateAdditionalItem(${index}, 'type', this.value)">
-                                <option value="Amount" ${item.type === 'Amount' ? 'selected' : ''}>Amount</option>
-                                <option value="Percentage" ${item.type === 'Percentage' ? 'selected' : ''}>Percentage</option>
-                            </select>
-                            <input type="number" value="${item.quantity}" style="width: 70px; margin-right: 10px; padding: 8px; border: 1px solid #e9ecef; border-radius: 4px;" 
-                                   onchange="updateAdditionalItem(${index}, 'quantity', this.value)">
-                            <button style="width: 40px; height: 32px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;" 
-                                    onclick="removeAdditionalItem(${index})">🗑️</button>
-                        </div>
-                    `;
-                }
+                itemDiv.style.cssText = 'display: flex; align-items: center; margin-bottom: 10px; padding: 10px; border: 1px solid #e9ecef; border-radius: 4px;';
+                itemDiv.innerHTML = `
+                    <input type="text" value="${item.name}" style="flex: 1; margin-right: 10px; padding: 8px; border: 1px solid #e9ecef; border-radius: 4px;" 
+                           onchange="updateAdditionalItem(${index}, 'name', this.value)">
+                    <input type="number" value="${item.price}" style="width: 90px; margin-right: 10px; padding: 8px; border: 1px solid #e9ecef; border-radius: 4px;" 
+                           onchange="updateAdditionalItem(${index}, 'price', this.value)">
+                    <select style="width: 90px; margin-right: 10px; padding: 8px; border: 1px solid #e9ecef; border-radius: 4px;" 
+                            onchange="updateAdditionalItem(${index}, 'type', this.value)">
+                        <option value="Amount" ${item.type === 'Amount' ? 'selected' : ''}>Amount</option>
+                        <option value="Percentage" ${item.type === 'Percentage' ? 'selected' : ''}>Percentage</option>
+                    </select>
+                    <input type="number" value="${item.quantity}" style="width: 70px; margin-right: 10px; padding: 8px; border: 1px solid #e9ecef; border-radius: 4px;" 
+                           onchange="updateAdditionalItem(${index}, 'quantity', this.value)">
+                    <button style="width: 40px; height: 32px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;" 
+                            onclick="removeAdditionalItem(${index})">🗑️</button>
+                `;
                 container.appendChild(itemDiv);
             });
         }
@@ -5038,11 +4915,7 @@ Both bookings added to confirmed bookings list!`;
         }
 
         function saveSurchargeItems() {
-            // Add timestamp for update tracking
-            const currentTime = Date.now();
             localStorage.setItem('surchargeItems', JSON.stringify(surchargeItems));
-            localStorage.setItem('surchargeItemsUpdateTime', currentTime.toString());
-            
             alert('✅ Surcharge items saved successfully!');
             
             // Sync to booking system
@@ -5056,11 +4929,6 @@ Both bookings added to confirmed bookings list!`;
                 additional: surchargeItems.additional
             };
             localStorage.setItem('bookingSurchargeItems', JSON.stringify(bookingSurcharge));
-            
-            // Also set timestamp for booking system updates
-            const currentTime = Date.now();
-            localStorage.setItem('bookingSurchargeItemsUpdateTime', currentTime.toString());
-            
             console.log('✅ Surcharge items synced to booking system:', bookingSurcharge);
         }
 

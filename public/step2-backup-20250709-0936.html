@@ -689,8 +689,8 @@
         }
 
         /* BABY SEAT DROPDOWN */
-        .child-seat-multi-dropdown {
-            display: none !important;
+        .baby-seat-dropdown {
+            display: none;
             margin-top: 10px;
             margin-left: 35px;
             padding: 10px;
@@ -699,7 +699,7 @@
             border: 1px solid #e9ecef;
         }
 
-        .child-seat-multi-option {
+        .baby-seat-option {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -710,23 +710,23 @@
             transition: all 0.3s ease;
         }
 
-        .child-seat-multi-option:hover {
+        .baby-seat-option:hover {
             background: #e3f2fd;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        .child-seat-multi-option input[type="checkbox"] {
+        .baby-seat-option input[type="radio"] {
             margin-right: 10px;
         }
 
-        .child-seat-multi-option label {
+        .baby-seat-option label {
             flex: 1;
             cursor: pointer;
             font-size: 14px;
             color: #495057;
         }
 
-        .child-seat-multi-price {
+        .baby-seat-price {
             font-weight: 600;
             color: #667eea;
             font-size: 14px;
@@ -869,29 +869,6 @@
             font-weight: 700;
             color: #007bff;
             font-size: 20px;
-        }
-        
-        /* Notification animations */
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        
-        @keyframes slideOut {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(100%);
-                opacity: 0;
-            }
         }
     </style>
     <!-- Google Maps API (only load if needed) -->
@@ -1081,9 +1058,6 @@
             console.log('📄 Loading surcharge items...');
             loadSurchargeItems();
             console.log('✅ STAP 2 - Page initialized');
-            
-            // Set up automatic checking for admin surcharge updates
-            setInterval(checkForSurchargeUpdates, 5000); // Check every 5 seconds
         });
 
 
@@ -1375,8 +1349,8 @@
             // Update continue button state
             updateContinueButton();
 
-            // Update surcharge totals after vehicle selection
-            updateSurchargeTotal();
+            // Show surcharge section after vehicle selection
+            showSurchargeSection();
 
         }
 
@@ -1980,53 +1954,42 @@
         let surchargeItems = { fixed: [], additional: [] };
         let selectedSurcharges = {};
         let surchargeTotal = 0;
-        let lastSurchargeUpdateTime = 0;
 
         function loadSurchargeItems() {
-            // First try to load from admin localStorage (primary source)
-            let adminSaved = localStorage.getItem('surchargeItems');
+            let saved = localStorage.getItem('bookingSurchargeItems');
             
-            // If admin data exists, use it and save to booking localStorage
-            if (adminSaved) {
-                console.log('📄 Loading surcharge items from admin localStorage...');
-                surchargeItems = JSON.parse(adminSaved);
-                localStorage.setItem('bookingSurchargeItems', JSON.stringify(surchargeItems));
-            } else {
-                // Fallback to booking localStorage or create defaults
-                let bookingSaved = localStorage.getItem('bookingSurchargeItems');
+            // If no saved data, create default surcharge items
+            if (!saved) {
+                console.log('📄 No surcharge items found, creating default ones...');
+                const defaultSurchargeItems = {
+                    fixed: [
+                        { id: 'meet-greet', name: 'Meet and greet', price: 5, enabled: false },
+                        { id: 'baby-seat', name: 'Baby seat', price: 3, enabled: true },
+                        { id: 'wheelchair', name: 'Wheelchair', price: 0, enabled: true },
+                        { id: 'waiting-time', name: 'Waiting time after landing', price: 0, enabled: true },
+                        { id: 'stopover', name: 'Stopover (Via)', price: 10, enabled: true }
+                    ],
+                    additional: [
+                        { id: 'golf-material', name: 'Golf-material', price: 5, type: 'Amount', quantity: 1 },
+                        { id: 'ski-material', name: 'Ski-material', price: 5, type: 'Amount', quantity: 1 },
+                        { id: 'dog', name: 'Dog', price: 3, type: 'Amount', quantity: 1 },
+                        { id: 'oversize-luggage', name: 'Oversize luggage', price: 0, type: 'Amount', quantity: 1 },
+                        { id: 'extra-waiting', name: 'Extra waiting time (1 hour)', price: 30, type: 'Amount', quantity: 1 }
+                    ]
+                };
                 
-                if (!bookingSaved) {
-                    console.log('📄 No surcharge items found, creating default ones...');
-                    const defaultSurchargeItems = {
-                        fixed: [
-                            { id: 'meet-greet', name: 'Meet and greet', price: 5, enabled: false },
-                            { id: 'child-seat', name: 'Child seat', price: 3, enabled: true, hasDropdown: true, dropdownOptions: [{ id: 'maxi_cosi', name: 'Maxi Cosi (baby can\'t sit)', price: 3 }, { id: 'baby_seat', name: 'Baby seat', price: 3 }, { id: 'verhoostoel', name: 'Verhoostoel', price: 3 }] },
-                            { id: 'dog', name: 'Dog', price: 3, enabled: true, hasDropdown: true, dropdownOptions: [{ id: 'kleine_hond', name: 'Kleine hond', price: 3 }, { id: 'groten_hond', name: 'Groten hond', price: 5 }] },
-                            { id: 'wheelchair', name: 'Wheelchair', price: 0, enabled: true },
-                            { id: 'waiting-time', name: 'Waiting time after landing', price: 0, enabled: true },
-                            { id: 'stopover', name: 'Stopover (Via)', price: 10, enabled: true }
-                        ],
-                        additional: [
-                            { id: 'golf-material', name: 'Golf-material', price: 5, type: 'Amount', quantity: 1 },
-                            { id: 'ski-material', name: 'Ski-material', price: 5, type: 'Amount', quantity: 1 },
-                            { id: 'water', name: 'Water', price: 2, type: 'Amount', quantity: 1, hasDropdown: true },
-                            { id: 'newspaper', name: 'Newspaper', price: 1, type: 'Amount', quantity: 1, hasDropdown: true },
-                            { id: 'oversize-luggage', name: 'Oversize luggage', price: 0, type: 'Amount', quantity: 1 },
-                            { id: 'extra-waiting', name: 'Extra waiting time (1 hour)', price: 30, type: 'Amount', quantity: 1 }
-                        ]
-                    };
-                    
-                    localStorage.setItem('bookingSurchargeItems', JSON.stringify(defaultSurchargeItems));
-                    surchargeItems = defaultSurchargeItems;
-                } else {
-                    surchargeItems = JSON.parse(bookingSaved);
-                }
+                localStorage.setItem('bookingSurchargeItems', JSON.stringify(defaultSurchargeItems));
+                surchargeItems = defaultSurchargeItems;
+            } else {
+                surchargeItems = JSON.parse(saved);
             }
             
             console.log('📄 Loaded surcharge items:', surchargeItems);
             renderSurchargeItems();
-            // Always show surcharge section immediately
-            document.getElementById('surchargeSection').style.display = 'block';
+            // Only show if a vehicle is already selected
+            if (selectedVehicleOutbound) {
+                document.getElementById('surchargeSection').style.display = 'block';
+            }
         }
 
         function renderSurchargeItems() {
@@ -2059,45 +2022,39 @@
                     const itemDiv = document.createElement('div');
                     itemDiv.className = 'surcharge-item';
                     
-                    // Special handling for items with multiple selection dropdown
-                    if (item.hasDropdown && (item.id === 'child-seat' || item.id === 'dog')) {
+                    // Special handling for baby seat
+                    if (item.id === 'baby-seat') {
                         itemDiv.innerHTML = `
                             <div class="surcharge-item-left">
-                                <input type="checkbox" id="surcharge_${item.id}" onchange="toggleChildSeatMultiOption('${item.id}', ${item.price}, 'fixed')">
+                                <input type="checkbox" id="surcharge_${item.id}" onchange="toggleBabySeat('${item.id}', ${item.price}, 'fixed')">
                                 <label for="surcharge_${item.id}">${item.name}</label>
                             </div>
                             <div class="surcharge-item-right">
-                                <div class="surcharge-price"><!-- Geen prijs hier - individuele prijzen in dropdown --></div>
+                                <div class="surcharge-price">€${item.price.toFixed(2)}</div>
                             </div>
                         `;
                         
-                        // Add multi-selection dropdown using configured options
+                        // Add baby seat dropdown
                         const dropdownDiv = document.createElement('div');
-                        dropdownDiv.className = 'child-seat-multi-dropdown';
-                        dropdownDiv.id = `childSeatMultiDropdown_${item.id}`;
-                        
-                        // Get configured options or use defaults based on item type
-                        let dropdownOptions;
-                        if (item.id === 'child-seat') {
-                            dropdownOptions = item.dropdownOptions || [
-                                { id: 'maxi_cosi', name: 'Maxi Cosi (baby can\'t sit)', price: 3 },
-                                { id: 'baby_seat', name: 'Baby seat', price: 3 },
-                                { id: 'verhoostoel', name: 'Verhoostoel', price: 3 }
-                            ];
-                        } else if (item.id === 'dog') {
-                            dropdownOptions = item.dropdownOptions || [
-                                { id: 'kleine_hond', name: 'Kleine hond', price: 3 },
-                                { id: 'groten_hond', name: 'Groten hond', price: 5 }
-                            ];
-                        }
-                        
-                        dropdownDiv.innerHTML = dropdownOptions.map(option => `
-                            <div class="child-seat-multi-option">
-                                <input type="checkbox" id="${item.id}_${option.id}" onchange="selectMultiVariant('${item.id}', '${option.id}', this.checked, ${option.price})">
-                                <label for="${item.id}_${option.id}">${option.name}</label>
-                                <div class="child-seat-multi-price">€${option.price.toFixed(2)}</div>
+                        dropdownDiv.className = 'baby-seat-dropdown';
+                        dropdownDiv.id = 'babySeatDropdown';
+                        dropdownDiv.innerHTML = `
+                            <div class="baby-seat-option">
+                                <input type="radio" id="babySeat_babySeat" name="babySeatType" value="baby-seat" onchange="selectBabySeatType('baby-seat')">
+                                <label for="babySeat_babySeat">Baby seat</label>
+                                <div class="baby-seat-price">€${item.price.toFixed(2)}</div>
                             </div>
-                        `).join('');
+                            <div class="baby-seat-option">
+                                <input type="radio" id="babySeat_booster" name="babySeatType" value="booster-seat" onchange="selectBabySeatType('booster-seat')">
+                                <label for="babySeat_booster">Verhoostoel</label>
+                                <div class="baby-seat-price">€${item.price.toFixed(2)}</div>
+                            </div>
+                            <div class="baby-seat-option">
+                                <input type="radio" id="babySeat_maxi" name="babySeatType" value="maxi-cosi" onchange="selectBabySeatType('maxi-cosi')">
+                                <label for="babySeat_maxi">Maxi Cosi</label>
+                                <div class="baby-seat-price">€${item.price.toFixed(2)}</div>
+                            </div>
+                        `;
                         
                         itemDiv.appendChild(dropdownDiv);
                     } else {
@@ -2131,91 +2088,21 @@
                     
                     const itemDiv = document.createElement('div');
                     itemDiv.className = 'surcharge-item';
-                    
-                    // Special handling for items with dropdown - only show if dropdown options exist
-                    if (item.hasDropdown && item.dropdownOptions && item.dropdownOptions.length > 0) {
-                        itemDiv.innerHTML = `
-                            <div class="surcharge-item-left">
-                                <input type="checkbox" id="surcharge_${item.id}" onchange="toggleAdditionalOption('${item.id}', ${item.price}, 'additional')">
-                                <label for="surcharge_${item.id}">${item.name}</label>
+                    itemDiv.innerHTML = `
+                        <div class="surcharge-item-left">
+                            <input type="checkbox" id="surcharge_${item.id}" onchange="toggleSurcharge('${item.id}', ${item.price}, 'additional')">
+                            <label for="surcharge_${item.id}">${item.name}</label>
+                        </div>
+                        <div class="surcharge-item-right">
+                            <div class="surcharge-price">€${item.price.toFixed(2)}</div>
+                            <div class="quantity-controls">
+                                <button onclick="adjustSurchargeQuantity('${item.id}', -1)">-</button>
+                                <input type="number" id="quantity_${item.id}" value="1" min="1" max="10" 
+                                       onchange="updateSurchargeQuantity('${item.id}', this.value)">
+                                <button onclick="adjustSurchargeQuantity('${item.id}', 1)">+</button>
                             </div>
-                            <div class="surcharge-item-right">
-                                <div class="surcharge-price"><!-- Geen prijs hier - individuele prijzen in dropdown --></div>
-                                <div class="quantity-controls">
-                                    <button onclick="adjustSurchargeQuantity('${item.id}', -1)">-</button>
-                                    <input type="number" id="quantity_${item.id}" value="1" min="1" max="10" 
-                                           onchange="updateSurchargeQuantity('${item.id}', this.value)">
-                                    <button onclick="adjustSurchargeQuantity('${item.id}', 1)">+</button>
-                                </div>
-                            </div>
-                        `;
-                        
-                        // Add dropdown specific to this item
-                        const dropdownDiv = document.createElement('div');
-                        dropdownDiv.className = 'baby-seat-dropdown';
-                        dropdownDiv.id = `additionalDropdown_${item.id}`;
-                        
-                        // Create different options based on item type
-                        let dropdownOptions = '';
-                        if (item.id === 'water') {
-                            dropdownOptions = `
-                                <div class="baby-seat-option">
-                                    <input type="radio" id="${item.id}_still" name="${item.id}Type" value="still" onchange="selectAdditionalVariant('${item.id}', 'still')">
-                                    <label for="${item.id}_still">Still water</label>
-                                    <div class="baby-seat-price">€${item.price.toFixed(2)}</div>
-                                </div>
-                                <div class="baby-seat-option">
-                                    <input type="radio" id="${item.id}_sparkling" name="${item.id}Type" value="sparkling" onchange="selectAdditionalVariant('${item.id}', 'sparkling')">
-                                    <label for="${item.id}_sparkling">Sparkling water</label>
-                                    <div class="baby-seat-price">€${(item.price + 1).toFixed(2)}</div>
-                                </div>
-                                <div class="baby-seat-option">
-                                    <input type="radio" id="${item.id}_premium" name="${item.id}Type" value="premium" onchange="selectAdditionalVariant('${item.id}', 'premium')">
-                                    <label for="${item.id}_premium">Premium water</label>
-                                    <div class="baby-seat-price">€${(item.price + 3).toFixed(2)}</div>
-                                </div>
-                            `;
-                        } else if (item.id === 'newspaper') {
-                            dropdownOptions = `
-                                <div class="baby-seat-option">
-                                    <input type="radio" id="${item.id}_local" name="${item.id}Type" value="local" onchange="selectAdditionalVariant('${item.id}', 'local')">
-                                    <label for="${item.id}_local">Lokale krant</label>
-                                    <div class="baby-seat-price">€${item.price.toFixed(2)}</div>
-                                </div>
-                                <div class="baby-seat-option">
-                                    <input type="radio" id="${item.id}_national" name="${item.id}Type" value="national" onchange="selectAdditionalVariant('${item.id}', 'national')">
-                                    <label for="${item.id}_national">Nationale krant</label>
-                                    <div class="baby-seat-price">€${(item.price + 1).toFixed(2)}</div>
-                                </div>
-                                <div class="baby-seat-option">
-                                    <input type="radio" id="${item.id}_international" name="${item.id}Type" value="international" onchange="selectAdditionalVariant('${item.id}', 'international')">
-                                    <label for="${item.id}_international">Internationale krant</label>
-                                    <div class="baby-seat-price">€${(item.price + 2).toFixed(2)}</div>
-                                </div>
-                            `;
-                        }
-                        
-                        dropdownDiv.innerHTML = dropdownOptions;
-                        itemDiv.appendChild(dropdownDiv);
-                    } else {
-                        // Regular items without dropdown
-                        itemDiv.innerHTML = `
-                            <div class="surcharge-item-left">
-                                <input type="checkbox" id="surcharge_${item.id}" onchange="toggleSurcharge('${item.id}', ${item.price}, 'additional')">
-                                <label for="surcharge_${item.id}">${item.name}</label>
-                            </div>
-                            <div class="surcharge-item-right">
-                                <div class="surcharge-price">€${item.price.toFixed(2)}</div>
-                                <div class="quantity-controls">
-                                    <button onclick="adjustSurchargeQuantity('${item.id}', -1)">-</button>
-                                    <input type="number" id="quantity_${item.id}" value="1" min="1" max="10" 
-                                           onchange="updateSurchargeQuantity('${item.id}', this.value)">
-                                    <button onclick="adjustSurchargeQuantity('${item.id}', 1)">+</button>
-                                </div>
-                            </div>
-                        `;
-                    }
-                    
+                        </div>
+                    `;
                     container.appendChild(itemDiv);
                 });
             }
@@ -2239,150 +2126,9 @@
             updateSurchargeTotal();
         }
 
-        function toggleChildSeatMultiOption(itemId, price, type) {
+        function toggleBabySeat(itemId, price, type) {
             const checkbox = document.getElementById(`surcharge_${itemId}`);
-            const dropdown = document.getElementById(`childSeatMultiDropdown_${itemId}`);
-            
-            if (checkbox.checked) {
-                // Show dropdown
-                dropdown.style.display = 'block';
-                dropdown.style.setProperty('display', 'block', 'important');
-            } else {
-                // Hide dropdown
-                dropdown.style.display = 'none';
-                dropdown.style.setProperty('display', 'none', 'important');
-                
-                // Remove all selections (dynamic based on configured options)
-                const item = surchargeItems.fixed.find(item => item.id === itemId);
-                let defaultOptions = [];
-                if (itemId === 'child-seat') {
-                    defaultOptions = [{ id: 'maxi_cosi' }, { id: 'baby_seat' }, { id: 'verhoostoel' }];
-                } else if (itemId === 'dog') {
-                    defaultOptions = [{ id: 'kleine_hond' }, { id: 'groten_hond' }];
-                }
-                
-                const options = item?.dropdownOptions || defaultOptions;
-                options.forEach(option => {
-                    delete selectedSurcharges[`${itemId}_${option.id}`];
-                });
-                
-                // Clear checkboxes
-                dropdown.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                    checkbox.checked = false;
-                });
-                
-                updateSurchargeTotal();
-            }
-        }
-        
-        function selectMultiVariant(itemId, variant, isChecked, price) {
-            const item = surchargeItems.fixed.find(item => item.id === itemId);
-            const variantKey = `${itemId}_${variant}`;
-            
-            if (item) {
-                if (isChecked) {
-                    // Find the configured option name and price
-                    let defaultOptions = [];
-                    if (itemId === 'child-seat') {
-                        defaultOptions = [
-                            { id: 'maxi_cosi', name: 'Maxi Cosi (baby can\'t sit)', price: 3 },
-                            { id: 'baby_seat', name: 'Baby seat', price: 3 },
-                            { id: 'verhoostoel', name: 'Verhoostoel', price: 3 }
-                        ];
-                    } else if (itemId === 'dog') {
-                        defaultOptions = [
-                            { id: 'kleine_hond', name: 'Kleine hond', price: 3 },
-                            { id: 'groten_hond', name: 'Groten hond', price: 5 }
-                        ];
-                    }
-                    
-                    const options = item.dropdownOptions || defaultOptions;
-                    const option = options.find(opt => opt.id === variant);
-                    
-                    selectedSurcharges[variantKey] = {
-                        name: option ? option.name : variant,
-                        price: price || (option ? option.price : 3),
-                        quantity: 1,
-                        type: 'fixed',
-                        variant: variant
-                    };
-                } else {
-                    delete selectedSurcharges[variantKey];
-                }
-                
-                updateSurchargeTotal();
-            }
-        }
-
-        // Function removed - no longer needed as child seats are now individual items
-        
-        function checkForSurchargeUpdates() {
-            const adminSurchargeData = localStorage.getItem('surchargeItems');
-            const adminUpdateTime = localStorage.getItem('surchargeItemsUpdateTime');
-            
-            if (adminSurchargeData && adminUpdateTime) {
-                const updateTime = parseInt(adminUpdateTime);
-                
-                // Check if admin data has been updated since last check
-                if (updateTime > lastSurchargeUpdateTime) {
-                    console.log('🔄 Admin surcharge data updated, refreshing...');
-                    lastSurchargeUpdateTime = updateTime;
-                    
-                    // Update surcharge items from admin
-                    surchargeItems = JSON.parse(adminSurchargeData);
-                    localStorage.setItem('bookingSurchargeItems', JSON.stringify(surchargeItems));
-                    
-                    // Re-render surcharge items
-                    renderSurchargeItems();
-                    
-                    // Show update notification
-                    showUpdateNotification('Item Surcharge opties zijn bijgewerkt vanuit Admin');
-                }
-            }
-        }
-        
-        function showUpdateNotification(message) {
-            // Create notification element
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: #28a745;
-                color: white;
-                padding: 15px 20px;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-                z-index: 1000;
-                font-size: 14px;
-                font-weight: 600;
-                max-width: 300px;
-                animation: slideIn 0.3s ease-out;
-            `;
-            notification.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span>🔄</span>
-                    <span>${message}</span>
-                </div>
-            `;
-            
-            // Add to page
-            document.body.appendChild(notification);
-            
-            // Remove after 4 seconds
-            setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease-in';
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.parentNode.removeChild(notification);
-                    }
-                }, 300);
-            }, 4000);
-        }
-
-        function toggleAdditionalOption(itemId, price, type) {
-            const checkbox = document.getElementById(`surcharge_${itemId}`);
-            const dropdown = document.getElementById(`additionalDropdown_${itemId}`);
+            const dropdown = document.getElementById('babySeatDropdown');
             
             if (checkbox.checked) {
                 // Show dropdown
@@ -2392,13 +2138,13 @@
                 const firstOption = dropdown.querySelector('input[type="radio"]');
                 if (firstOption) {
                     firstOption.checked = true;
-                    selectAdditionalVariant(itemId, firstOption.value);
+                    selectBabySeatType(firstOption.value);
                 }
             } else {
                 // Hide dropdown
                 dropdown.style.display = 'none';
                 
-                // Remove selection
+                // Remove baby seat selection
                 delete selectedSurcharges[itemId];
                 
                 // Clear radio buttons
@@ -2410,56 +2156,33 @@
             }
         }
 
-        function selectAdditionalVariant(itemId, variant) {
-            const additionalItem = surchargeItems.additional.find(item => item.id === itemId);
+        function selectBabySeatType(seatType) {
+            const basePrice = 3;
+            const babySeatItem = surchargeItems.fixed.find(item => item.id === 'baby-seat');
             
-            if (additionalItem) {
-                let price = additionalItem.price;
-                let variantName = '';
-                const quantity = parseInt(document.getElementById(`quantity_${itemId}`).value) || 1;
-                
-                // Different pricing and naming based on item and variant
-                if (itemId === 'water') {
-                    switch(variant) {
-                        case 'still':
-                            price = additionalItem.price;
-                            variantName = 'Still water';
-                            break;
-                        case 'sparkling':
-                            price = additionalItem.price + 1;
-                            variantName = 'Sparkling water';
-                            break;
-                        case 'premium':
-                            price = additionalItem.price + 3;
-                            variantName = 'Premium water';
-                            break;
-                    }
-                } else if (itemId === 'newspaper') {
-                    switch(variant) {
-                        case 'local':
-                            price = additionalItem.price;
-                            variantName = 'Lokale krant';
-                            break;
-                        case 'national':
-                            price = additionalItem.price + 1;
-                            variantName = 'Nationale krant';
-                            break;
-                        case 'international':
-                            price = additionalItem.price + 2;
-                            variantName = 'Internationale krant';
-                            break;
-                    }
-                }
-                
-                selectedSurcharges[itemId] = {
-                    name: variantName,
-                    price: price,
-                    quantity: quantity,
-                    type: 'additional',
-                    variant: variant
+            if (babySeatItem) {
+                selectedSurcharges['baby-seat'] = {
+                    name: getSeatTypeName(seatType),
+                    price: basePrice,
+                    quantity: 1,
+                    type: 'fixed',
+                    seatType: seatType
                 };
                 
                 updateSurchargeTotal();
+            }
+        }
+
+        function getSeatTypeName(seatType) {
+            switch(seatType) {
+                case 'baby-seat':
+                    return 'Baby seat';
+                case 'booster-seat':
+                    return 'Verhoostoel';
+                case 'maxi-cosi':
+                    return 'Maxi Cosi';
+                default:
+                    return 'Baby seat';
             }
         }
 
