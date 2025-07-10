@@ -458,10 +458,13 @@
                         <li><a class="nav-link" onclick="showSection('item-surcharge')">💰 Item Surcharge</a></li>
                         <li><a class="nav-link" onclick="showSection('notifications')">🔔 Notifications</a></li>
                         <li><a class="nav-link" onclick="showSection('mail')">📧 Email Settings</a></li>
+                        <li><a class="nav-link" onclick="showSection('email-templates')">📝 Email Templates</a></li>
+                        <li><a class="nav-link" onclick="showSection('translation')">🌐 Translation</a></li>
                         <li><a class="nav-link" onclick="showSection('booking-settings')">📋 Booking Settings</a></li>
-                        <li><a class="nav-link" onclick="showSection('locations')">📍 Locations</a></li>
+                        <li><a class="nav-link" onclick="showSection('google')">🌐 Google</a></li>
                         <li><a class="nav-link" onclick="showSection('services')">🎯 Services</a></li>
                         <li><a class="nav-link" onclick="showSection('users-settings')">👥 User Management</a></li>
+                        <li><a class="nav-link" onclick="showSection('backup-export')">💾 Backup & Export</a></li>
                     </ul>
                 </li>
                 
@@ -478,6 +481,7 @@
                         <li><a class="nav-link" onclick="showSection('holiday-surcharge')">Holiday Surcharge</a></li>
                         <li><a class="nav-link" onclick="showSection('item-surcharge')">Item Surcharge</a></li>
                         <li><a class="nav-link" onclick="showSection('location-surcharge')">Location Surcharge</a></li>
+                        <li><a class="nav-link" onclick="showSection('meet-and-greet')">Meet and Greet</a></li>
                         <li><a class="nav-link" onclick="showSection('night-surcharge')">Night Surcharge</a></li>
                         <li><a class="nav-link" onclick="showSection('other-discounts')">Other Discounts</a></li>
                         <li><a class="nav-link" onclick="showSection('tax')">Tax</a></li>
@@ -984,7 +988,7 @@
                         </div>
                     </div>
 
-                    <form id="adminEmailSettingsForm">
+                    <form id="adminEmailSettingsForm" onsubmit="saveEmailSettings(event)">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                             <div>
                                 <label style="display: block; font-weight: 500; margin-bottom: 8px;">From name</label>
@@ -1088,6 +1092,466 @@
                     </form>
 
                     <div id="adminEmailStatus" style="margin-top: 20px; padding: 15px; border-radius: 6px; display: none;"></div>
+                </div>
+
+                <!-- Email Templates Section -->
+                <div id="email-templates-section" class="content-section">
+                    <div style="border-bottom: 2px solid #e1e8ed; margin-bottom: 30px; padding-bottom: 20px;">
+                        <h1 style="color: #2c3e50; font-size: 28px; margin-bottom: 10px;">Marcel's Taxi Pro</h1>
+                        <h2 style="color: #007bff; font-size: 24px; margin-bottom: 5px;">Professional Admin Panel - ⚙️ Settings</h2>
+                        <h3 style="color: #666; font-size: 20px; margin: 0;">📝 Email Templates</h3>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #007bff;">
+                        <h3>📧 Email Template Configuratie</h3>
+                        <p style="margin: 10px 0; color: #6c757d;">Beheer de 3 verschillende email templates die naar klanten worden verstuurd tijdens het boekingsproces.</p>
+                    </div>
+
+                    <!-- Template Selector -->
+                    <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 10px;">Selecteer Email Template:</label>
+                        <select id="templateSelector" onchange="loadSelectedTemplate()" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 16px;">
+                            <option value="pending">📋 Template 1: Wacht op Bevestiging (Direct na reservering)</option>
+                            <option value="confirmed">✅ Template 2: Bevestiging Email (Unconfirmed → Confirmed)</option>
+                            <option value="cancelled">❌ Template 3: Annulering Email (Unconfirmed → Cancelled)</option>
+                        </select>
+                    </div>
+
+                    <form id="emailTemplateForm" onsubmit="saveEmailTemplate(event)">
+                        <!-- Template 1: Pending Confirmation -->
+                        <div id="pendingTemplate" class="template-content">
+                            <div style="background: #fff4e6; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ffa500;">
+                                <h4 style="color: #2c3e50; margin-bottom: 10px;">📋 Template 1: Wacht op Bevestiging</h4>
+                                <p style="margin: 0; color: #666;">Deze email wordt direct verstuurd wanneer een klant een nieuwe boeking maakt.</p>
+                            </div>
+
+                            <!-- Subject Line -->
+                            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;">
+                                <h4 style="color: #2c3e50; margin-bottom: 15px;">📧 Email Onderwerp</h4>
+                                <input type="text" id="pendingSubject" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px;" value="Uw booking wacht op bevestiging - [BOOKING_ID]" placeholder="Email onderwerp">
+                            </div>
+
+                            <!-- Welcome Message -->
+                            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;">
+                                <h4 style="color: #2c3e50; margin-bottom: 15px;">🎉 Welkomstbericht</h4>
+                                <textarea id="pendingWelcomeMessage" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; min-height: 80px; resize: vertical;">Bedankt voor uw boeking bij Marcel's Taxi!
+
+We hebben uw reservering ontvangen. Ons team zal uw boeking zo spoedig mogelijk beoordelen.</textarea>
+                            </div>
+
+                            <!-- Status Message -->
+                            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;">
+                                <h4 style="color: #2c3e50; margin-bottom: 15px;">⏳ Status Bericht</h4>
+                                <textarea id="pendingStatusMessage" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; min-height: 100px; resize: vertical;">🔄 UW BOEKING WACHT OP BEVESTIGING
+
+Uw boeking wordt binnen 24 uur door ons team beoordeeld. U ontvangt een bevestiging of annulering per email.
+
+Voor urgente boekingen kunt u ons direct bellen.</textarea>
+                            </div>
+                        </div>
+
+                        <!-- Template 2: Confirmed -->
+                        <div id="confirmedTemplate" class="template-content" style="display: none;">
+                            <div style="background: #e8f5e9; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #4caf50;">
+                                <h4 style="color: #2c3e50; margin-bottom: 10px;">✅ Template 2: Bevestiging Email</h4>
+                                <p style="margin: 0; color: #666;">Deze email wordt verstuurd wanneer een boeking van 'unconfirmed' naar 'confirmed' wordt gezet.</p>
+                            </div>
+
+                            <!-- Subject Line -->
+                            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;">
+                                <h4 style="color: #2c3e50; margin-bottom: 15px;">📧 Email Onderwerp</h4>
+                                <input type="text" id="confirmedSubject" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px;" value="✅ Uw rit is bevestigd - [BOOKING_ID]" placeholder="Email onderwerp">
+                            </div>
+
+                            <!-- Welcome Message -->
+                            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;">
+                                <h4 style="color: #2c3e50; margin-bottom: 15px;">🎉 Bevestigingsbericht</h4>
+                                <textarea id="confirmedWelcomeMessage" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; min-height: 80px; resize: vertical;">Goed nieuws! Uw taxi boeking is bevestigd.
+
+We hebben uw reservering definitief bevestigd. Hieronder vindt u alle details van uw rit.</textarea>
+                            </div>
+
+                            <!-- Status Message -->
+                            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;">
+                                <h4 style="color: #2c3e50; margin-bottom: 15px;">✅ Bevestiging Details</h4>
+                                <textarea id="confirmedStatusMessage" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; min-height: 100px; resize: vertical;">✅ UW RIT IS DEFINITIEF BEVESTIGD
+
+Een chauffeur is aan uw rit toegewezen. U ontvangt 24 uur voor vertrek de contactgegevens van uw chauffeur.
+
+Zorg ervoor dat u op tijd klaar staat op de afgesproken locatie.</textarea>
+                            </div>
+                        </div>
+
+                        <!-- Template 3: Cancelled -->
+                        <div id="cancelledTemplate" class="template-content" style="display: none;">
+                            <div style="background: #ffebee; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #f44336;">
+                                <h4 style="color: #2c3e50; margin-bottom: 10px;">❌ Template 3: Annulering Email</h4>
+                                <p style="margin: 0; color: #666;">Deze email wordt verstuurd wanneer een boeking wordt geannuleerd.</p>
+                            </div>
+
+                            <!-- Subject Line -->
+                            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;">
+                                <h4 style="color: #2c3e50; margin-bottom: 15px;">📧 Email Onderwerp</h4>
+                                <input type="text" id="cancelledSubject" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px;" value="❌ Uw rit is geannuleerd - [BOOKING_ID]" placeholder="Email onderwerp">
+                            </div>
+
+                            <!-- Cancellation Message -->
+                            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;">
+                                <h4 style="color: #2c3e50; margin-bottom: 15px;">❌ Annuleringsbericht</h4>
+                                <textarea id="cancelledWelcomeMessage" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; min-height: 80px; resize: vertical;">Helaas moeten wij u mededelen dat uw taxi boeking is geannuleerd.
+
+Hieronder vindt u de details van de geannuleerde rit.</textarea>
+                            </div>
+
+                            <!-- Reason Message -->
+                            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;">
+                                <h4 style="color: #2c3e50; margin-bottom: 15px;">📋 Annulering Reden</h4>
+                                <textarea id="cancelledStatusMessage" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; min-height: 100px; resize: vertical;">❌ UW RIT IS GEANNULEERD
+
+Mogelijke redenen voor annulering:
+- Geen beschikbare chauffeurs op het gevraagde tijdstip
+- De route valt buiten ons servicegebied
+- Technische problemen
+
+Voor vragen kunt u contact met ons opnemen. We helpen u graag met een alternatieve oplossing.</textarea>
+                            </div>
+                        </div>
+
+                        <!-- Shared Contact Information -->
+                        <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;">
+                            <h4 style="color: #2c3e50; margin-bottom: 15px;">📞 Contact Informatie</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                <div>
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">Telefoon:</label>
+                                    <input type="text" id="templatePhone" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px;" value="+32 xxx xx xx xx" placeholder="+32 xxx xx xx xx">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">WhatsApp:</label>
+                                    <input type="text" id="templateWhatsApp" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px;" value="+32 xxx xx xx xx" placeholder="+32 xxx xx xx xx">
+                                </div>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Email:</label>
+                                <input type="email" id="templateEmail" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px;" value="info@airporttransfer.be" placeholder="info@airporttransfer.be">
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Extra instructies:</label>
+                                <textarea id="templateContactInfo" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; min-height: 60px; resize: vertical;" placeholder="Voor vragen of wijzigingen kunt u contact opnemen...">Voor vragen of wijzigingen kunt u ons bereiken via bovenstaande contactgegevens.
+
+Bij no-show of annulering binnen 2 uur voor vertrek kunnen kosten in rekening worden gebracht.</textarea>
+                            </div>
+                        </div>
+
+                        <!-- Booking Modification Settings -->
+                        <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;">
+                            <h4 style="color: #2c3e50; margin-bottom: 15px;">✏️ Boeking Wijzigingen</h4>
+                            <div style="background: #e8f5e9; padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid #28a745;">
+                                <p style="margin: 0; color: #155724; font-size: 14px;">
+                                    <strong>📋 Wijziging Link:</strong> In bevestigde emails wordt automatisch een link toegevoegd waarmee klanten hun boeking kunnen wijzigen.
+                                </p>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; align-items: end;">
+                                <div>
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">Deadline (uur voor vertrek):</label>
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <button type="button" style="width: 30px; height: 30px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;" onclick="adjustModificationDeadline(-1)">-</button>
+                                        <input type="number" id="templateModificationDeadline" style="width: 80px; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px; text-align: center;" value="24" min="1" max="168" placeholder="24">
+                                        <button type="button" style="width: 30px; height: 30px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;" onclick="adjustModificationDeadline(1)">+</button>
+                                        <span style="color: #6c757d; font-size: 14px;">uur</span>
+                                    </div>
+                                    <div style="font-size: 12px; color: #6c757d; margin-top: 5px;">
+                                        Standaard: 24 uur voor vertrek
+                                    </div>
+                                </div>
+                                <div>
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">Preview tekst:</label>
+                                    <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; color: #6c757d; font-size: 14px; border: 1px solid #e9ecef;">
+                                        "U kunt uw boeking nog wijzigen tot <strong id="deadlinePreview">24</strong> uur voor uw vertrek."
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Company Information -->
+                        <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;">
+                            <h4 style="color: #2c3e50; margin-bottom: 15px;">🏢 Bedrijfsinformatie</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                <div>
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">Bedrijfsnaam:</label>
+                                    <input type="text" id="templateCompanyName" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px;" value="Marcel's Taxi Service" placeholder="Marcel's Taxi Service">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">Website:</label>
+                                    <input type="text" id="templateWebsite" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px;" value="www.airporttransfer.be" placeholder="www.airporttransfer.be">
+                                </div>
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Footer bericht:</label>
+                                <textarea id="templateFooter" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; min-height: 80px; resize: vertical;" placeholder="Marcel's Taxi - Professioneel vervoer sinds...">Marcel's Taxi - Professioneel vervoer
+Betrouwbaar • Comfortabel • Op tijd
+
+Bedankt voor het kiezen van onze service!</textarea>
+                            </div>
+                        </div>
+
+                        <!-- Save and Preview -->
+                        <div style="text-align: center; margin-top: 30px;">
+                            <button type="button" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 6px; margin-right: 15px; cursor: pointer;" onclick="previewEmailTemplate()">
+                                👁️ Preview Email
+                            </button>
+                            <button type="submit" style="background: #28a745; color: white; border: none; padding: 15px 30px; border-radius: 6px; font-size: 16px; cursor: pointer;">
+                                💾 Save Email Template
+                            </button>
+                        </div>
+                    </form>
+
+                    <div id="emailTemplateStatus" style="margin-top: 20px; padding: 15px; border-radius: 6px; display: none;"></div>
+                </div>
+
+                <!-- Translation Section -->
+                <div id="translation-section" class="content-section">
+                    <div style="border-bottom: 2px solid #e1e8ed; margin-bottom: 30px; padding-bottom: 20px;">
+                        <h1 style="color: #2c3e50; font-size: 28px; margin-bottom: 10px;">Marcel's Taxi Pro</h1>
+                        <h2 style="color: #007bff; font-size: 24px; margin-bottom: 5px;">Professional Admin Panel - ⚙️ Settings</h2>
+                        <h3 style="color: #666; font-size: 20px; margin: 0;">🌐 Translation - Email Teksten</h3>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #007bff;">
+                        <h3>📧 Professional Email Layout</h3>
+                        <p style="margin: 10px 0; color: #6c757d;">Configureer alle teksten die in de booking emails verschijnen. Deze instellingen bepalen hoe klanten jullie emails ontvangen.</p>
+                    </div>
+
+                    <form id="translationForm" onsubmit="saveTranslation(event)">
+                        <!-- Company Header -->
+                        <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;">
+                            <h4 style="color: #2c3e50; margin-bottom: 15px;">🏢 Bedrijf Header</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                <div>
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">Bedrijfsnaam in Email Header:</label>
+                                    <input type="text" id="translationCompanyName" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px;" value="Taxi Leuven" placeholder="Taxi Leuven">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">Logo URL (optioneel):</label>
+                                    <input type="text" id="translationLogoUrl" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px;" placeholder="https://example.com/logo.png">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Main Message -->
+                        <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;">
+                            <h4 style="color: #2c3e50; margin-bottom: 15px;">📨 Hoofdbericht</h4>
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Status bericht (eerste regel):</label>
+                                <input type="text" id="translationStatusLine" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px;" value="Uw booking wacht op bevestiging." placeholder="Uw booking wacht op bevestiging.">
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Bevestigings bericht:</label>
+                                <textarea id="translationMainMessage" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; min-height: 80px; resize: vertical;" placeholder="Bedankt voor uw booking bij Taxi Leuven. Uw reservatienummer is...">Bedankt voor uw booking bij Taxi Leuven. Uw reservatienummer is [BOOKING_ID].
+
+Een bevestigingsmail wordt naar uw e-mailadres verzonden binnen 1 uur. ALS U GEEN EMAIL ONTVANGEN HEBT, GELIEVE MET ONS CONTACT OP TE NEMEN!</textarea>
+                            </div>
+                        </div>
+
+                        <!-- Section Labels -->
+                        <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;">
+                            <h4 style="color: #2c3e50; margin-bottom: 15px;">🏷️ Sectie Labels</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                <div>
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">Reis Sectie:</label>
+                                    <input type="text" id="translationTripSection" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px;" value="Reis" placeholder="Reis">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">Klant Sectie:</label>
+                                    <input type="text" id="translationClientSection" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px;" value="Klant" placeholder="Klant">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">Reservatie Sectie:</label>
+                                    <input type="text" id="translationReservationSection" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px;" value="Reservatie" placeholder="Reservatie">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Field Labels -->
+                        <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;">
+                            <h4 style="color: #2c3e50; margin-bottom: 15px;">📝 Veld Labels</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                <div>
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">Datum & tijd:</label>
+                                    <input type="text" id="translationDateTime" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px;" value="Datum & tijd:" placeholder="Datum & tijd:">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">Ophaallocatie:</label>
+                                    <input type="text" id="translationPickupLocation" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px;" value="Ophaallocatie:" placeholder="Ophaallocatie:">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">Bestemming:</label>
+                                    <input type="text" id="translationDestination" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px;" value="Bestemming:" placeholder="Bestemming:">
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                <div>
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">Voertuig:</label>
+                                    <input type="text" id="translationVehicle" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px;" value="Voertuig:" placeholder="Voertuig:">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">Passagiers:</label>
+                                    <input type="text" id="translationPassengers" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px;" value="Passagiers:" placeholder="Passagiers:">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">Naam:</label>
+                                    <input type="text" id="translationName" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px;" value="Naam:" placeholder="Naam:">
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                <div>
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">Telefoonnummer:</label>
+                                    <input type="text" id="translationPhone" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px;" value="Telefoonnummer:" placeholder="Telefoonnummer:">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">E-mail:</label>
+                                    <input type="text" id="translationEmail" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px;" value="E-mail:" placeholder="E-mail:">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">Referentie-ID:</label>
+                                    <input type="text" id="translationReferenceId" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px;" value="Referentie-ID:" placeholder="Referentie-ID:">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pricing Labels -->
+                        <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;">
+                            <h4 style="color: #2c3e50; margin-bottom: 15px;">💰 Prijs Labels</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                <div>
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">Boekingsdatum:</label>
+                                    <input type="text" id="translationBookingDate" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px;" value="Boekingsdatum:" placeholder="Boekingsdatum:">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">Samenvatting:</label>
+                                    <input type="text" id="translationSummary" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px;" value="Samenvatting:" placeholder="Samenvatting:">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">Totaal:</label>
+                                    <input type="text" id="translationTotal" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px;" value="Totaal:" placeholder="Totaal:">
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                <div>
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">Betalingen:</label>
+                                    <input type="text" id="translationPayments" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px;" value="Betalingen:" placeholder="Betalingen:">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">Verschuldigd bedrag:</label>
+                                    <input type="text" id="translationOwedAmount" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px;" value="Verschuldigd bedrag:" placeholder="Verschuldigd bedrag:">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">Status:</label>
+                                    <input type="text" id="translationPaymentStatus" style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px;" value="Pending" placeholder="Pending">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer Messages -->
+                        <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;">
+                            <h4 style="color: #2c3e50; margin-bottom: 15px;">📄 Footer Berichten</h4>
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Annulatie regels:</label>
+                                <textarea id="translationCancellation" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; min-height: 60px; resize: vertical;" placeholder="Annulatie binnen 24 uur...">Annulatie binnen 24 uur: Bij annulering binnen 24 uur voor de geplande rit wordt het volledige bedrag van de rit in rekening gebracht.</textarea>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Wijzigingen regels:</label>
+                                <textarea id="translationChanges" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; min-height: 60px; resize: vertical;" placeholder="Wijzigingen binnen 24 uur...">Wijzigingen binnen 24 uur: Voor aanpassingen aan een bestaande reservering binnen 24 uur (bijvoorbeeld door het missen van een vlucht) wordt een toeslag van €30 gerekend.</textarea>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Booking advies:</label>
+                                <textarea id="translationBookingAdvice" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; min-height: 60px; resize: vertical;" placeholder="Het rechtstreeks reserveren van een rit...">Bookingsregels: Het rechtstreeks reserveren van een rit via één van onze chauffeurs is niet toegestaan. Voor een verzekerde en kwaliteitsvolle dienstverlening verzoeken wij u uw taxi uitsluitend via ons officiële systeem te boeken.</textarea>
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 8px;">Chauffeur informatie:</label>
+                                <textarea id="translationDriverInfo" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; min-height: 60px; resize: vertical;" placeholder="Eén dag voor uw vertrek...">Eén dag voor uw vertrek sturen wij u het nummer van de chauffeur, zodra wij onze planning hebben gemaakt.</textarea>
+                            </div>
+                        </div>
+
+                        <!-- Save and Preview -->
+                        <div style="text-align: center; margin-top: 30px;">
+                            <button type="button" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 6px; margin-right: 15px; cursor: pointer;" onclick="previewTranslationEmail()">
+                                👁️ Preview Professional Email
+                            </button>
+                            <button type="submit" style="background: #28a745; color: white; border: none; padding: 15px 30px; border-radius: 6px; font-size: 16px; cursor: pointer;">
+                                💾 Save Translation Settings
+                            </button>
+                        </div>
+                    </form>
+
+                    <div id="translationStatus" style="margin-top: 20px; padding: 15px; border-radius: 6px; display: none;"></div>
+                </div>
+
+                <!-- Google Section -->
+                <div id="google-section" class="content-section">
+                    <div style="border-bottom: 2px solid #e1e8ed; margin-bottom: 30px; padding-bottom: 20px;">
+                        <h1 style="color: #2c3e50; font-size: 28px; margin-bottom: 10px;">Marcel's Taxi Pro</h1>
+                        <h2 style="color: #007bff; font-size: 24px; margin-bottom: 5px;">Professional Admin Panel - ⚙️ Settings</h2>
+                        <h3 style="color: #666; font-size: 20px; margin: 0;">🌐 Google API Configuration</h3>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                        <h3 style="color: #2c3e50; margin-bottom: 15px;">🗺️ Google Maps API</h3>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #495057;">Google Maps API Key:</label>
+                            <input type="text" id="googleMapsApiKey" placeholder="Enter your Google Maps JavaScript API key" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace;">
+                            <small style="color: #6c757d; display: block; margin-top: 5px;">Required for map display and route calculations</small>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #495057;">Google Places API Key:</label>
+                            <input type="text" id="googlePlacesApiKey" placeholder="Enter your Google Places API key" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace;">
+                            <small style="color: #6c757d; display: block; margin-top: 5px;">Required for address autocomplete and place search</small>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #495057;">Google Directions API Key:</label>
+                            <input type="text" id="googleDirectionsApiKey" placeholder="Enter your Google Directions API key" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace;">
+                            <small style="color: #6c757d; display: block; margin-top: 5px;">Required for route calculation and distance/time estimation</small>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #495057;">Google Geocoding API Key:</label>
+                            <input type="text" id="googleGeocodingApiKey" placeholder="Enter your Google Geocoding API key" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace;">
+                            <small style="color: #6c757d; display: block; margin-top: 5px;">Required for converting addresses to coordinates</small>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #495057;">Default Location:</label>
+                            <input type="text" id="defaultLocation" placeholder="Enter default pickup location (e.g., Brussels, Belgium)" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                            <small style="color: #6c757d; display: block; margin-top: 5px;">Default location for taxi services</small>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #495057;">Service Area:</label>
+                            <input type="text" id="serviceArea" placeholder="Enter service area (e.g., Brussels Metropolitan Area)" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                            <small style="color: #6c757d; display: block; margin-top: 5px;">Geographic area where taxi services are available</small>
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
+                            <button onclick="saveGoogleSettings()" style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 600;">💾 Save Settings</button>
+                            <button onclick="testGoogleMapsApi()" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 600;">🔍 Test Google Maps API</button>
+                        </div>
+                        
+                        <div id="googleStatus" style="margin-top: 15px; padding: 10px; border-radius: 4px; display: none;"></div>
+                    </div>
+                    
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 6px; border: 1px solid #ffeaa7;">
+                        <h4 style="color: #856404; margin-bottom: 10px;">ℹ️ Google Maps Setup Instructions</h4>
+                        <ol style="color: #856404; margin-bottom: 0;">
+                            <li>Go to <a href="https://console.cloud.google.com/" target="_blank" style="color: #007bff;">Google Cloud Console</a></li>
+                            <li>Create a new project or select existing one</li>
+                            <li>Enable Google Maps JavaScript API</li>
+                            <li>Create credentials (API key)</li>
+                            <li>Add API key restrictions for security</li>
+                            <li>Copy the API key and paste it above</li>
+                        </ol>
+                    </div>
                 </div>
 
                 <!-- Bookings Sections -->
@@ -1238,6 +1702,92 @@
                             <button class="btn btn-primary" onclick="saveSurchargeItems()" style="margin-left: 10px;">💾 Save</button>
                         </div>
                     </div>
+                </div>
+
+                <!-- Meet and Greet Section -->
+                <div id="meet-and-greet-section" class="content-section">
+                    <div style="border-bottom: 2px solid #e1e8ed; margin-bottom: 30px; padding-bottom: 20px;">
+                        <h1 style="color: #2c3e50; font-size: 28px; margin-bottom: 10px;">Marcel's Taxi Pro</h1>
+                        <h2 style="color: #007bff; font-size: 24px; margin-bottom: 5px;">Professional Admin Panel - 💰 Pricing</h2>
+                        <h3 style="color: #666; font-size: 20px; margin: 0;">🤝 Meet and Greet Locations</h3>
+                    </div>
+
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #007bff;">
+                        <h3>🤝 Meet and Greet Locatie Beheer</h3>
+                        <p style="margin: 10px 0; color: #6c757d;">Voeg luchthavens, stations en hotels toe waar Meet & Greet service beschikbaar is. Het systeem past automatisch de Meet & Greet toeslag toe wanneer iemand boekt vanaf deze locaties.</p>
+                    </div>
+
+                    <!-- Connection with Item Surcharge -->
+                    <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #28a745;">
+                        <h4 style="color: #155724; margin-bottom: 10px;">🔗 Verbinding met Item Surcharge</h4>
+                        <p style="margin: 5px 0; color: #155724; font-size: 14px;">
+                            <strong>Meet & Greet toeslag:</strong> €<span id="meetGreetSurchargePrice">5.00</span> 
+                            <span id="meetGreetSurchargeStatus" style="margin-left: 10px; padding: 2px 8px; border-radius: 4px; font-size: 12px;"></span>
+                        </p>
+                        <p style="margin: 0; color: #155724; font-size: 13px;">
+                            Deze prijs wordt automatisch toegepast wanneer de ophaallocatie een geregistreerde Meet & Greet locatie is.
+                        </p>
+                    </div>
+
+                    <!-- Location Types Tabs -->
+                    <div style="margin-bottom: 20px;">
+                        <div style="display: flex; border-bottom: 2px solid #e9ecef;">
+                            <button class="location-tab" data-type="airports" onclick="switchLocationTab('airports')" 
+                                    style="padding: 12px 24px; border: none; background: #007bff; color: white; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: 600;">
+                                ✈️ Luchthavens
+                            </button>
+                            <button class="location-tab" data-type="stations" onclick="switchLocationTab('stations')" 
+                                    style="padding: 12px 24px; border: none; background: #6c757d; color: white; border-radius: 8px 8px 0 0; cursor: pointer; margin-left: 2px;">
+                                🚉 Stations
+                            </button>
+                            <button class="location-tab" data-type="hotels" onclick="switchLocationTab('hotels')" 
+                                    style="padding: 12px 24px; border: none; background: #6c757d; color: white; border-radius: 8px 8px 0 0; cursor: pointer; margin-left: 2px;">
+                                🏨 Hotels
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Location Management Container -->
+                    <div style="background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                        <div id="airportsTab" class="location-tab-content">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h4 style="color: #2c3e50; margin: 0;">✈️ Luchthaven Locaties</h4>
+                                <button class="btn btn-success" onclick="addNewLocation('airports')">+ Nieuwe Luchthaven</button>
+                            </div>
+                            <div id="airportsList" class="locations-list">
+                                <!-- Airport locations will be rendered here -->
+                            </div>
+                        </div>
+
+                        <div id="stationsTab" class="location-tab-content" style="display: none;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h4 style="color: #2c3e50; margin: 0;">🚉 Station Locaties</h4>
+                                <button class="btn btn-success" onclick="addNewLocation('stations')">+ Nieuw Station</button>
+                            </div>
+                            <div id="stationsList" class="locations-list">
+                                <!-- Station locations will be rendered here -->
+                            </div>
+                        </div>
+
+                        <div id="hotelsTab" class="location-tab-content" style="display: none;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h4 style="color: #2c3e50; margin: 0;">🏨 Hotel Locaties</h4>
+                                <button class="btn btn-success" onclick="addNewLocation('hotels')">+ Nieuw Hotel</button>
+                            </div>
+                            <div id="hotelsList" class="locations-list">
+                                <!-- Hotel locations will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Save Button -->
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button class="btn btn-primary" onclick="saveMeetAndGreetSettings()">
+                            💾 Opslaan Meet & Greet Instellingen
+                        </button>
+                    </div>
+
+                    <div id="meetGreetStatus" style="margin-top: 20px; padding: 15px; border-radius: 6px; display: none;"></div>
                 </div>
 
                 <div id="deposit-payments-section" class="content-section">
@@ -1538,8 +2088,9 @@
 
     <script>
         console.log('🚀 Admin panel JavaScript loaded');
-
-        function showSection(sectionName) {
+        
+        // Define critical functions immediately to prevent "not defined" errors
+        window.showSection = function(sectionName) {
             console.log('📍 Showing section:', sectionName);
             
             // Hide all sections
@@ -1552,59 +2103,40 @@
             const targetSection = document.getElementById(sectionName + '-section');
             if (targetSection) {
                 targetSection.classList.add('active');
-                document.getElementById('pageTitle').textContent = sectionName.charAt(0).toUpperCase() + sectionName.slice(1);
+                const pageTitle = document.getElementById('pageTitle');
+                if (pageTitle) {
+                    pageTitle.textContent = sectionName.charAt(0).toUpperCase() + sectionName.slice(1);
+                }
                 console.log('✅ Section shown:', sectionName);
                 
-                // If showing distance-time section, load vehicle pricing
+                // Special section loading
                 if (sectionName === 'distance-time') {
-                    console.log('🚗 Loading Distance & Time pricing section...');
-                    updateTestResults('🚗 Opening Distance & Time pricing...');
-                    setTimeout(() => {
-                        loadVehiclePricing(); // Load dynamic pricing from Types of Vehicles
-                    }, 200);
+                    setTimeout(() => loadVehiclePricing(), 200);
                 }
-                
-                // If showing unconfirmed section, load bookings
                 if (sectionName === 'unconfirmed') {
-                    console.log('📋 Loading Unconfirmed bookings section...');
-                    setTimeout(() => {
-                        loadUnconfirmedBookings();
-                    }, 200);
+                    setTimeout(() => loadUnconfirmedBookings(), 200);
                 }
-                
-                // If showing next 24h section, load confirmed bookings
                 if (sectionName === 'next-24h') {
-                    console.log('📅 Loading Next 24h bookings section...');
-                    setTimeout(() => {
-                        loadNext24hBookings();
-                    }, 200);
+                    setTimeout(() => loadNext24hBookings(), 200);
                 }
-                
-                // If showing cancelled section, load cancelled bookings
                 if (sectionName === 'cancelled') {
-                    console.log('❌ Loading Cancelled bookings section...');
-                    setTimeout(() => {
-                        loadCancelledBookings();
-                    }, 200);
+                    setTimeout(() => loadCancelledBookings(), 200);
                 }
-                
-                // Update test results
-                updateTestResults('✅ Section "' + sectionName + '" successfully loaded');
             } else {
                 console.error('❌ Section not found:', sectionName + '-section');
-                updateTestResults('❌ Section "' + sectionName + '" not found');
             }
-        }
+        };
 
-        function toggleMenu(menuName) {
+        window.toggleMenu = function(menuName) {
             console.log('🔧 Toggling menu:', menuName);
             
             const menu = document.getElementById(menuName + '-menu');
             if (!menu) {
                 console.error('❌ Menu not found:', menuName + '-menu');
-                updateTestResults('❌ Menu "' + menuName + '" not found');
                 return;
             }
+            
+            console.log('📋 Menu element found:', menu.id);
             
             // Close other menus
             const allMenus = document.querySelectorAll('.nav-submenu');
@@ -1619,21 +2151,49 @@
             if (isVisible) {
                 menu.classList.remove('show');
                 console.log('❌ Menu hidden:', menuName);
-                updateTestResults('❌ Menu "' + menuName + '" hidden');
             } else {
                 menu.classList.add('show');
                 console.log('✅ Menu shown:', menuName);
-                updateTestResults('✅ Menu "' + menuName + '" shown');
             }
-        }
+        };
+
+        // Removed duplicate functions - using window properties above
 
         function updateTestResults(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            console.log(`[${timestamp}] ${message}`);
+            
+            // Try to find test results div, if not found, just log to console
             const results = document.getElementById('testResults');
             if (results) {
-                const timestamp = new Date().toLocaleTimeString();
                 results.innerHTML = `[${timestamp}] ${message}<br>${results.innerHTML}`;
             }
         }
+
+        // Add manual menu test function
+        window.testMenus = function() {
+            console.log('🧪 Manual menu testing started...');
+            
+            const menus = ['bookings', 'settings', 'pricing', 'reports'];
+            menus.forEach(menuName => {
+                console.log(`\n--- Testing ${menuName} menu ---`);
+                const menu = document.getElementById(menuName + '-menu');
+                if (menu) {
+                    console.log(`✅ ${menuName} menu exists`);
+                    console.log(`Current classes:`, menu.className);
+                    console.log(`Display style:`, window.getComputedStyle(menu).display);
+                } else {
+                    console.log(`❌ ${menuName} menu NOT found`);
+                }
+            });
+            
+            console.log('\n🔍 All available menu IDs:');
+            document.querySelectorAll('.nav-submenu').forEach(menu => {
+                console.log(`  - ${menu.id}`);
+            });
+            
+            console.log('\n🧪 Manual menu testing completed. Try: testMenus() in console');
+        };
 
 
         function logout() {
@@ -1662,7 +2222,13 @@
                 }
             }
             
-            // If no vehicles found, show message to add vehicles first
+            // If no vehicles found, create default vehicles first
+            if (vehicles.length === 0) {
+                console.log('⚠️ No vehicles found, creating default vehicles...');
+                updateTestResults('⚠️ No vehicles found, creating default vehicles...');
+                createDefaultVehicles();
+                vehicles = JSON.parse(localStorage.getItem('taxiVehicles') || '[]');
+            }
             if (vehicles.length === 0) {
                 updateTestResults('⚠️ No vehicles found - need to add vehicles first');
                 const container = document.getElementById('vehiclePricingContainer');
@@ -1933,6 +2499,70 @@
             updateTestResults(`✅ Saved pricing for ${savedCount} vehicles from Types of Vehicles`);
         }
         
+        function createDefaultVehicles() {
+            console.log('🚗 Creating default vehicles and pricing...');
+            
+            const defaultVehicles = [
+                {
+                    id: 'saloon',
+                    name: 'Saloon',
+                    description: 'Comfortable sedan for city rides',
+                    active: true,
+                    image: '',
+                    passengers: 4,
+                    luggage: 2,
+                    handBags: 4
+                },
+                {
+                    id: 'estate',
+                    name: 'Estate',
+                    description: 'Spacious estate car for extra luggage',
+                    active: true,
+                    image: '',
+                    passengers: 4,
+                    luggage: 4,
+                    handBags: 4
+                },
+                {
+                    id: 'minivan',
+                    name: 'Minivan',
+                    description: 'Large vehicle for groups',
+                    active: true,
+                    image: '',
+                    passengers: 6,
+                    luggage: 4,
+                    handBags: 6
+                },
+                {
+                    id: 'minivan_long',
+                    name: 'Minivan Long',
+                    description: 'Extra large vehicle for big groups',
+                    active: true,
+                    image: '',
+                    passengers: 8,
+                    luggage: 6,
+                    handBags: 8
+                }
+            ];
+            
+            // Save vehicles to localStorage
+            localStorage.setItem('taxiVehicles', JSON.stringify(defaultVehicles));
+            
+            // Create default pricing (whole euros)
+            const defaultPricing = {
+                saloon: { minimumPrice: 45, pricePerKm: 1.50 },
+                estate: { minimumPrice: 55, pricePerKm: 1.80 },
+                minivan: { minimumPrice: 65, pricePerKm: 2.00 },
+                minivan_long: { minimumPrice: 85, pricePerKm: 2.50 }
+            };
+            
+            // Save pricing to localStorage
+            localStorage.setItem('vehiclePricing', JSON.stringify(defaultPricing));
+            
+            console.log('✅ Default vehicles and pricing created');
+            updateTestResults('✅ Created 4 default vehicles with pricing');
+        }
+
         function resetToDefaults() {
             if (confirm('Weet je zeker dat je alle prijzen wilt resetten naar de standaardwaarden?')) {
                 const vehicles = JSON.parse(localStorage.getItem('taxiVehicles') || '[]');
@@ -4380,6 +5010,9 @@ Both bookings added to confirmed bookings list!`;
         function saveVehicles() {
             localStorage.setItem('taxiVehicles', JSON.stringify(vehicles));
             
+            // Set timestamp for booking system to detect updates
+            localStorage.setItem('vehicleUpdateTimestamp', Date.now().toString());
+            
             // Also sync to booking system
             const bookingVehicles = vehicles.filter(v => v.active).map(v => ({
                 id: v.id,
@@ -4761,6 +5394,12 @@ Both bookings added to confirmed bookings list!`;
                         loadSurchargeItems();
                     }, 100);
                 }
+                
+                if (sectionName === 'locations') {
+                    setTimeout(() => {
+                        loadLocationSettings();
+                    }, 100);
+                }
             };
         }
 
@@ -5049,6 +5688,108 @@ Both bookings added to confirmed bookings list!`;
             syncSurchargeToBookingSystem();
         }
 
+        // Google Settings Functions
+        function loadGoogleSettings() {
+            const saved = localStorage.getItem('googleSettings');
+            if (saved) {
+                const settings = JSON.parse(saved);
+                document.getElementById('googleMapsApiKey').value = settings.googleMapsApiKey || '';
+                document.getElementById('googlePlacesApiKey').value = settings.googlePlacesApiKey || '';
+                document.getElementById('googleDirectionsApiKey').value = settings.googleDirectionsApiKey || '';
+                document.getElementById('googleGeocodingApiKey').value = settings.googleGeocodingApiKey || '';
+                document.getElementById('defaultLocation').value = settings.defaultLocation || '';
+                document.getElementById('serviceArea').value = settings.serviceArea || '';
+                console.log('✅ Google settings loaded:', settings);
+            }
+        }
+        function saveGoogleSettings() {
+            const mapsApiKey = document.getElementById('googleMapsApiKey').value.trim();
+            const placesApiKey = document.getElementById('googlePlacesApiKey').value.trim();
+            const directionsApiKey = document.getElementById('googleDirectionsApiKey').value.trim();
+            const geocodingApiKey = document.getElementById('googleGeocodingApiKey').value.trim();
+            const defaultLocation = document.getElementById('defaultLocation').value.trim();
+            const serviceArea = document.getElementById('serviceArea').value.trim();
+            
+            // Save to localStorage
+            const googleSettings = {
+                googleMapsApiKey: mapsApiKey,
+                googlePlacesApiKey: placesApiKey,
+                googleDirectionsApiKey: directionsApiKey,
+                googleGeocodingApiKey: geocodingApiKey,
+                defaultLocation: defaultLocation,
+                serviceArea: serviceArea,
+                lastUpdated: new Date().toISOString()
+            };
+            
+            localStorage.setItem('googleSettings', JSON.stringify(googleSettings));
+            
+            // Show success message
+            const statusDiv = document.getElementById('googleStatus');
+            statusDiv.style.display = 'block';
+            statusDiv.style.background = '#d4edda';
+            statusDiv.style.color = '#155724';
+            statusDiv.style.border = '1px solid #c3e6cb';
+            statusDiv.innerHTML = '✅ Google settings saved successfully!';
+            
+            // Hide message after 3 seconds
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 3000);
+            
+            console.log('✅ Google settings saved:', googleSettings);
+        }
+        
+        function testGoogleMapsApi() {
+            const apiKey = document.getElementById('googleMapsApiKey').value.trim();
+            const statusDiv = document.getElementById('googleStatus');
+            
+            if (!apiKey) {
+                statusDiv.style.display = 'block';
+                statusDiv.style.background = '#f8d7da';
+                statusDiv.style.color = '#721c24';
+                statusDiv.style.border = '1px solid #f5c6cb';
+                statusDiv.innerHTML = '❌ Please enter a Google Maps API key first';
+                return;
+            }
+            
+            // Show testing message
+            statusDiv.style.display = 'block';
+            statusDiv.style.background = '#fff3cd';
+            statusDiv.style.color = '#856404';
+            statusDiv.style.border = '1px solid #ffeaa7';
+            statusDiv.innerHTML = '🔍 Testing Google Maps API...';
+            
+            // Test the API by making a simple request
+            const testUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=Brussels,Belgium&key=${apiKey}`;
+            
+            fetch(testUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'OK') {
+                        statusDiv.style.background = '#d4edda';
+                        statusDiv.style.color = '#155724';
+                        statusDiv.style.border = '1px solid #c3e6cb';
+                        statusDiv.innerHTML = '✅ Google Maps API is working correctly!';
+                    } else {
+                        statusDiv.style.background = '#f8d7da';
+                        statusDiv.style.color = '#721c24';
+                        statusDiv.style.border = '1px solid #f5c6cb';
+                        statusDiv.innerHTML = `❌ API Error: ${data.status} - ${data.error_message || 'Unknown error'}`;
+                    }
+                })
+                .catch(error => {
+                    statusDiv.style.background = '#f8d7da';
+                    statusDiv.style.color = '#721c24';
+                    statusDiv.style.border = '1px solid #f5c6cb';
+                    statusDiv.innerHTML = `❌ Network Error: ${error.message}`;
+                });
+            
+            // Hide message after 10 seconds
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 10000);
+        }
+
         function syncSurchargeToBookingSystem() {
             // Create booking system compatible data
             const bookingSurcharge = {
@@ -5083,6 +5824,18 @@ Both bookings added to confirmed bookings list!`;
         window.addNewSurchargeItem = addNewSurchargeItem;
         window.removeAdditionalItem = removeAdditionalItem;
         window.saveSurchargeItems = saveSurchargeItems;
+        window.loadGoogleSettings = loadGoogleSettings;
+        window.saveGoogleSettings = saveGoogleSettings;
+        window.testGoogleMapsApi = testGoogleMapsApi;
+        window.loadEmailSettings = loadEmailSettings;
+        window.saveEmailSettings = saveEmailSettings;
+        window.sendAdminTestEmail = sendAdminTestEmail;
+        window.loadEmailTemplate = loadEmailTemplate;
+        window.saveEmailTemplate = saveEmailTemplate;
+        window.previewEmailTemplate = previewEmailTemplate;
+        window.loadTranslation = loadTranslation;
+        window.saveTranslation = saveTranslation;
+        window.previewTranslationEmail = previewTranslationEmail;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
@@ -5103,7 +5856,1501 @@ Both bookings added to confirmed bookings list!`;
             // Initialize surcharge items and sync to booking system
             loadSurchargeItems();
             syncSurchargeToBookingSystem();
+            
+            // Load Google settings
+            loadGoogleSettings();
+            
+            // Load email settings
+            loadEmailSettings();
+            
+            // Load email template
+            loadEmailTemplate();
+            
+            // Load translation settings
+            loadTranslation();
         });
+
+        // Email Template Functions
+        function loadSelectedTemplate() {
+            const selectedType = document.getElementById('templateSelector').value;
+            console.log('📝 Loading template:', selectedType);
+            
+            // Hide all templates
+            document.querySelectorAll('.template-content').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            // Show selected template
+            document.getElementById(selectedType + 'Template').style.display = 'block';
+            
+            // Load saved data for this template
+            loadEmailTemplate();
+        }
+        
+        function loadEmailTemplate() {
+            console.log('📝 Loading email templates from localStorage...');
+            
+            // Load all templates from localStorage
+            const allTemplates = JSON.parse(localStorage.getItem('emailTemplates') || '{}');
+            
+            // Load Pending Template (Template 1)
+            if (allTemplates.pending) {
+                const pending = allTemplates.pending;
+                if (pending.subject) document.getElementById('pendingSubject').value = pending.subject;
+                if (pending.welcomeMessage) document.getElementById('pendingWelcomeMessage').value = pending.welcomeMessage;
+                if (pending.statusMessage) document.getElementById('pendingStatusMessage').value = pending.statusMessage;
+            }
+            
+            // Load Confirmed Template (Template 2)
+            if (allTemplates.confirmed) {
+                const confirmed = allTemplates.confirmed;
+                if (confirmed.subject) document.getElementById('confirmedSubject').value = confirmed.subject;
+                if (confirmed.welcomeMessage) document.getElementById('confirmedWelcomeMessage').value = confirmed.welcomeMessage;
+                if (confirmed.statusMessage) document.getElementById('confirmedStatusMessage').value = confirmed.statusMessage;
+            }
+            
+            // Load Cancelled Template (Template 3)
+            if (allTemplates.cancelled) {
+                const cancelled = allTemplates.cancelled;
+                if (cancelled.subject) document.getElementById('cancelledSubject').value = cancelled.subject;
+                if (cancelled.welcomeMessage) document.getElementById('cancelledWelcomeMessage').value = cancelled.welcomeMessage;
+                if (cancelled.statusMessage) document.getElementById('cancelledStatusMessage').value = cancelled.statusMessage;
+            }
+            
+            // Load shared contact info
+            const sharedData = allTemplates.shared || {};
+            if (sharedData.phone) document.getElementById('templatePhone').value = sharedData.phone;
+            if (sharedData.whatsApp) document.getElementById('templateWhatsApp').value = sharedData.whatsApp;
+            if (sharedData.email) document.getElementById('templateEmail').value = sharedData.email;
+            if (sharedData.contactInfo) document.getElementById('templateContactInfo').value = sharedData.contactInfo;
+            if (sharedData.companyName) document.getElementById('templateCompanyName').value = sharedData.companyName;
+            if (sharedData.website) document.getElementById('templateWebsite').value = sharedData.website;
+            if (sharedData.footer) document.getElementById('templateFooter').value = sharedData.footer;
+            if (sharedData.modificationDeadlineHours) {
+                document.getElementById('templateModificationDeadline').value = sharedData.modificationDeadlineHours;
+                document.getElementById('deadlinePreview').textContent = sharedData.modificationDeadlineHours;
+            }
+            
+            console.log('✅ Email templates loaded from localStorage');
+        }
+
+        function saveEmailTemplate(event) {
+            event.preventDefault();
+            
+            console.log('💾 Saving email templates...');
+            
+            // Get current templates or create new object
+            const allTemplates = JSON.parse(localStorage.getItem('emailTemplates') || '{}');
+            
+            // Save Template 1: Pending
+            allTemplates.pending = {
+                subject: document.getElementById('pendingSubject').value,
+                welcomeMessage: document.getElementById('pendingWelcomeMessage').value,
+                statusMessage: document.getElementById('pendingStatusMessage').value
+            };
+            
+            // Save Template 2: Confirmed
+            allTemplates.confirmed = {
+                subject: document.getElementById('confirmedSubject').value,
+                welcomeMessage: document.getElementById('confirmedWelcomeMessage').value,
+                statusMessage: document.getElementById('confirmedStatusMessage').value
+            };
+            
+            // Save Template 3: Cancelled
+            allTemplates.cancelled = {
+                subject: document.getElementById('cancelledSubject').value,
+                welcomeMessage: document.getElementById('cancelledWelcomeMessage').value,
+                statusMessage: document.getElementById('cancelledStatusMessage').value
+            };
+            
+            // Save shared contact info
+            allTemplates.shared = {
+                phone: document.getElementById('templatePhone').value,
+                whatsApp: document.getElementById('templateWhatsApp').value,
+                email: document.getElementById('templateEmail').value,
+                contactInfo: document.getElementById('templateContactInfo').value,
+                companyName: document.getElementById('templateCompanyName').value,
+                website: document.getElementById('templateWebsite').value,
+                footer: document.getElementById('templateFooter').value,
+                modificationDeadlineHours: document.getElementById('templateModificationDeadline').value,
+                lastUpdated: new Date().toISOString()
+            };
+            
+            // Save to localStorage
+            localStorage.setItem('emailTemplates', JSON.stringify(allTemplates));
+            
+            // Show success message
+            const statusDiv = document.getElementById('emailTemplateStatus');
+            statusDiv.style.display = 'block';
+            statusDiv.style.background = '#d4edda';
+            statusDiv.style.color = '#155724';
+            statusDiv.style.border = '1px solid #c3e6cb';
+            statusDiv.innerHTML = '✅ Email templates opgeslagen! Deze templates worden gebruikt voor de verschillende booking statussen.';
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+            
+            console.log('✅ Email templates saved successfully:', allTemplates);
+        }
+
+        function previewEmailTemplate() {
+            console.log('👁️ Generating email template preview...');
+            
+            const selectedType = document.getElementById('templateSelector').value;
+            let templateData = {};
+            
+            // Get the selected template data
+            if (selectedType === 'pending') {
+                templateData = {
+                    subject: document.getElementById('pendingSubject').value,
+                    welcomeMessage: document.getElementById('pendingWelcomeMessage').value,
+                    statusMessage: document.getElementById('pendingStatusMessage').value,
+                    templateType: 'pending'
+                };
+            } else if (selectedType === 'confirmed') {
+                templateData = {
+                    subject: document.getElementById('confirmedSubject').value,
+                    welcomeMessage: document.getElementById('confirmedWelcomeMessage').value,
+                    statusMessage: document.getElementById('confirmedStatusMessage').value,
+                    templateType: 'confirmed'
+                };
+            } else if (selectedType === 'cancelled') {
+                templateData = {
+                    subject: document.getElementById('cancelledSubject').value,
+                    welcomeMessage: document.getElementById('cancelledWelcomeMessage').value,
+                    statusMessage: document.getElementById('cancelledStatusMessage').value,
+                    templateType: 'cancelled'
+                };
+            }
+            
+            // Add shared data
+            templateData.phone = document.getElementById('templatePhone').value;
+            templateData.whatsApp = document.getElementById('templateWhatsApp').value;
+            templateData.email = document.getElementById('templateEmail').value;
+            templateData.contactInfo = document.getElementById('templateContactInfo').value;
+            templateData.companyName = document.getElementById('templateCompanyName').value;
+            templateData.website = document.getElementById('templateWebsite').value;
+            templateData.footer = document.getElementById('templateFooter').value;
+            
+            // Generate preview email HTML
+            const previewHTML = generateEmailPreview(templateData);
+            
+            // Open preview in new window
+            const previewWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes');
+            previewWindow.document.write(previewHTML);
+            previewWindow.document.close();
+            
+            console.log('✅ Email template preview opened');
+        }
+
+        function generateEmailPreview(templateData) {
+            // Sample booking data for preview
+            const sampleBooking = {
+                bookingId: 'BK12345678',
+                customer: {
+                    firstName: 'Jan',
+                    lastName: 'Janssen',
+                    email: 'jan.janssen@email.com',
+                    phone: '+32 496 12 34 56'
+                },
+                trip: {
+                    fromLocation: 'Brussels Airport (BRU)',
+                    toLocation: 'Leuven Centrum',
+                    travelDate: '15/07/2025',
+                    travelHour: '14',
+                    travelMinute: '30'
+                },
+                vehicle: {
+                    vehicle: { name: 'Saloon' },
+                    pricing: { minimumPrice: '45.00' }
+                }
+            };
+            
+            // Determine colors and title based on template type
+            let headerColor = '#007bff'; // Default blue
+            let statusBadgeColor = '#ffc107'; // Default yellow
+            let statusBadgeTextColor = '#212529';
+            let title = 'Booking Bevestiging';
+            
+            if (templateData.templateType === 'pending') {
+                headerColor = '#ffa500'; // Orange
+                statusBadgeColor = '#ffc107'; // Yellow
+                title = 'Booking Ontvangen - Wacht op Bevestiging';
+            } else if (templateData.templateType === 'confirmed') {
+                headerColor = '#28a745'; // Green
+                statusBadgeColor = '#28a745'; // Green
+                statusBadgeTextColor = 'white';
+                title = '✅ Booking Bevestigd';
+            } else if (templateData.templateType === 'cancelled') {
+                headerColor = '#dc3545'; // Red
+                statusBadgeColor = '#dc3545'; // Red
+                statusBadgeTextColor = 'white';
+                title = '❌ Booking Geannuleerd';
+            }
+            
+            return `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <title>Email Template Preview - ${title}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 20px; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background: ${headerColor}; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+                    .content { padding: 20px; background: #f9f9f9; }
+                    .booking-details { background: white; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid ${headerColor}; }
+                    .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; background: #f1f1f1; border-radius: 0 0 8px 8px; }
+                    .status-badge { background: ${statusBadgeColor}; color: ${statusBadgeTextColor}; padding: 8px 16px; border-radius: 20px; font-weight: bold; display: inline-block; margin: 10px 0; }
+                    .contact-info { background: #e3f2fd; padding: 15px; border-radius: 5px; margin: 15px 0; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>🚗 ${templateData.companyName || 'Marcel\'s Taxi'}</h1>
+                        <h2>${title}</h2>
+                    </div>
+                    <div class="content">
+                        <h3>Beste ${sampleBooking.customer.firstName} ${sampleBooking.customer.lastName},</h3>
+                        <div style="margin-bottom: 20px;">
+                            ${templateData.welcomeMessage.replace(/\n/g, '<br>')}
+                        </div>
+                        
+                        <div class="status-badge">
+                            ${templateData.statusMessage.split('\n')[0]}
+                        </div>
+                        
+                        <div class="booking-details">
+                            <h4>📋 Booking ${sampleBooking.bookingId}</h4>
+                            <p><strong>Klant:</strong> ${sampleBooking.customer.firstName} ${sampleBooking.customer.lastName}</p>
+                            <p><strong>📍 Van:</strong> ${sampleBooking.trip.fromLocation}</p>
+                            <p><strong>📍 Naar:</strong> ${sampleBooking.trip.toLocation}</p>
+                            <p><strong>📅 Datum:</strong> ${sampleBooking.trip.travelDate}</p>
+                            <p><strong>🕐 Tijd:</strong> ${sampleBooking.trip.travelHour}:${sampleBooking.trip.travelMinute}</p>
+                            <p><strong>🚗 Voertuig:</strong> ${sampleBooking.vehicle.vehicle.name}</p>
+                            <p><strong>💰 Prijs:</strong> €${sampleBooking.vehicle.pricing.minimumPrice}</p>
+                        </div>
+                        
+                        <div style="margin: 20px 0;">
+                            ${templateData.statusMessage.replace(/\n/g, '<br>')}
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>📞 Contact Informatie</h4>
+                            <p><strong>Telefoon:</strong> ${templateData.phone}</p>
+                            <p><strong>WhatsApp:</strong> ${templateData.whatsApp}</p>
+                            <p><strong>Email:</strong> ${templateData.email}</p>
+                            <div style="margin-top: 10px;">
+                                ${templateData.contactInfo.replace(/\n/g, '<br>')}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="footer">
+                        <p><strong>${templateData.companyName || 'Marcel\'s Taxi'}</strong></p>
+                        <p>${templateData.website}</p>
+                        <div style="margin-top: 15px;">
+                            ${templateData.footer.replace(/\n/g, '<br>')}
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+            `;
+        }
+
+        // Modification Deadline Functions
+        function adjustModificationDeadline(delta) {
+            const input = document.getElementById('templateModificationDeadline');
+            const preview = document.getElementById('deadlinePreview');
+            let currentValue = parseInt(input.value) || 24;
+            
+            // Apply delta with bounds checking
+            currentValue = Math.max(1, Math.min(168, currentValue + delta)); // 1 hour to 7 days (168 hours)
+            
+            // Update input and preview
+            input.value = currentValue;
+            preview.textContent = currentValue;
+            
+            console.log('⏰ Modification deadline updated to:', currentValue, 'hours');
+        }
+
+        // Update preview when input changes directly
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.getElementById('templateModificationDeadline');
+            if (input) {
+                input.addEventListener('input', function() {
+                    const preview = document.getElementById('deadlinePreview');
+                    if (preview) {
+                        preview.textContent = this.value || '24';
+                    }
+                });
+            }
+        });
+
+        // Translation Functions
+        function loadTranslation() {
+            console.log('🌐 Loading translation settings from localStorage...');
+            
+            // Load translation settings from localStorage
+            const translationData = JSON.parse(localStorage.getItem('translationSettings') || '{}');
+            
+            // Update form fields if values exist
+            if (translationData.companyName) document.getElementById('translationCompanyName').value = translationData.companyName;
+            if (translationData.logoUrl) document.getElementById('translationLogoUrl').value = translationData.logoUrl;
+            if (translationData.statusLine) document.getElementById('translationStatusLine').value = translationData.statusLine;
+            if (translationData.mainMessage) document.getElementById('translationMainMessage').value = translationData.mainMessage;
+            if (translationData.tripSection) document.getElementById('translationTripSection').value = translationData.tripSection;
+            if (translationData.clientSection) document.getElementById('translationClientSection').value = translationData.clientSection;
+            if (translationData.reservationSection) document.getElementById('translationReservationSection').value = translationData.reservationSection;
+            if (translationData.dateTime) document.getElementById('translationDateTime').value = translationData.dateTime;
+            if (translationData.pickupLocation) document.getElementById('translationPickupLocation').value = translationData.pickupLocation;
+            if (translationData.destination) document.getElementById('translationDestination').value = translationData.destination;
+            if (translationData.vehicle) document.getElementById('translationVehicle').value = translationData.vehicle;
+            if (translationData.passengers) document.getElementById('translationPassengers').value = translationData.passengers;
+            if (translationData.name) document.getElementById('translationName').value = translationData.name;
+            if (translationData.phone) document.getElementById('translationPhone').value = translationData.phone;
+            if (translationData.email) document.getElementById('translationEmail').value = translationData.email;
+            if (translationData.referenceId) document.getElementById('translationReferenceId').value = translationData.referenceId;
+            if (translationData.bookingDate) document.getElementById('translationBookingDate').value = translationData.bookingDate;
+            if (translationData.summary) document.getElementById('translationSummary').value = translationData.summary;
+            if (translationData.total) document.getElementById('translationTotal').value = translationData.total;
+            if (translationData.payments) document.getElementById('translationPayments').value = translationData.payments;
+            if (translationData.owedAmount) document.getElementById('translationOwedAmount').value = translationData.owedAmount;
+            if (translationData.paymentStatus) document.getElementById('translationPaymentStatus').value = translationData.paymentStatus;
+            if (translationData.cancellation) document.getElementById('translationCancellation').value = translationData.cancellation;
+            if (translationData.changes) document.getElementById('translationChanges').value = translationData.changes;
+            if (translationData.bookingAdvice) document.getElementById('translationBookingAdvice').value = translationData.bookingAdvice;
+            if (translationData.driverInfo) document.getElementById('translationDriverInfo').value = translationData.driverInfo;
+            
+            console.log('✅ Translation settings loaded from localStorage');
+        }
+
+        function saveTranslation(event) {
+            event.preventDefault();
+            
+            console.log('💾 Saving translation settings...');
+            
+            // Collect all translation data
+            const translationData = {
+                companyName: document.getElementById('translationCompanyName').value,
+                logoUrl: document.getElementById('translationLogoUrl').value,
+                statusLine: document.getElementById('translationStatusLine').value,
+                mainMessage: document.getElementById('translationMainMessage').value,
+                tripSection: document.getElementById('translationTripSection').value,
+                clientSection: document.getElementById('translationClientSection').value,
+                reservationSection: document.getElementById('translationReservationSection').value,
+                dateTime: document.getElementById('translationDateTime').value,
+                pickupLocation: document.getElementById('translationPickupLocation').value,
+                destination: document.getElementById('translationDestination').value,
+                vehicle: document.getElementById('translationVehicle').value,
+                passengers: document.getElementById('translationPassengers').value,
+                name: document.getElementById('translationName').value,
+                phone: document.getElementById('translationPhone').value,
+                email: document.getElementById('translationEmail').value,
+                referenceId: document.getElementById('translationReferenceId').value,
+                bookingDate: document.getElementById('translationBookingDate').value,
+                summary: document.getElementById('translationSummary').value,
+                total: document.getElementById('translationTotal').value,
+                payments: document.getElementById('translationPayments').value,
+                owedAmount: document.getElementById('translationOwedAmount').value,
+                paymentStatus: document.getElementById('translationPaymentStatus').value,
+                cancellation: document.getElementById('translationCancellation').value,
+                changes: document.getElementById('translationChanges').value,
+                bookingAdvice: document.getElementById('translationBookingAdvice').value,
+                driverInfo: document.getElementById('translationDriverInfo').value,
+                lastUpdated: new Date().toISOString()
+            };
+            
+            // Save to localStorage
+            localStorage.setItem('translationSettings', JSON.stringify(translationData));
+            
+            // Show success message
+            const statusDiv = document.getElementById('translationStatus');
+            statusDiv.style.display = 'block';
+            statusDiv.style.background = '#d4edda';
+            statusDiv.style.color = '#155724';
+            statusDiv.style.border = '1px solid #c3e6cb';
+            statusDiv.innerHTML = '✅ Translation instellingen opgeslagen! Deze teksten worden gebruikt in alle booking emails.';
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+            
+            console.log('✅ Translation settings saved successfully:', translationData);
+        }
+
+        function previewTranslationEmail() {
+            console.log('👁️ Generating professional email preview...');
+            
+            // Get current translation data
+            const translationData = {
+                companyName: document.getElementById('translationCompanyName').value,
+                logoUrl: document.getElementById('translationLogoUrl').value,
+                statusLine: document.getElementById('translationStatusLine').value,
+                mainMessage: document.getElementById('translationMainMessage').value,
+                tripSection: document.getElementById('translationTripSection').value,
+                clientSection: document.getElementById('translationClientSection').value,
+                reservationSection: document.getElementById('translationReservationSection').value,
+                dateTime: document.getElementById('translationDateTime').value,
+                pickupLocation: document.getElementById('translationPickupLocation').value,
+                destination: document.getElementById('translationDestination').value,
+                vehicle: document.getElementById('translationVehicle').value,
+                passengers: document.getElementById('translationPassengers').value,
+                name: document.getElementById('translationName').value,
+                phone: document.getElementById('translationPhone').value,
+                email: document.getElementById('translationEmail').value,
+                referenceId: document.getElementById('translationReferenceId').value,
+                bookingDate: document.getElementById('translationBookingDate').value,
+                summary: document.getElementById('translationSummary').value,
+                total: document.getElementById('translationTotal').value,
+                payments: document.getElementById('translationPayments').value,
+                owedAmount: document.getElementById('translationOwedAmount').value,
+                paymentStatus: document.getElementById('translationPaymentStatus').value,
+                cancellation: document.getElementById('translationCancellation').value,
+                changes: document.getElementById('translationChanges').value,
+                bookingAdvice: document.getElementById('translationBookingAdvice').value,
+                driverInfo: document.getElementById('translationDriverInfo').value
+            };
+            
+            // Generate professional preview email HTML
+            const previewHTML = generateProfessionalEmailPreview(translationData);
+            
+            // Open preview in new window
+            const previewWindow = window.open('', '_blank', 'width=800,height=900,scrollbars=yes');
+            previewWindow.document.write(previewHTML);
+            previewWindow.document.close();
+            
+            console.log('✅ Professional email preview opened');
+        }
+
+        function generateProfessionalEmailPreview(translation) {
+            // Sample booking data for preview - exactly like the screenshot
+            const sampleBooking = {
+                bookingId: 'KIGK23',
+                customer: {
+                    firstName: 'Kelly',
+                    lastName: 'Mortelmans',
+                    email: 'mortelmanskelly@gmail.com',
+                    phone: '+32472950917',
+                    passengers: '1'
+                },
+                trip: {
+                    fromLocation: 'Boterveldstraat 2, 3390 Tielt-Winge, Belgium, Boterveldstraat 2, 3390 Tielt-winge',
+                    toLocation: 'DAVO SINT-TRUIDEN Mini, Spookvliegerlaan, Sint-Truiden, Belgium, Davo, spookvliegerlaan sint-truiden',
+                    travelDate: '27/06/2025',
+                    travelHour: '09',
+                    travelMinute: '00'
+                },
+                vehicle: {
+                    vehicle: { name: 'Saloon' },
+                    pricing: { minimumPrice: '63.00' }
+                },
+                bookingDate: '26/06/2025 09:36'
+            };
+            
+            return `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <title>Professional Email Preview</title>
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.4; color: #333; margin: 20px; background: #f5f5f5; }
+                    .email-container { max-width: 600px; margin: 0 auto; background: white; border: 1px solid #ddd; }
+                    .header { text-align: center; padding: 20px; border-bottom: 3px solid #333; background: white; }
+                    .header h1 { margin: 0; font-size: 24px; color: #333; }
+                    .content { padding: 20px; background: white; }
+                    .status-line { color: #d9534f; font-weight: bold; margin-bottom: 15px; }
+                    .main-message { margin-bottom: 20px; line-height: 1.5; }
+                    .booking-id { color: #d9534f; font-weight: bold; }
+                    .section { margin-bottom: 25px; }
+                    .section-title { font-weight: bold; font-size: 16px; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+                    .info-table { width: 100%; }
+                    .info-table td { padding: 5px 0; vertical-align: top; }
+                    .info-table td:first-child { font-weight: bold; width: 150px; }
+                    .footer-rules { margin-top: 20px; padding-top: 15px; border-top: 1px solid #ddd; font-size: 13px; line-height: 1.4; }
+                    .footer-rules p { margin-bottom: 12px; }
+                </style>
+            </head>
+            <body>
+                <div class="email-container">
+                    <div class="header">
+                        ${translation.logoUrl ? `<img src="${translation.logoUrl}" alt="Logo" style="max-height: 50px; margin-bottom: 10px;">` : ''}
+                        <h1>${translation.companyName}</h1>
+                    </div>
+                    <div class="content">
+                        <div class="status-line">${translation.statusLine}</div>
+                        
+                        <div class="main-message">
+                            ${translation.mainMessage.replace('[BOOKING_ID]', `<span class="booking-id">${sampleBooking.bookingId}</span>`).replace(/\n/g, '<br>')}
+                        </div>
+                        
+                        <div class="section">
+                            <div class="section-title">${translation.tripSection}</div>
+                            <table class="info-table">
+                                <tr>
+                                    <td>${translation.dateTime}</td>
+                                    <td>${sampleBooking.trip.travelDate} ${sampleBooking.trip.travelHour}:${sampleBooking.trip.travelMinute}</td>
+                                </tr>
+                                <tr>
+                                    <td>${translation.pickupLocation}</td>
+                                    <td>${sampleBooking.trip.fromLocation}</td>
+                                </tr>
+                                <tr>
+                                    <td>${translation.destination}</td>
+                                    <td>${sampleBooking.trip.toLocation}</td>
+                                </tr>
+                                <tr>
+                                    <td>${translation.vehicle}</td>
+                                    <td>${sampleBooking.vehicle.vehicle.name}</td>
+                                </tr>
+                                <tr>
+                                    <td>${translation.passengers}</td>
+                                    <td>${sampleBooking.customer.passengers}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div class="section">
+                            <div class="section-title">${translation.clientSection}</div>
+                            <table class="info-table">
+                                <tr>
+                                    <td>${translation.name}</td>
+                                    <td>${sampleBooking.customer.firstName} ${sampleBooking.customer.lastName}</td>
+                                </tr>
+                                <tr>
+                                    <td>${translation.phone}</td>
+                                    <td>${sampleBooking.customer.phone}</td>
+                                </tr>
+                                <tr>
+                                    <td>${translation.email}</td>
+                                    <td>${sampleBooking.customer.email}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div class="section">
+                            <div class="section-title">${translation.reservationSection}</div>
+                            <table class="info-table">
+                                <tr>
+                                    <td>${translation.referenceId}</td>
+                                    <td>${sampleBooking.bookingId}</td>
+                                </tr>
+                                <tr>
+                                    <td>${translation.bookingDate}</td>
+                                    <td>${sampleBooking.bookingDate}</td>
+                                </tr>
+                                <tr>
+                                    <td>${translation.summary}</td>
+                                    <td>Journey €${sampleBooking.vehicle.pricing.minimumPrice}</td>
+                                </tr>
+                                <tr>
+                                    <td>${translation.total}</td>
+                                    <td>€${sampleBooking.vehicle.pricing.minimumPrice}</td>
+                                </tr>
+                                <tr>
+                                    <td>${translation.payments}</td>
+                                    <td>€${sampleBooking.vehicle.pricing.minimumPrice} (Cash) - <span style="color: #f39c12;">${translation.paymentStatus}</span></td>
+                                </tr>
+                                <tr>
+                                    <td>${translation.owedAmount}</td>
+                                    <td>€${sampleBooking.vehicle.pricing.minimumPrice}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div class="footer-rules">
+                            <p>${translation.cancellation}</p>
+                            <p>${translation.changes}</p>
+                            <p>${translation.bookingAdvice}</p>
+                            <p>${translation.driverInfo}</p>
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+            `;
+        }
+
+        // Load existing email settings from localStorage
+        function loadEmailSettings() {
+            console.log('📧 Loading existing email settings...');
+            
+            // Load individual settings
+            const fromName = localStorage.getItem('adminFromName');
+            const fromEmail = localStorage.getItem('adminFromEmail');
+            const replyToEmail = localStorage.getItem('adminReplyToEmail');
+            const adminEmail = localStorage.getItem('adminAdminEmail');
+            const connectionType = localStorage.getItem('adminConnectionType');
+            const provider = localStorage.getItem('adminProvider');
+            const smtpHost = localStorage.getItem('adminSmtpHost');
+            const smtpPort = localStorage.getItem('adminSmtpPort');
+            const smtpUsername = localStorage.getItem('adminSmtpUsername');
+            const smtpPassword = localStorage.getItem('adminSmtpPassword');
+            const smtpSecurity = localStorage.getItem('adminSmtpSecurity');
+            
+            // Update form fields if values exist
+            if (fromName) document.getElementById('adminFromName').value = fromName;
+            if (fromEmail) document.getElementById('adminFromEmail').value = fromEmail;
+            if (replyToEmail) document.getElementById('adminReplyToEmail').value = replyToEmail;
+            if (adminEmail) document.getElementById('adminAdminEmail').value = adminEmail;
+            if (connectionType) document.getElementById('adminConnectionType').value = connectionType;
+            if (provider) document.getElementById('adminProvider').value = provider;
+            if (smtpHost) document.getElementById('adminSmtpHost').value = smtpHost;
+            if (smtpPort) document.getElementById('adminSmtpPort').value = smtpPort;
+            if (smtpUsername) document.getElementById('adminSmtpUsername').value = smtpUsername;
+            if (smtpPassword) document.getElementById('adminSmtpPassword').value = smtpPassword;
+            
+            // Set security radio button
+            if (smtpSecurity) {
+                const securityRadio = document.querySelector(`input[name="adminSmtpSecurity"][value="${smtpSecurity}"]`);
+                if (securityRadio) securityRadio.checked = true;
+            }
+            
+            // Update status display
+            if (fromEmail && smtpHost && smtpUsername && smtpPassword) {
+                document.getElementById('configStatus').textContent = 'Configured ✅';
+                document.getElementById('configHost').textContent = smtpHost;
+                document.getElementById('configEmail').textContent = fromEmail;
+            }
+            
+            console.log('✅ Email settings loaded');
+        }
+
+        // Email configuration save function
+        function saveEmailSettings(event) {
+            event.preventDefault();
+            
+            console.log('💾 Saving email settings...');
+            
+            // Get form values
+            const fromName = document.getElementById('adminFromName').value;
+            const fromEmail = document.getElementById('adminFromEmail').value;
+            const replyToEmail = document.getElementById('adminReplyToEmail').value;
+            const adminEmail = document.getElementById('adminAdminEmail').value;
+            const connectionType = document.getElementById('adminConnectionType').value;
+            const provider = document.getElementById('adminProvider').value;
+            const smtpHost = document.getElementById('adminSmtpHost').value;
+            const smtpPort = document.getElementById('adminSmtpPort').value;
+            const smtpUsername = document.getElementById('adminSmtpUsername').value;
+            const smtpPassword = document.getElementById('adminSmtpPassword').value;
+            
+            // Get selected security option
+            const securityRadio = document.querySelector('input[name="adminSmtpSecurity"]:checked');
+            const smtpSecurity = securityRadio ? securityRadio.value : 'tls';
+            
+            // Validate required fields
+            if (!fromName || !fromEmail || !smtpHost || !smtpUsername || !smtpPassword) {
+                alert('⚠️ Vul alle verplichte velden in');
+                return;
+            }
+            
+            // Save to localStorage for booking system
+            localStorage.setItem('adminFromName', fromName);
+            localStorage.setItem('adminFromEmail', fromEmail);
+            localStorage.setItem('adminReplyToEmail', replyToEmail);
+            localStorage.setItem('adminAdminEmail', adminEmail);
+            localStorage.setItem('adminConnectionType', connectionType);
+            localStorage.setItem('adminProvider', provider);
+            localStorage.setItem('adminSmtpHost', smtpHost);
+            localStorage.setItem('adminSmtpPort', smtpPort);
+            localStorage.setItem('adminSmtpUsername', smtpUsername);
+            localStorage.setItem('adminSmtpPassword', smtpPassword);
+            localStorage.setItem('adminSmtpSecurity', smtpSecurity);
+            
+            // Also save as complete email settings object
+            const emailSettings = {
+                fromName,
+                fromEmail,
+                replyToEmail,
+                adminEmail,
+                connectionType,
+                provider,
+                smtpHost,
+                smtpPort,
+                smtpUsername,
+                smtpPassword,
+                smtpSecurity,
+                lastUpdated: new Date().toISOString()
+            };
+            localStorage.setItem('adminEmailSettings', JSON.stringify(emailSettings));
+            
+            // Update configuration status display
+            document.getElementById('configStatus').textContent = 'Configured ✅';
+            document.getElementById('configHost').textContent = smtpHost;
+            document.getElementById('configEmail').textContent = fromEmail;
+            
+            // Show success message
+            const statusDiv = document.getElementById('adminEmailStatus');
+            statusDiv.style.display = 'block';
+            statusDiv.style.background = '#d4edda';
+            statusDiv.style.color = '#155724';
+            statusDiv.style.border = '1px solid #c3e6cb';
+            statusDiv.innerHTML = '✅ Email instellingen opgeslagen! Het booking systeem kan nu emails versturen.';
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+            
+            console.log('✅ Email settings saved successfully:', emailSettings);
+        }
+
+        // Email test function
+        async function sendAdminTestEmail() {
+            const testEmail = document.getElementById('adminTestEmail').value;
+            if (!testEmail) {
+                alert('⚠️ Vul een email adres in om te testen');
+                return;
+            }
+
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Verzenden...';
+
+            try {
+                const emailSettings = {
+                    fromName: document.getElementById('adminFromName').value,
+                    fromEmail: document.getElementById('adminFromEmail').value,
+                    smtpHost: document.getElementById('adminSmtpHost').value,
+                    smtpPort: document.getElementById('adminSmtpPort').value,
+                    smtpUsername: document.getElementById('adminSmtpUsername').value,
+                    smtpPassword: document.getElementById('adminSmtpPassword').value,
+                    testEmail: testEmail
+                };
+
+                const response = await fetch('/api/send-test-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(emailSettings)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✅ Test email verzonden! Controleer je inbox.');
+                } else {
+                    alert('❌ Email versturen mislukt: ' + result.error);
+                }
+            } catch (error) {
+                alert('❌ Email versturen mislukt: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        // Translation Section Functions
+        function loadTranslation() {
+            console.log('🌍 Loading Translation settings...');
+            
+            const saved = localStorage.getItem('translationSettings');
+            if (saved) {
+                try {
+                    const translation = JSON.parse(saved);
+                    
+                    // Load all form fields
+                    document.getElementById('translationCompanyName').value = translation.companyName || '';
+                    document.getElementById('translationLogoUrl').value = translation.logoUrl || '';
+                    document.getElementById('translationStatusLine').value = translation.statusLine || '';
+                    document.getElementById('translationMainMessage').value = translation.mainMessage || '';
+                    document.getElementById('translationTripSection').value = translation.tripSection || '';
+                    document.getElementById('translationDateTime').value = translation.dateTime || '';
+                    document.getElementById('translationPickupLocation').value = translation.pickupLocation || '';
+                    document.getElementById('translationDestination').value = translation.destination || '';
+                    document.getElementById('translationVehicle').value = translation.vehicle || '';
+                    document.getElementById('translationPassengers').value = translation.passengers || '';
+                    document.getElementById('translationClientSection').value = translation.clientSection || '';
+                    document.getElementById('translationName').value = translation.name || '';
+                    document.getElementById('translationPhone').value = translation.phone || '';
+                    document.getElementById('translationEmail').value = translation.email || '';
+                    document.getElementById('translationReservationSection').value = translation.reservationSection || '';
+                    document.getElementById('translationReferenceId').value = translation.referenceId || '';
+                    document.getElementById('translationBookingDate').value = translation.bookingDate || '';
+                    document.getElementById('translationSummary').value = translation.summary || '';
+                    document.getElementById('translationTotal').value = translation.total || '';
+                    document.getElementById('translationPayments').value = translation.payments || '';
+                    document.getElementById('translationPaymentStatus').value = translation.paymentStatus || '';
+                    document.getElementById('translationOwedAmount').value = translation.owedAmount || '';
+                    document.getElementById('translationCancellation').value = translation.cancellation || '';
+                    document.getElementById('translationChanges').value = translation.changes || '';
+                    document.getElementById('translationBookingAdvice').value = translation.bookingAdvice || '';
+                    document.getElementById('translationDriverInfo').value = translation.driverInfo || '';
+                    
+                    console.log('✅ Translation settings loaded');
+                } catch (error) {
+                    console.error('❌ Error loading translation settings:', error);
+                }
+            } else {
+                // Set default values
+                setDefaultTranslationValues();
+            }
+        }
+
+        function setDefaultTranslationValues() {
+            document.getElementById('translationCompanyName').value = 'Taxi Leuven';
+            document.getElementById('translationStatusLine').value = 'Uw booking wacht op bevestiging. Bedankt voor uw booking bij Taxi Leuven. Uw reservatienummer is [BOOKING_ID].';
+            document.getElementById('translationMainMessage').value = 'Een bevestigingsmail wordt naar uw e-mailadres verzonden binnen 1 uur. ALS U GEEN EMAIL ONTVANGEN HEBT, GELIEVE MET ONS CONTACT OP TE NEMEN!';
+            document.getElementById('translationTripSection').value = 'Reis';
+            document.getElementById('translationDateTime').value = 'Datum & tijd:';
+            document.getElementById('translationPickupLocation').value = 'Ophaallocatie:';
+            document.getElementById('translationDestination').value = 'Bestemming:';
+            document.getElementById('translationVehicle').value = 'Voertuig:';
+            document.getElementById('translationPassengers').value = 'Passagiers:';
+            document.getElementById('translationClientSection').value = 'Klant';
+            document.getElementById('translationName').value = 'Naam:';
+            document.getElementById('translationPhone').value = 'Telefoonnummer:';
+            document.getElementById('translationEmail').value = 'E-mail:';
+            document.getElementById('translationReservationSection').value = 'Reservatie';
+            document.getElementById('translationReferenceId').value = 'Referentie-ID:';
+            document.getElementById('translationBookingDate').value = 'Boekingsdatum:';
+            document.getElementById('translationSummary').value = 'Samenvatting:';
+            document.getElementById('translationTotal').value = 'Totaal:';
+            document.getElementById('translationPayments').value = 'Betalingen:';
+            document.getElementById('translationPaymentStatus').value = 'Pending';
+            document.getElementById('translationOwedAmount').value = 'Verschuldigd bedrag:';
+            document.getElementById('translationCancellation').value = 'Annulatie binnen 24 uur: Bij annulering binnen 24 uur voor de geplande rit wordt het volledige bedrag van de rit in rekening gebracht.';
+            document.getElementById('translationChanges').value = 'Wijzigingen binnen 24 uur: Voor aanpassingen aan een bestaande reservering binnen 24 uur (bijvoorbeeld door het missen van een vlucht) wordt een toeslag van €30 gerekend.';
+            document.getElementById('translationBookingAdvice').value = 'Boekingsregels: Het rechtstreeks reserveren van een rit via een van onze chauffeurs is niet toegestaan. Voor een verzekerde en kwalitatieve dienstverlening verzoeken wij u uw taxi uitsluitend via ons officiële systeem te boeken.';
+            document.getElementById('translationDriverInfo').value = 'Eén dag voor uw vertrek sturen wij u het nummer van de chauffeur, zodra wij onze planning hebben gemaakt.';
+        }
+
+        function saveTranslation(event) {
+            event.preventDefault();
+            
+            console.log('💾 Saving Translation settings...');
+            
+            const translationData = {
+                companyName: document.getElementById('translationCompanyName').value,
+                logoUrl: document.getElementById('translationLogoUrl').value,
+                statusLine: document.getElementById('translationStatusLine').value,
+                mainMessage: document.getElementById('translationMainMessage').value,
+                tripSection: document.getElementById('translationTripSection').value,
+                dateTime: document.getElementById('translationDateTime').value,
+                pickupLocation: document.getElementById('translationPickupLocation').value,
+                destination: document.getElementById('translationDestination').value,
+                vehicle: document.getElementById('translationVehicle').value,
+                passengers: document.getElementById('translationPassengers').value,
+                clientSection: document.getElementById('translationClientSection').value,
+                name: document.getElementById('translationName').value,
+                phone: document.getElementById('translationPhone').value,
+                email: document.getElementById('translationEmail').value,
+                reservationSection: document.getElementById('translationReservationSection').value,
+                referenceId: document.getElementById('translationReferenceId').value,
+                bookingDate: document.getElementById('translationBookingDate').value,
+                summary: document.getElementById('translationSummary').value,
+                total: document.getElementById('translationTotal').value,
+                payments: document.getElementById('translationPayments').value,
+                paymentStatus: document.getElementById('translationPaymentStatus').value,
+                owedAmount: document.getElementById('translationOwedAmount').value,
+                cancellation: document.getElementById('translationCancellation').value,
+                changes: document.getElementById('translationChanges').value,
+                bookingAdvice: document.getElementById('translationBookingAdvice').value,
+                driverInfo: document.getElementById('translationDriverInfo').value,
+                lastUpdated: new Date().toISOString()
+            };
+            
+            localStorage.setItem('translationSettings', JSON.stringify(translationData));
+            
+            // Show success message
+            const statusDiv = document.getElementById('translationStatus');
+            statusDiv.style.display = 'block';
+            statusDiv.style.background = '#d4edda';
+            statusDiv.style.color = '#155724';
+            statusDiv.style.border = '1px solid #c3e6cb';
+            statusDiv.innerHTML = '✅ Translation settings saved successfully!';
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+            
+            console.log('✅ Translation settings saved:', translationData);
+        }
+
+        function previewTranslationEmail() {
+            console.log('📧 Generating email preview...');
+            
+            // Get current translation values
+            const translation = {
+                companyName: document.getElementById('translationCompanyName').value || 'Taxi Leuven',
+                logoUrl: document.getElementById('translationLogoUrl').value || '',
+                statusLine: document.getElementById('translationStatusLine').value || 'Uw booking wacht op bevestiging.',
+                mainMessage: document.getElementById('translationMainMessage').value || 'Bedankt voor uw booking.',
+                tripSection: document.getElementById('translationTripSection').value || 'Reis',
+                dateTime: document.getElementById('translationDateTime').value || 'Datum & tijd:',
+                pickupLocation: document.getElementById('translationPickupLocation').value || 'Ophaallocatie:',
+                destination: document.getElementById('translationDestination').value || 'Bestemming:',
+                vehicle: document.getElementById('translationVehicle').value || 'Voertuig:',
+                passengers: document.getElementById('translationPassengers').value || 'Passagiers:',
+                clientSection: document.getElementById('translationClientSection').value || 'Klant',
+                name: document.getElementById('translationName').value || 'Naam:',
+                phone: document.getElementById('translationPhone').value || 'Telefoonnummer:',
+                email: document.getElementById('translationEmail').value || 'E-mail:',
+                reservationSection: document.getElementById('translationReservationSection').value || 'Reservatie',
+                referenceId: document.getElementById('translationReferenceId').value || 'Referentie-ID:',
+                bookingDate: document.getElementById('translationBookingDate').value || 'Boekingsdatum:',
+                summary: document.getElementById('translationSummary').value || 'Samenvatting:',
+                total: document.getElementById('translationTotal').value || 'Totaal:',
+                payments: document.getElementById('translationPayments').value || 'Betalingen:',
+                paymentStatus: document.getElementById('translationPaymentStatus').value || 'Pending',
+                owedAmount: document.getElementById('translationOwedAmount').value || 'Verschuldigd bedrag:',
+                cancellation: document.getElementById('translationCancellation').value || 'Annulatie regels...',
+                changes: document.getElementById('translationChanges').value || 'Wijziging regels...',
+                bookingAdvice: document.getElementById('translationBookingAdvice').value || 'Booking advies...',
+                driverInfo: document.getElementById('translationDriverInfo').value || 'Chauffeur informatie...'
+            };
+            
+            // Generate preview HTML
+            const previewHTML = generateEmailPreview(translation);
+            
+            // Open in new window
+            const previewWindow = window.open('', '_blank', 'width=700,height=800,scrollbars=yes');
+            previewWindow.document.write(previewHTML);
+            previewWindow.document.close();
+        }
+
+        // Initialize admin panel when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Admin panel DOM loaded');
+            
+            // Show dashboard by default
+            showSection('dispatch');
+            
+            // Load email settings
+            loadEmailSettings();
+            
+            // Load translation settings when translation section is opened
+            const translationNav = document.querySelector('[onclick="showSection(\'translation\')"]');
+            if (translationNav) {
+                translationNav.addEventListener('click', () => {
+                    setTimeout(loadTranslation, 100);
+                });
+            }
+            
+            // Test menu functionality after page load
+            setTimeout(() => {
+                console.log('🔧 Testing menu functionality...');
+                
+                // Test if menu elements exist
+                const bookingsMenu = document.getElementById('bookings-menu');
+                const settingsMenu = document.getElementById('settings-menu');
+                const pricingMenu = document.getElementById('pricing-menu');
+                
+                console.log('📋 Bookings menu found:', !!bookingsMenu);
+                console.log('⚙️ Settings menu found:', !!settingsMenu);
+                console.log('💰 Pricing menu found:', !!pricingMenu);
+                
+                // Test toggle functionality
+                if (settingsMenu) {
+                    console.log('✅ Menu system ready');
+                    updateTestResults('✅ Menu system initialized successfully');
+                } else {
+                    console.error('❌ Menu system failed to initialize');
+                    updateTestResults('❌ Menu system failed to initialize');
+                }
+                
+                // Initialize Meet and Greet when admin loads
+                initializeMeetAndGreet();
+            }, 500);
+        });
+
+        // Meet and Greet Location Management Functions
+        let meetAndGreetLocations = {
+            airports: [
+                {
+                    id: 'brussels-airport',
+                    name: 'Brussels Airport (BRU)',
+                    fullName: 'Brussels Airport',
+                    code: 'BRU',
+                    address: 'A201, 1930 Zaventem, Belgium',
+                    enabled: true,
+                    meetGreetEnabled: true,
+                    pickupInstructions: 'Onze chauffeur wacht op u in de aankomsthal met een naambord. Locatie: bij de informatiebalie.'
+                },
+                {
+                    id: 'charleroi-airport',
+                    name: 'Brussels South Charleroi Airport (CRL)',
+                    fullName: 'Brussels South Charleroi Airport',
+                    code: 'CRL',
+                    address: 'Rue des Frères Wright 8, 6041 Charleroi, Belgium',
+                    enabled: true,
+                    meetGreetEnabled: true,
+                    pickupInstructions: 'Meet & Greet service beschikbaar in de aankomsthal. Onze chauffeur wacht bij de uitgang.'
+                }
+            ],
+            stations: [
+                {
+                    id: 'brussels-central',
+                    name: 'Brussels Central Station',
+                    fullName: 'Gare Centrale / Centraal Station',
+                    address: 'Carrefour de l\'Europe 2, 1000 Brussels, Belgium',
+                    enabled: true,
+                    meetGreetEnabled: true,
+                    pickupInstructions: 'Onze chauffeur wacht bij de hoofdingang van het station.'
+                }
+            ],
+            hotels: [
+                {
+                    id: 'hilton-brussels',
+                    name: 'Hilton Brussels City',
+                    fullName: 'Hilton Brussels City Hotel',
+                    address: 'Place Eugène Flagey 20, 1050 Brussels, Belgium',
+                    enabled: true,
+                    meetGreetEnabled: true,
+                    pickupInstructions: 'Onze chauffeur wacht in de lobby van het hotel.'
+                }
+            ]
+        };
+
+        function initializeMeetAndGreet() {
+            // Load Meet and Greet settings from localStorage
+            const savedLocations = localStorage.getItem('meetAndGreetLocations');
+            if (savedLocations) {
+                meetAndGreetLocations = JSON.parse(savedLocations);
+            } else {
+                // Save default locations to localStorage for first time use
+                console.log('💾 No Meet & Greet locations found, saving defaults to localStorage');
+                localStorage.setItem('meetAndGreetLocations', JSON.stringify(meetAndGreetLocations));
+            }
+            
+            // Update Meet & Greet surcharge price from Item Surcharge
+            updateMeetGreetSurchargeInfo();
+            
+            // Load locations when Meet and Greet section is shown
+            if (document.getElementById('meet-and-greet-section')) {
+                renderLocationTabs();
+            }
+        }
+
+        function updateMeetGreetSurchargeInfo() {
+            // Find Meet & Greet item in surchargeItems
+            const meetGreetItem = surchargeItems.fixed.find(item => item.id === 'meet-greet');
+            if (meetGreetItem) {
+                const priceElement = document.getElementById('meetGreetSurchargePrice');
+                const statusElement = document.getElementById('meetGreetSurchargeStatus');
+                
+                if (priceElement) {
+                    priceElement.textContent = meetGreetItem.price.toFixed(2);
+                }
+                
+                if (statusElement) {
+                    if (meetGreetItem.enabled) {
+                        statusElement.textContent = 'Actief';
+                        statusElement.style.background = '#28a745';
+                        statusElement.style.color = 'white';
+                    } else {
+                        statusElement.textContent = 'Uitgeschakeld';
+                        statusElement.style.background = '#dc3545';
+                        statusElement.style.color = 'white';
+                    }
+                }
+            }
+        }
+
+        function switchLocationTab(type) {
+            // Update tab appearance
+            document.querySelectorAll('.location-tab').forEach(tab => {
+                if (tab.dataset.type === type) {
+                    tab.style.background = '#007bff';
+                    tab.style.color = 'white';
+                } else {
+                    tab.style.background = '#6c757d';
+                    tab.style.color = 'white';
+                }
+            });
+            
+            // Show/hide tab content
+            document.querySelectorAll('.location-tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            document.getElementById(type + 'Tab').style.display = 'block';
+            
+            // Render locations for selected type
+            renderLocations(type);
+        }
+
+        function renderLocationTabs() {
+            // Default to airports tab
+            switchLocationTab('airports');
+        }
+
+        function renderLocations(type) {
+            const container = document.getElementById(type + 'List');
+            const locations = meetAndGreetLocations[type] || [];
+            
+            if (locations.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #6c757d;">
+                        <div style="font-size: 48px; margin-bottom: 20px;">📍</div>
+                        <p>Nog geen ${type === 'airports' ? 'luchthavens' : type === 'stations' ? 'stations' : 'hotels'} toegevoegd.</p>
+                        <p style="font-size: 14px;">Klik op "+ Nieuwe ${type === 'airports' ? 'Luchthaven' : type === 'stations' ? 'Station' : 'Hotel'}" om te beginnen.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = locations.map((location, index) => `
+                <div style="border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 15px; background: ${location.enabled ? 'white' : '#f8f9fa'};">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                        <div style="flex: 1;">
+                            <h5 style="margin: 0 0 5px 0; color: #2c3e50; font-size: 16px;">
+                                ${getLocationIcon(type)} ${location.name}
+                            </h5>
+                            <p style="margin: 0 0 5px 0; color: #6c757d; font-size: 14px;">${location.fullName}</p>
+                            ${location.code ? `<span style="background: #007bff; color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-weight: 600;">${location.code}</span>` : ''}
+                        </div>
+                        <div style="display: flex; gap: 5px;">
+                            <button onclick="editLocation('${type}', ${index})" style="background: #007bff; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">✏️ Edit</button>
+                            <button onclick="deleteLocation('${type}', ${index})" style="background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">🗑️</button>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <p style="margin: 0; color: #495057; font-size: 14px;"><strong>Adres:</strong> ${location.address}</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
+                            <input type="checkbox" ${location.meetGreetEnabled ? 'checked' : ''} onchange="toggleMeetGreet('${type}', ${index}, this.checked)">
+                            <span>🤝 Meet & Greet service actief</span>
+                        </label>
+                    </div>
+                    
+                    ${location.meetGreetEnabled ? `
+                    <div style="background: #e8f5e9; padding: 15px; border-radius: 6px; border-left: 4px solid #28a745;">
+                        <h6 style="margin: 0 0 10px 0; color: #155724;">📝 Ophaalinstructies</h6>
+                        <textarea onchange="updatePickupInstructions('${type}', ${index}, this.value)" 
+                                  style="width: 100%; padding: 8px; border: 1px solid #c3e6cb; border-radius: 4px; resize: vertical; min-height: 60px; font-size: 13px;"
+                                  placeholder="Beschrijf waar de klant opgehaald wordt...">${location.pickupInstructions || ''}</textarea>
+                    </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function getLocationIcon(type) {
+            switch(type) {
+                case 'airports': return '✈️';
+                case 'stations': return '🚉';
+                case 'hotels': return '🏨';
+                default: return '📍';
+            }
+        }
+
+        function addNewLocation(type) {
+            showAddLocationModal(type);
+        }
+
+        function showAddLocationModal(type) {
+            const typeLabels = {
+                'airports': 'Luchthaven',
+                'stations': 'Station', 
+                'hotels': 'Hotel'
+            };
+            
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 12px; padding: 30px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #e9ecef; padding-bottom: 15px;">
+                        <h3 style="margin: 0; color: #2c3e50; font-size: 24px;">
+                            ${getLocationIcon(type)} Nieuwe ${typeLabels[type]} Toevoegen
+                        </h3>
+                        <button onclick="closeAddLocationModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #6c757d;">×</button>
+                    </div>
+                    
+                    <form id="addLocationForm" onsubmit="submitNewLocation(event, '${type}')">
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #495057;">
+                                📍 Naam van de ${typeLabels[type].toLowerCase()}:
+                            </label>
+                            <input type="text" id="locationName" required 
+                                   placeholder="Bijv. Brussels Airport" 
+                                   style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 16px;">
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #495057;">
+                                🏠 Volledig adres:
+                            </label>
+                            <input type="text" id="locationAddress" required 
+                                   placeholder="Bijv. A201, 1930 Zaventem, Belgium" 
+                                   style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 16px;">
+                        </div>
+                        
+                        ${type === 'airports' ? `
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #495057;">
+                                ✈️ Luchthaven code (optioneel):
+                            </label>
+                            <input type="text" id="locationCode" 
+                                   placeholder="Bijv. BRU" 
+                                   style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 16px; text-transform: uppercase;" 
+                                   maxlength="4">
+                        </div>
+                        ` : ''}
+                        
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #495057;">
+                                📝 Ophaalinstructies:
+                            </label>
+                            <textarea id="locationInstructions" 
+                                      placeholder="Bijv. Onze chauffeur wacht op u in de aankomsthal met een naambord."
+                                      style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 16px; min-height: 80px; resize: vertical;">${getDefaultPickupInstructions(type)}</textarea>
+                        </div>
+                        
+                        <div style="margin-bottom: 25px; background: #e8f5e8; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="checkbox" id="meetGreetEnabled" checked 
+                                       style="margin-right: 10px; transform: scale(1.2);">
+                                <span style="font-weight: 600; color: #155724;">
+                                    🤝 Meet & Greet service inschakelen voor deze locatie
+                                </span>
+                            </label>
+                            <p style="margin: 8px 0 0 0; font-size: 14px; color: #155724;">
+                                Wanneer iemand boekt vanaf deze locatie wordt automatisch €5.00 Meet & Greet toeslag toegevoegd.
+                            </p>
+                        </div>
+                        
+                        <div style="display: flex; gap: 15px; justify-content: flex-end;">
+                            <button type="button" onclick="closeAddLocationModal()" 
+                                    style="padding: 12px 24px; border: 2px solid #6c757d; background: white; color: #6c757d; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                                Annuleren
+                            </button>
+                            <button type="submit" 
+                                    style="padding: 12px 24px; border: none; background: #28a745; color: white; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                                ${typeLabels[type]} Toevoegen
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            document.getElementById('locationName').focus();
+        }
+
+        function closeAddLocationModal() {
+            const modal = document.querySelector('[style*="position: fixed"][style*="z-index: 10000"]');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        function submitNewLocation(event, type) {
+            event.preventDefault();
+            
+            const name = document.getElementById('locationName').value.trim();
+            const address = document.getElementById('locationAddress').value.trim();
+            const code = document.getElementById('locationCode')?.value.trim().toUpperCase() || '';
+            const instructions = document.getElementById('locationInstructions').value.trim();
+            const meetGreetEnabled = document.getElementById('meetGreetEnabled').checked;
+            
+            if (!name || !address) {
+                alert('Naam en adres zijn verplicht.');
+                return;
+            }
+            
+            const newLocation = {
+                id: name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+                name: name,
+                fullName: name,
+                address: address,
+                enabled: true,
+                meetGreetEnabled: meetGreetEnabled,
+                pickupInstructions: instructions || getDefaultPickupInstructions(type)
+            };
+            
+            if (code) {
+                newLocation.code = code;
+            }
+            
+            if (!meetAndGreetLocations[type]) {
+                meetAndGreetLocations[type] = [];
+            }
+            
+            meetAndGreetLocations[type].push(newLocation);
+            renderLocations(type);
+            closeAddLocationModal();
+            
+            console.log(`✅ Nieuwe ${type} locatie toegevoegd:`, newLocation);
+            
+            // Show success message
+            showNotification(`✅ ${newLocation.name} succesvol toegevoegd!`, 'success');
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#007bff'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 10001;
+                font-weight: 600;
+                max-width: 400px;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 4000);
+        }
+
+        function getDefaultPickupInstructions(type) {
+            switch(type) {
+                case 'airports':
+                    return 'Onze chauffeur wacht op u in de aankomsthal met een naambord.';
+                case 'stations':
+                    return 'Onze chauffeur wacht bij de hoofdingang van het station.';
+                case 'hotels':
+                    return 'Onze chauffeur wacht in de lobby van het hotel.';
+                default:
+                    return 'Onze chauffeur wacht op de afgesproken locatie.';
+            }
+        }
+
+        function toggleMeetGreet(type, index, enabled) {
+            meetAndGreetLocations[type][index].meetGreetEnabled = enabled;
+            renderLocations(type);
+            console.log(`🤝 Meet & Greet ${enabled ? 'ingeschakeld' : 'uitgeschakeld'} voor ${meetAndGreetLocations[type][index].name}`);
+        }
+
+        function updatePickupInstructions(type, index, instructions) {
+            meetAndGreetLocations[type][index].pickupInstructions = instructions;
+            console.log(`📝 Ophaalinstructies bijgewerkt voor ${meetAndGreetLocations[type][index].name}`);
+        }
+
+        function editLocation(type, index) {
+            const location = meetAndGreetLocations[type][index];
+            
+            const newName = prompt('Naam:', location.name);
+            if (newName === null) return;
+            
+            const newAddress = prompt('Adres:', location.address);
+            if (newAddress === null) return;
+            
+            let newCode = location.code || '';
+            if (type === 'airports') {
+                newCode = prompt('Luchthaven code:', newCode) || '';
+            }
+            
+            // Update location
+            location.name = newName;
+            location.fullName = newName;
+            location.address = newAddress;
+            if (newCode) {
+                location.code = newCode.toUpperCase();
+            }
+            
+            renderLocations(type);
+            console.log(`✏️ Locatie bijgewerkt:`, location);
+        }
+
+        function deleteLocation(type, index) {
+            const location = meetAndGreetLocations[type][index];
+            if (confirm(`Weet je zeker dat je "${location.name}" wilt verwijderen?`)) {
+                meetAndGreetLocations[type].splice(index, 1);
+                renderLocations(type);
+                console.log(`🗑️ Locatie verwijderd: ${location.name}`);
+            }
+        }
+
+        function saveMeetAndGreetSettings() {
+            try {
+                // Save to localStorage
+                localStorage.setItem('meetAndGreetLocations', JSON.stringify(meetAndGreetLocations));
+                
+                // Show success message
+                const statusDiv = document.getElementById('meetGreetStatus');
+                statusDiv.style.display = 'block';
+                statusDiv.style.background = '#d4edda';
+                statusDiv.style.color = '#155724';
+                statusDiv.style.border = '1px solid #c3e6cb';
+                statusDiv.innerHTML = '✅ Meet & Greet instellingen succesvol opgeslagen!';
+                
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 3000);
+                
+                console.log('✅ Meet & Greet settings saved:', meetAndGreetLocations);
+                
+                // Update surcharge info
+                updateMeetGreetSurchargeInfo();
+                
+            } catch (error) {
+                console.error('❌ Failed to save Meet & Greet settings:', error);
+                
+                const statusDiv = document.getElementById('meetGreetStatus');
+                statusDiv.style.display = 'block';
+                statusDiv.style.background = '#f8d7da';
+                statusDiv.style.color = '#721c24';
+                statusDiv.style.border = '1px solid #f5c6cb';
+                statusDiv.innerHTML = '❌ Fout bij opslaan van instellingen: ' + error.message;
+            }
+        }
+
+        // Function to check if a location requires Meet & Greet
+        function checkMeetAndGreetRequired(fromLocation) {
+            const allLocations = [
+                ...meetAndGreetLocations.airports,
+                ...meetAndGreetLocations.stations,
+                ...meetAndGreetLocations.hotels
+            ];
+            
+            // Check if the pickup location matches any registered Meet & Greet location
+            for (const location of allLocations) {
+                if (!location.enabled || !location.meetGreetEnabled) continue;
+                
+                // Simple text matching - in production you might want more sophisticated matching
+                const locationNames = [
+                    location.name.toLowerCase(),
+                    location.fullName.toLowerCase(),
+                    location.code?.toLowerCase()
+                ].filter(Boolean);
+                
+                const fromLoc = fromLocation.toLowerCase();
+                
+                for (const locName of locationNames) {
+                    if (fromLoc.includes(locName) || locName.includes(fromLoc)) {
+                        return {
+                            required: true,
+                            location: location,
+                            instructions: location.pickupInstructions
+                        };
+                    }
+                }
+            }
+            
+            return { required: false };
+        }
     </script>
 </body>
 </html>

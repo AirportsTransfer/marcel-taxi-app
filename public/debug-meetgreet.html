@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Meet & Greet</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #f5f5f5; }
+        .debug-section { background: white; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .debug-title { font-weight: bold; color: #2c3e50; margin-bottom: 10px; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .test-button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .test-button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>🐛 Meet & Greet Debug Tool</h1>
+    
+    <div class="debug-section">
+        <div class="debug-title">🔧 Actions:</div>
+        <button class="test-button" onclick="showLocalStorage()">Show All localStorage</button>
+        <button class="test-button" onclick="testMeetGreetLocations()">Test Meet & Greet Locations</button>
+        <button class="test-button" onclick="testLocationMatching()">Test Location Matching</button>
+        <button class="test-button" onclick="clearMeetGreetData()">Clear Meet & Greet Data</button>
+    </div>
+
+    <div class="debug-section">
+        <div class="debug-title">📊 Results:</div>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function showLocalStorage() {
+            const results = document.getElementById('results');
+            let output = '<h3>📦 All localStorage Data:</h3>';
+            
+            const keys = Object.keys(localStorage).sort();
+            keys.forEach(key => {
+                try {
+                    const value = localStorage.getItem(key);
+                    const parsed = JSON.parse(value);
+                    output += `<strong>${key}:</strong><pre>${JSON.stringify(parsed, null, 2)}</pre>`;
+                } catch (e) {
+                    output += `<strong>${key}:</strong><pre>${value}</pre>`;
+                }
+            });
+            
+            results.innerHTML = output;
+        }
+
+        function testMeetGreetLocations() {
+            const results = document.getElementById('results');
+            let output = '<h3>🤝 Meet & Greet Locations Test:</h3>';
+            
+            // Load locations
+            const savedLocations = localStorage.getItem('meetAndGreetLocations');
+            if (savedLocations) {
+                const locations = JSON.parse(savedLocations);
+                output += '<strong>✅ Found meetAndGreetLocations in localStorage:</strong>';
+                output += `<pre>${JSON.stringify(locations, null, 2)}</pre>`;
+                
+                // Count enabled locations
+                const allLocations = [
+                    ...locations.airports || [],
+                    ...locations.stations || [],
+                    ...locations.hotels || []
+                ];
+                
+                const enabledLocations = allLocations.filter(loc => loc.enabled && loc.meetGreetEnabled);
+                output += `<strong>📊 Summary:</strong><br>`;
+                output += `- Total locations: ${allLocations.length}<br>`;
+                output += `- Enabled with Meet & Greet: ${enabledLocations.length}<br>`;
+                
+                if (enabledLocations.length > 0) {
+                    output += '<strong>✅ Enabled Meet & Greet locations:</strong><ul>';
+                    enabledLocations.forEach(loc => {
+                        output += `<li>${loc.name} (${loc.code || 'no code'})</li>`;
+                    });
+                    output += '</ul>';
+                }
+            } else {
+                output += '<strong>❌ No meetAndGreetLocations found in localStorage</strong>';
+            }
+            
+            results.innerHTML = output;
+        }
+
+        function testLocationMatching() {
+            const results = document.getElementById('results');
+            let output = '<h3>🔍 Location Matching Test:</h3>';
+            
+            const testLocations = [
+                'Brussels Airport',
+                'brussels airport',
+                'BRU',
+                'Zaventem',
+                'Brussels Airport (BRU)',
+                'Charleroi Airport',
+                'CRL',
+                'Brussels Central Station',
+                'Hilton Brussels'
+            ];
+            
+            const savedLocations = localStorage.getItem('meetAndGreetLocations');
+            if (!savedLocations) {
+                output += '<strong>❌ No locations data to test against</strong>';
+                results.innerHTML = output;
+                return;
+            }
+            
+            const locations = JSON.parse(savedLocations);
+            const allLocations = [
+                ...locations.airports || [],
+                ...locations.stations || [],
+                ...locations.hotels || []
+            ];
+            
+            output += '<strong>Test Results:</strong><br>';
+            
+            testLocations.forEach(testLoc => {
+                let matched = false;
+                let matchedLocation = null;
+                
+                for (const location of allLocations) {
+                    if (!location.enabled || !location.meetGreetEnabled) continue;
+                    
+                    const locationNames = [
+                        location.name?.toLowerCase(),
+                        location.fullName?.toLowerCase(),
+                        location.code?.toLowerCase(),
+                        location.address?.toLowerCase()
+                    ].filter(Boolean);
+                    
+                    const fromLoc = testLoc.toLowerCase();
+                    
+                    for (const locName of locationNames) {
+                        if (fromLoc.includes(locName) || locName.includes(fromLoc)) {
+                            matched = true;
+                            matchedLocation = location;
+                            break;
+                        }
+                        
+                        // Special airport handling
+                        if (location.code && (
+                            fromLoc.includes('brussels airport') && location.code.toLowerCase() === 'bru' ||
+                            fromLoc.includes('zaventem') && location.code.toLowerCase() === 'bru' ||
+                            fromLoc.includes('charleroi') && location.code.toLowerCase() === 'crl'
+                        )) {
+                            matched = true;
+                            matchedLocation = location;
+                            break;
+                        }
+                    }
+                    
+                    if (matched) break;
+                }
+                
+                if (matched) {
+                    output += `✅ "${testLoc}" → matches "${matchedLocation.name}"<br>`;
+                } else {
+                    output += `❌ "${testLoc}" → no match<br>`;
+                }
+            });
+            
+            results.innerHTML = output;
+        }
+
+        function clearMeetGreetData() {
+            localStorage.removeItem('meetAndGreetLocations');
+            localStorage.removeItem('selectedSurcharges');
+            localStorage.removeItem('surchargeItems');
+            localStorage.removeItem('bookingSurchargeItems');
+            
+            const results = document.getElementById('results');
+            results.innerHTML = '<h3>🗑️ Cleared Meet & Greet Data</h3><p>Removed: meetAndGreetLocations, selectedSurcharges, surchargeItems, bookingSurchargeItems</p>';
+        }
+
+        // Auto-load localStorage on page load
+        window.onload = function() {
+            showLocalStorage();
+        };
+    </script>
+</body>
+</html>

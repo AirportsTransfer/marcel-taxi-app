@@ -322,7 +322,6 @@
         
         <div class="step-header">
             <h1 class="step-title">STAP 3: Klantgegevens</h1>
-            <p>Vul uw gegevens in om de boeking af te ronden</p>
             <div class="step-progress">
                 <div class="progress-dot completed" onclick="goToStep(1)" title="Ga naar STAP 1"></div>
                 <div class="progress-dot completed" onclick="goToStep(2)" title="Ga naar STAP 2"></div>
@@ -381,7 +380,6 @@
         </div>
     </div>
 
-    <script src="../email-config.js"></script>
     <script>
         // Load booking data from previous steps
         document.addEventListener('DOMContentLoaded', function() {
@@ -552,6 +550,10 @@
             };
 
             const step2Data = JSON.parse(localStorage.getItem('selectedVehicleStep2') || '{}');
+            
+            // 🆕 Load surcharge data including Meet & Greet locations for email
+            const surchargeData = JSON.parse(localStorage.getItem('selectedSurcharges') || '{}');
+            console.log('📧 Loaded surcharge data for email:', surchargeData);
 
             // Handle both old and new vehicle selection formats
             let outboundVehicle, returnVehicle;
@@ -574,6 +576,7 @@
                     direction: 'outbound'
                 },
                 vehicle: outboundVehicle,
+                surcharges: surchargeData, // 🆕 Include surcharge data (including Meet & Greet locations)
                 bookingDate: new Date().toISOString(),
                 bookingId: generateBookingId()
             };
@@ -603,6 +606,7 @@
                         relatedBookingId: mainBooking.bookingId // Link to main booking
                     },
                     vehicle: returnVehicle,
+                    surcharges: surchargeData, // 🆕 Include surcharge data for return trip too
                     bookingDate: new Date().toISOString(),
                     bookingId: generateBookingId()
                 };
@@ -627,13 +631,30 @@
                 originalBtn.disabled = true;
                 originalBtn.textContent = 'Verzenden...';
                 
+                // Get email settings from admin panel
+                const emailSettings = {
+                    fromName: localStorage.getItem('adminFromName') || 'Marcel\'s Taxi',
+                    fromEmail: localStorage.getItem('adminFromEmail') || 'info@airporttransfer.be',
+                    smtpHost: localStorage.getItem('adminSmtpHost') || 'smtp.gmail.com',
+                    smtpPort: localStorage.getItem('adminSmtpPort') || '587',
+                    smtpUsername: localStorage.getItem('adminSmtpUsername') || 'info@airporttransfer.be',
+                    smtpPassword: localStorage.getItem('adminSmtpPassword') || ''
+                };
+
+                // Get email template from admin panel
+                const emailTemplate = JSON.parse(localStorage.getItem('emailTemplate') || '{}');
+
                 // Send email for main booking
-                const response = await fetch('http://localhost:3001/api/send-booking-email', {
+                const response = await fetch('/api/send-booking-email', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(mainBooking)
+                    body: JSON.stringify({
+                        ...mainBooking,
+                        emailSettings: emailSettings,
+                        emailTemplate: emailTemplate
+                    })
                 });
                 
                 const result = await response.json();
@@ -646,12 +667,16 @@
 
                 // Send email for return booking if exists
                 if (returnBooking) {
-                    const returnResponse = await fetch('http://localhost:3001/api/send-booking-email', {
+                    const returnResponse = await fetch('/api/send-booking-email', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify(returnBooking)
+                        body: JSON.stringify({
+                            ...returnBooking,
+                            emailSettings: emailSettings,
+                            emailTemplate: emailTemplate
+                        })
                     });
                     
                     const returnResult = await returnResponse.json();

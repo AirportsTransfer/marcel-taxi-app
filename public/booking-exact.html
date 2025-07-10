@@ -350,6 +350,65 @@
             cursor: not-allowed;
             transform: none;
         }
+
+        /* ERROR STYLING */
+        .address-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin: 5px 0 15px 0;
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 1.3;
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            animation: errorSlideIn 0.3s ease-out;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .address-error::before {
+            content: "⚠️";
+            font-size: 13px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        @keyframes errorSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ERROR INPUT STYLING */
+        .date-input.error,
+        .extra-stop-input.error {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15) !important;
+            background: #fff5f5;
+        }
+
+        .date-input.error:focus,
+        .extra-stop-input.error:focus {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25) !important;
+        }
+
+        /* SUCCESS INPUT STYLING */
+        .date-input.success,
+        .extra-stop-input.success {
+            border-color: #28a745 !important;
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.15) !important;
+            background: #f8fff8;
+        }
     </style>
 </head>
 <body>
@@ -489,6 +548,351 @@
     </div>
 
     <script>
+        // Define initGoogle before loading Google Maps
+        window.initGoogle = function() {
+            console.log('Google Maps API loaded, initializing...');
+            
+            if (typeof google !== 'undefined' && google.maps && google.maps.places) {
+                // Initialize autocomplete service for real-time predictions
+                const autocompleteService = new google.maps.places.AutocompleteService();
+                const placesService = new google.maps.places.PlacesService(document.createElement('div'));
+                // Enhanced autocomplete for pickup location
+                setupEnhancedAutocomplete('fromLocation', autocompleteService, placesService);
+                
+                // Enhanced autocomplete for drop-off location  
+                setupEnhancedAutocomplete('toLocation', autocompleteService, placesService);
+
+                console.log('✅ Google Places autocomplete initialized successfully');
+            }
+        };
+
+        // Enhanced autocomplete setup function
+        function setupEnhancedAutocomplete(inputId, autocompleteService, placesService) {
+            const input = document.getElementById(inputId);
+            let currentTimeout;
+            let suggestionsList;
+            
+            // Create suggestions dropdown
+            const container = input.parentElement;
+            suggestionsList = document.createElement('div');
+            suggestionsList.className = 'suggestions-dropdown';
+            suggestionsList.style.cssText = `
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: white;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 1000;
+                display: none;
+                max-height: 300px;
+                overflow-y: auto;
+            `;
+            container.style.position = 'relative';
+            container.appendChild(suggestionsList);
+            
+            // Enhanced input listener
+            input.addEventListener('input', function() {
+                const query = this.value.trim();
+                
+                if (currentTimeout) {
+                    clearTimeout(currentTimeout);
+                }
+                
+                if (query.length < 2) {
+                    suggestionsList.style.display = 'none';
+                    return;
+                }
+                
+                // Debounce the search
+                currentTimeout = setTimeout(() => {
+                    searchPlaces(query, suggestionsList, input, autocompleteService, placesService);
+                }, 150);
+            });
+            
+            // Hide suggestions when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!container.contains(e.target)) {
+                    suggestionsList.style.display = 'none';
+                }
+            });
+        }
+
+        // Search places function
+        function searchPlaces(query, suggestionsList, input, autocompleteService, placesService) {
+            const request = {
+                input: query,
+                types: [], // Search all types
+            };
+            
+            autocompleteService.getPlacePredictions(request, function(predictions, status) {
+                if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
+                    displaySuggestions(predictions, suggestionsList, input, placesService);
+                } else {
+                    suggestionsList.style.display = 'none';
+                }
+            });
+        }
+
+        // Display suggestions function
+        function displaySuggestions(predictions, suggestionsList, input, placesService) {
+            suggestionsList.innerHTML = '';
+            
+            predictions.slice(0, 8).forEach(function(prediction) {
+                const suggestionItem = document.createElement('div');
+                suggestionItem.className = 'suggestion-item';
+                suggestionItem.style.cssText = `
+                    padding: 12px 16px;
+                    cursor: pointer;
+                    border-bottom: 1px solid #eee;
+                    hover: background: #f5f5f5;
+                `;
+                
+                // 🆕 Enhanced display with special formatting for airports, stations, hotels
+                const mainText = prediction.structured_formatting.main_text;
+                const secondaryText = prediction.structured_formatting.secondary_text || '';
+                
+                // Check if it's a special place type that should show combined format
+                const specialTypes = ['airport', 'train_station', 'subway_station', 'lodging', 'hospital', 'university'];
+                const hasSpecialType = prediction.types && prediction.types.some(type => specialTypes.includes(type));
+                
+                let displayHTML;
+                if (hasSpecialType && secondaryText) {
+                    // For special places: show "Name, Address" as primary text
+                    displayHTML = `
+                        <div style="font-weight: 600; color: #333;">${mainText}, ${secondaryText}</div>
+                        <div style="font-size: 12px; color: #007bff;">✈️ ${prediction.types.filter(t => specialTypes.includes(t)).join(', ')}</div>
+                    `;
+                } else {
+                    // For regular addresses: use default format
+                    displayHTML = `
+                        <div style="font-weight: 600; color: #333;">${mainText}</div>
+                        <div style="font-size: 12px; color: #666;">${secondaryText}</div>
+                    `;
+                }
+                
+                suggestionItem.innerHTML = displayHTML;
+                
+                suggestionItem.addEventListener('mouseenter', function() {
+                    this.style.background = '#f5f5f5';
+                });
+                
+                suggestionItem.addEventListener('mouseleave', function() {
+                    this.style.background = 'white';
+                });
+                
+                suggestionItem.addEventListener('click', function() {
+                    selectPlace(prediction.place_id, input, suggestionsList, placesService);
+                });
+                
+                suggestionsList.appendChild(suggestionItem);
+            });
+            
+            // Add "powered by Google" footer
+            const footer = document.createElement('div');
+            footer.style.cssText = `
+                padding: 8px 16px;
+                font-size: 11px;
+                color: #666;
+                text-align: right;
+                border-top: 1px solid #eee;
+                background: #f9f9f9;
+            `;
+            footer.innerHTML = 'powered by <strong>Google</strong>';
+            suggestionsList.appendChild(footer);
+            
+            suggestionsList.style.display = 'block';
+        }
+
+        // Select place function
+        function selectPlace(placeId, input, suggestionsList, placesService) {
+            const request = {
+                placeId: placeId,
+                fields: ['formatted_address', 'geometry', 'name', 'place_id', 'types', 'address_components']
+            };
+            
+            placesService.getDetails(request, function(place, status) {
+                if (status === google.maps.places.PlacesServiceStatus.OK) {
+                    // 🆕 Enhanced address formatting for special places (airports, stations, hotels)
+                    let address;
+                    
+                    // Check if it's a special establishment that needs name + address
+                    const specialTypes = ['airport', 'train_station', 'subway_station', 'lodging', 'hospital', 'university'];
+                    const hasSpecialType = place.types && place.types.some(type => specialTypes.includes(type));
+                    
+                    if (hasSpecialType && place.name && place.formatted_address && place.name !== place.formatted_address) {
+                        // For airports, stations, hotels etc: combine name + address
+                        address = `${place.name}, ${place.formatted_address}`;
+                        console.log(`🏢 Special place detected: ${place.name} (types: ${place.types.join(', ')})`);
+                    } else {
+                        // For regular addresses: use formatted_address or name
+                        address = place.formatted_address || place.name;
+                    }
+                    
+                    // Validate if it's a complete address
+                    if (isValidCompleteAddress(place, address)) {
+                        input.value = address;
+                        input.classList.remove('error');
+                        input.classList.add('success');
+                        
+                        // Store location data
+                        if (input.id.includes('extraStop')) {
+                            // For extra stops, use the full ID
+                            localStorage.setItem(input.id + 'PlaceId', place.place_id);
+                            localStorage.setItem(input.id + 'Lat', place.geometry.location.lat());
+                            localStorage.setItem(input.id + 'Lng', place.geometry.location.lng());
+                            localStorage.setItem(input.id + 'Valid', 'true');
+                        } else {
+                            // For main locations (from/to)
+                            const prefix = input.id.replace('Location', '');
+                            localStorage.setItem(prefix + 'PlaceId', place.place_id);
+                            localStorage.setItem(prefix + 'Lat', place.geometry.location.lat());
+                            localStorage.setItem(prefix + 'Lng', place.geometry.location.lng());
+                            localStorage.setItem(prefix + 'Valid', 'true');
+                        }
+                        
+                        // Remove any existing error
+                        const existingError = input.parentElement.querySelector('.address-error');
+                        if (existingError) {
+                            existingError.remove();
+                        }
+                        
+                        suggestionsList.style.display = 'none';
+                        console.log('✅ Valid complete address selected:', address);
+                    } else {
+                        // Invalid address - show error
+                        showAddressError(input, 'Selecteer een volledig adres met straat, nummer en stad of een specifieke locatie (hotel, luchthaven, etc.)');
+                        suggestionsList.style.display = 'none';
+                        console.log('❌ Incomplete address rejected:', address);
+                    }
+                }
+            });
+        }
+
+        // Validate if address is complete
+        function isValidCompleteAddress(place, address) {
+            // Check if it's a specific establishment (airport, hotel, hospital, etc.)
+            const establishmentTypes = [
+                'airport', 'amusement_park', 'aquarium', 'art_gallery', 'atm', 'bakery', 'bank', 
+                'bar', 'beauty_salon', 'bicycle_store', 'book_store', 'bowling_alley', 'bus_station',
+                'cafe', 'campground', 'car_dealer', 'car_rental', 'car_repair', 'car_wash', 'casino',
+                'cemetery', 'church', 'city_hall', 'clothing_store', 'convenience_store', 'courthouse',
+                'dentist', 'department_store', 'doctor', 'drugstore', 'electrician', 'electronics_store',
+                'embassy', 'fire_station', 'florist', 'funeral_home', 'furniture_store', 'gas_station',
+                'gym', 'hair_care', 'hardware_store', 'hindu_temple', 'home_goods_store', 'hospital',
+                'insurance_agency', 'jewelry_store', 'laundry', 'lawyer', 'library', 'light_rail_station',
+                'liquor_store', 'local_government_office', 'locksmith', 'lodging', 'meal_delivery',
+                'meal_takeaway', 'mosque', 'movie_rental', 'movie_theater', 'moving_company', 'museum',
+                'night_club', 'painter', 'park', 'parking', 'pet_store', 'pharmacy', 'physiotherapist',
+                'plumber', 'police', 'post_office', 'primary_school', 'real_estate_agency', 'restaurant',
+                'roofing_contractor', 'rv_park', 'school', 'secondary_school', 'shoe_store', 'shopping_mall',
+                'spa', 'stadium', 'storage', 'store', 'subway_station', 'supermarket', 'synagogue',
+                'taxi_stand', 'tourist_attraction', 'train_station', 'transit_station', 'travel_agency',
+                'university', 'veterinary_care', 'zoo', 'establishment'
+            ];
+            
+            // If it's an establishment, it's valid
+            if (place.types && place.types.some(type => establishmentTypes.includes(type))) {
+                return true;
+            }
+            
+            // For regular addresses, check if it has street number and street name
+            let hasStreetNumber = false;
+            let hasStreetName = false;
+            let hasLocality = false;
+            
+            if (place.address_components) {
+                place.address_components.forEach(component => {
+                    if (component.types.includes('street_number')) {
+                        hasStreetNumber = true;
+                    }
+                    if (component.types.includes('route')) {
+                        hasStreetName = true;
+                    }
+                    if (component.types.includes('locality') || 
+                        component.types.includes('administrative_area_level_1') ||
+                        component.types.includes('administrative_area_level_2')) {
+                        hasLocality = true;
+                    }
+                });
+            }
+            
+            // Must have street number, street name, and locality for regular addresses
+            return hasStreetNumber && hasStreetName && hasLocality;
+        }
+
+        // Check if address is complete (street, number, city)
+        function hasStreetNumber(address) {
+            // Must have at least one number for street number
+            const hasNumber = /\b\d+[a-zA-Z]?\b/.test(address);
+            
+            // Must have comma (indicates city/postal code)
+            const hasComma = address.includes(',');
+            
+            // Must have multiple parts (street, number, postal, city, country)
+            const parts = address.split(',').map(p => p.trim());
+            const hasEnoughParts = parts.length >= 2;
+            
+            // Exception for known places without street numbers
+            const exceptions = [
+                'Airport', 'Luchthaven', 'Aéroport', 'Flughafen',  // Airport in EN/NL/FR/DE
+                'Station', 'Gare', 'Bahnhof',                      // Train station
+                'Terminal', 'Tower', 
+                'Hospital', 'Ziekenhuis', 'Hôpital', 'Krankenhaus', // Hospital
+                'University', 'Universiteit', 'Université',         // University
+                'Hotel', 'Centrum', 'Centre', 'Center',            // Other common places
+                'Haven', 'Port', 'Hafen'                           // Harbor/Port
+            ];
+            const isException = exceptions.some(exc => address.toLowerCase().includes(exc.toLowerCase()));
+            
+            // For exceptions, still need city
+            if (isException) {
+                return hasComma && hasEnoughParts;
+            }
+            
+            // Regular addresses need: number, comma, multiple parts
+            return hasNumber && hasComma && hasEnoughParts;
+        }
+
+        // Show error message
+        function showAddressError(input, message) {
+            // Remove existing error message from both container and after container
+            const existingError = input.parentElement.querySelector('.address-error');
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            // Also check for errors after the container
+            const nextError = input.parentElement.nextElementSibling;
+            if (nextError && nextError.classList.contains('address-error')) {
+                nextError.remove();
+            }
+            
+            // Add error class to input
+            input.classList.remove('success');
+            input.classList.add('error');
+            
+            // Create professional error message
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'address-error';
+            errorDiv.textContent = message;
+            
+            // Insert AFTER the input container (not inside it)
+            input.parentElement.insertAdjacentElement('afterend', errorDiv);
+            
+            // Auto-remove error after 10 seconds
+            setTimeout(() => {
+                if (errorDiv.parentElement) {
+                    errorDiv.remove();
+                    input.classList.remove('error');
+                }
+            }, 10000);
+        }
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBAitd_yXcPjG7VcDkiRrfc6IdgXAD5awk&libraries=places&callback=initGoogle"></script>
+    <script>
         // Global variables
         let extraStopCount = 0;
         const maxExtraStops = 7;
@@ -496,6 +900,25 @@
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
+            // Force clear all form fields on page load/refresh
+            const form = document.querySelector('.booking-container');
+            if (form) {
+                // Clear all text inputs
+                document.getElementById('fromLocation').value = '';
+                document.getElementById('toLocation').value = '';
+                document.getElementById('travelDate').value = '';
+                
+                // Clear any extra stops
+                const extraStopsContainer = document.getElementById('extraStopsContainer');
+                if (extraStopsContainer) {
+                    extraStopsContainer.innerHTML = '';
+                }
+                
+                // Reset counters
+                extraStopCount = 0;
+                returnActive = false;
+            }
+            
             initializePage();
         });
 
@@ -673,6 +1096,13 @@
             
             container.appendChild(stopDiv);
             
+            // Initialize enhanced autocomplete for extra stop
+            if (typeof google !== 'undefined' && google.maps && google.maps.places) {
+                const autocompleteService = new google.maps.places.AutocompleteService();
+                const placesService = new google.maps.places.PlacesService(document.createElement('div'));
+                setupEnhancedAutocomplete(`extraStop${extraStopCount}`, autocompleteService, placesService);
+            }
+            
             // Update button text
             const btn = document.getElementById('extraStopBtn');
             btn.querySelector('span').textContent = `➕ Add Stop`;
@@ -746,6 +1176,32 @@
                 return;
             }
             
+            // Check if addresses are valid from Google selection
+            const fromValid = localStorage.getItem('fromValid') === 'true';
+            const toValid = localStorage.getItem('toValid') === 'true';
+            
+            if (!fromValid) {
+                showAddressError(document.getElementById('fromLocation'), 'Selecteer een volledig adres uit de Google suggesties');
+                return;
+            }
+            
+            if (!toValid) {
+                showAddressError(document.getElementById('toLocation'), 'Selecteer een volledig adres uit de Google suggesties');
+                return;
+            }
+            
+            // Validate all extra stops
+            for (let i = 1; i <= extraStopCount; i++) {
+                const extraStopInput = document.getElementById(`extraStop${i}`);
+                if (extraStopInput && extraStopInput.value.trim()) {
+                    const extraStopValid = localStorage.getItem(`extraStop${i}Valid`) === 'true';
+                    if (!extraStopValid) {
+                        showAddressError(extraStopInput, 'Selecteer een volledig adres uit de Google suggesties');
+                        return;
+                    }
+                }
+            }
+            
             if (!travelHour || !travelMinute) {
                 alert('⚠️ Vul uur en minuut in');
                 return;
@@ -763,6 +1219,7 @@
             console.log('✅ Validation passed, continuing to vehicles...');
             window.location.href = 'step2.html';
         }
+
 
         // Initialize page with DATUM text
         document.addEventListener('DOMContentLoaded', function() {

@@ -870,6 +870,24 @@
             color: #007bff;
             font-size: 20px;
         }
+
+        .automatic-surcharge {
+            position: relative;
+        }
+        
+        .automatic-surcharge::before {
+            content: "AUTO";
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #2196f3;
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 10px;
+            z-index: 10;
+        }
         
         /* Notification animations */
         @keyframes slideIn {
@@ -894,7 +912,7 @@
             }
         }
     </style>
-    <!-- Google Maps API (only load if needed) -->
+    <!-- Google Maps API (dynamically loaded with admin panel key) -->
     <script src="maps-config.js"></script>
     <script>
         // Global variable for maps functionality
@@ -960,10 +978,13 @@
             <div id="passengerRecommendation" style="text-align: center; font-size: 14px; color: #666; margin-top: 15px;"></div>
         </div>
 
+        <!-- ROUTE INFORMATION -->
+        <div id="routeInfo" style="display: none;"></div>
+
         <!-- VEHICLES -->
         <div class="vehicles-section">
-            <!-- Trip Type Selector for Return Trips -->
-            <div id="tripTypeSelector" class="trip-type-selector" style="display: none;">
+            <!-- Trip Type Selector HIDDEN - Not needed for user interface -->
+            <div id="tripTypeSelector" class="trip-type-selector" style="display: none !important;">
                 <div class="trip-tabs">
                     <div class="trip-tab active" id="outboundTab" onclick="switchTripType('outbound')">
                         <span>📍 Heen reis</span>
@@ -1067,35 +1088,474 @@
         let pricingData = {};
         let currentTripType = 'outbound';
         let hasReturnTrip = false;
+        let calculatedDistance = 0; // in kilometers
+        let distanceCalculated = false;
+        let routeDetails = null;
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 STAP 2 - Page initializing...');
+            
+            // Load Google Maps API first
+            loadGoogleMapsAPI()
+                .then(() => {
+                    console.log('✅ Google Maps API loaded from admin settings');
+                    
+                    // Wait a moment for all Google Maps objects to be available
+                    setTimeout(() => {
+                        // Test if Google Maps is actually working
+                        if (typeof google !== 'undefined' && google.maps && google.maps.Geocoder) {
+                            console.log('✅ Google Maps object available');
+                            console.log('📍 Google Maps version:', google.maps.version);
+                            
+                            // Test Google Maps functionality with a simple geocode
+                            try {
+                                const testGeocoder = new google.maps.Geocoder();
+                                testGeocoder.geocode({ address: 'Brussels, Belgium' }, function(results, status) {
+                                    if (status === google.maps.GeocoderStatus.OK) {
+                                        console.log('✅ Google Maps Geocoder test successful');
+                                    } else {
+                                        console.error('❌ Google Maps Geocoder test failed:', status);
+                                    }
+                                });
+                            } catch (error) {
+                                console.error('❌ Google Maps Geocoder creation failed:', error);
+                            }
+                        } else {
+                            console.error('❌ Google Maps object not available after loading');
+                            console.log('📍 Available google object:', typeof google);
+                            if (typeof google !== 'undefined') {
+                                console.log('📍 Available google.maps:', typeof google.maps);
+                                if (google.maps) {
+                                    console.log('📍 Available Geocoder:', typeof google.maps.Geocoder);
+                                }
+                            }
+                        }
+                    }, 500); // Wait 500ms for full initialization
+                })
+                .catch((error) => {
+                    console.error('❌ Google Maps API failed to load:', error);
+                    console.log('📍 Error details:', error);
+                    
+                    // Check what's in localStorage
+                    const googleSettings = JSON.parse(localStorage.getItem('googleSettings') || '{}');
+                    console.log('📍 Google settings from localStorage:', googleSettings);
+                    
+                    console.log('📍 Using fallback route calculations');
+                });
+            
+            // Initialize counters from localStorage or defaults
+            initializeCounters();
+            
+            // Initial vehicle filtering after counters are set
+            console.log('🔄 Running initial vehicle filtering...');
+            
             checkReturnTrip();
             loadSystemData();
-            // Set default passengers to 1
-            selectPassengers(1);
-            // Load route information
-            loadRouteInfo();
+            
+            // Load and display route info from STEP 1
+            loadRouteInfoFromStep1();
+            calculateRouteDistance();
+            // Do NOT override user's counter selection
+            // selectPassengers(1); // Disabled - initializeCounters() already sets correct values
+            // Load route information - DISABLED (route info hidden)
+            // loadRouteInfo();
             // Load surcharge items immediately
             console.log('📄 Loading surcharge items...');
             loadSurchargeItems();
+            
+            // Start pricing update checker
+            console.log('💰 Starting pricing update checker...');
+            setInterval(checkForPricingUpdates, 2000); // Check every 2 seconds
+            
             console.log('✅ STAP 2 - Page initialized');
             
-            // Set up automatic checking for admin surcharge updates
-            setInterval(checkForSurchargeUpdates, 5000); // Check every 5 seconds
+            // Debug vehicle capacity data
+            debugVehicleCapacityData();
+            
+            // Set up automatic checking for admin updates
+            setInterval(checkForAdminUpdates, 5000); // Check every 5 seconds
         });
 
+        function checkForAdminUpdates() {
+            // Check for surcharge updates
+            checkForSurchargeUpdates();
+            
+            // Check for vehicle capacity updates
+            checkForVehicleUpdates();
+        }
+
+        function checkForVehicleUpdates() {
+            const currentTimestamp = localStorage.getItem('vehicleUpdateTimestamp');
+            const lastCheckedTimestamp = window.lastVehicleCheck || 0;
+            
+            if (currentTimestamp && currentTimestamp > lastCheckedTimestamp) {
+                console.log('🔄 Vehicle capacity updates detected, refreshing...');
+                window.lastVehicleCheck = currentTimestamp;
+                
+                // Reload vehicle data
+                loadSystemData();
+                
+                // Re-render vehicles with new capacity data
+                if (vehicles && vehicles.length > 0) {
+                    renderVehicles();
+                    filterAndRenderVehicles();
+                }
+                
+                console.log('✅ Vehicle capacity data refreshed');
+            }
+        }
+
+        function debugVehicleCapacityData() {
+            console.log('🔍 DEBUG: Vehicle Capacity Data Analysis');
+            
+            const savedVehicles = localStorage.getItem('taxiVehicles');
+            if (!savedVehicles) {
+                console.warn('⚠️ No vehicle data found in localStorage.taxiVehicles');
+                return;
+            }
+            
+            try {
+                const vehicleData = JSON.parse(savedVehicles);
+                console.log('📊 Raw vehicle data from localStorage:');
+                
+                vehicleData.forEach(vehicle => {
+                    console.log(`🚗 ${vehicle.id} (${vehicle.name}):`);
+                    console.log(`   Admin Config: passengers=${vehicle.capacity?.passengers || 'undefined'}, luggage=${vehicle.capacity?.luggage || 'undefined'}, handLuggage=${vehicle.capacity?.handLuggage || 'undefined'}`);
+                    console.log(`   Fallback Props: passengers=${vehicle.passengers || 'undefined'}, luggage=${vehicle.luggage || 'undefined'}, handBags=${vehicle.handBags || 'undefined'}`);
+                    
+                    // Test getBagageInfo for this vehicle
+                    const bagageInfo = getBagageInfo(vehicle.id);
+                    console.log(`   Final Capacity: passengers=${bagageInfo.passengers}, luggages=${bagageInfo.luggages}, bags=${bagageInfo.bags}`);
+                });
+                
+            } catch (e) {
+                console.error('❌ Error parsing vehicle data:', e);
+            }
+        }
+
+        async function calculateRouteDistance() {
+            console.log('🗺️ Calculating route distance with stops...');
+            
+            const fromLocation = localStorage.getItem('fromLocation');
+            const toLocation = localStorage.getItem('toLocation');
+            const extraStopCount = parseInt(localStorage.getItem('extraStopCount') || '0');
+            
+            if (!fromLocation || !toLocation) {
+                console.warn('⚠️ Missing from/to locations for distance calculation');
+                return;
+            }
+            
+            // Collect all extra stops
+            const extraStops = [];
+            for (let i = 1; i <= extraStopCount; i++) {
+                const stopLocation = localStorage.getItem(`extraStop${i}`) || localStorage.getItem(`extraStop${i}Location`);
+                if (stopLocation && stopLocation.trim()) {
+                    extraStops.push(stopLocation.trim());
+                }
+            }
+            
+            console.log(`📍 Route: ${fromLocation} ${extraStops.length > 0 ? '→ ' + extraStops.join(' → ') + ' ' : ''}→ ${toLocation}`);
+            
+            // Show loading indicator
+            showDistanceLoading();
+            
+            try {
+                if (typeof google !== 'undefined' && google.maps) {
+                    
+                    // Try to get saved coordinates from Step 1 first
+                    const fromLat = localStorage.getItem('fromLat');
+                    const fromLng = localStorage.getItem('fromLng');
+                    const toLat = localStorage.getItem('toLat');
+                    const toLng = localStorage.getItem('toLng');
+                    
+                    let fromCoords, toCoords;
+                    
+                    if (fromLat && fromLng && toLat && toLng) {
+                        // Use saved coordinates from Step 1
+                        fromCoords = { lat: parseFloat(fromLat), lng: parseFloat(fromLng) };
+                        toCoords = { lat: parseFloat(toLat), lng: parseFloat(toLng) };
+                        console.log('📍 Using saved coordinates from Step 1');
+                    } else {
+                        // Fallback to geocoding
+                        console.log('📍 Geocoding addresses...');
+                        const geocoder = new google.maps.Geocoder();
+                        fromCoords = await geocodeAddress(geocoder, fromLocation);
+                        toCoords = await geocodeAddress(geocoder, toLocation);
+                    }
+                    
+                    if (fromCoords && toCoords) {
+                        // Try Directions Service for accurate driving distance with waypoints
+                        try {
+                            const directionsService = new google.maps.DirectionsService();
+                            
+                            // Build waypoints from extra stops
+                            const waypoints = [];
+                            if (extraStops.length > 0) {
+                                for (const stop of extraStops) {
+                                    waypoints.push({
+                                        location: stop,
+                                        stopover: true
+                                    });
+                                }
+                            }
+                            
+                            const result = await new Promise((resolve, reject) => {
+                                directionsService.route({
+                                    origin: fromLocation,
+                                    destination: toLocation,
+                                    waypoints: waypoints,
+                                    travelMode: google.maps.TravelMode.DRIVING,
+                                    unitSystem: google.maps.UnitSystem.METRIC,
+                                    optimizeWaypoints: false // Keep order of stops
+                                }, (response, status) => {
+                                    if (status === google.maps.DirectionsStatus.OK) {
+                                        resolve(response);
+                                    } else {
+                                        reject(new Error(`Directions API error: ${status}`));
+                                    }
+                                });
+                            });
+                            
+                            // Extract total distance and duration from all route legs
+                            const route = result.routes[0];
+                            let totalDistance = 0;
+                            let totalDuration = 0;
+                            
+                            // Sum all legs (A→Stop1, Stop1→Stop2, Stop2→B)
+                            route.legs.forEach(leg => {
+                                totalDistance += leg.distance.value;
+                                totalDuration += leg.duration.value;
+                            });
+                            
+                            calculatedDistance = Math.round((totalDistance / 1000) * 100) / 100;
+                            distanceCalculated = true;
+                            
+                            // Format duration
+                            const hours = Math.floor(totalDuration / 3600);
+                            const minutes = Math.floor((totalDuration % 3600) / 60);
+                            const durationText = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+                            
+                            routeDetails = {
+                                distance: `${calculatedDistance} km`,
+                                duration: durationText,
+                                distanceKm: calculatedDistance,
+                                stops: extraStops.length,
+                                route: `${fromLocation}${extraStops.length > 0 ? ' → ' + extraStops.join(' → ') + ' ' : ''}→ ${toLocation}`
+                            };
+                            
+                            console.log(`✅ Route calculated via Directions API with ${extraStops.length} stops: ${calculatedDistance} km (${durationText})`);
+                            
+                        } catch (directionsError) {
+                            console.warn('⚠️ Directions API failed, using straight-line distance with stops:', directionsError);
+                            
+                            // Fallback: calculate straight-line distance including all stops
+                            let totalStraightDistance = 0;
+                            
+                            // Get coordinates for all stops
+                            const allStopCoords = [fromCoords];
+                            
+                            // Add extra stop coordinates (if we have them)
+                            for (let i = 1; i <= extraStops.length; i++) {
+                                const stopLat = localStorage.getItem(`extraStop${i}Lat`);
+                                const stopLng = localStorage.getItem(`extraStop${i}Lng`);
+                                if (stopLat && stopLng) {
+                                    allStopCoords.push({ lat: parseFloat(stopLat), lng: parseFloat(stopLng) });
+                                }
+                            }
+                            
+                            allStopCoords.push(toCoords);
+                            
+                            // Calculate distance between consecutive points
+                            for (let i = 0; i < allStopCoords.length - 1; i++) {
+                                const segmentDistance = google.maps.geometry.spherical.computeDistanceBetween(
+                                    new google.maps.LatLng(allStopCoords[i].lat, allStopCoords[i].lng),
+                                    new google.maps.LatLng(allStopCoords[i + 1].lat, allStopCoords[i + 1].lng)
+                                );
+                                totalStraightDistance += segmentDistance;
+                            }
+                            
+                            // Convert to km and add 30% for road routing (approximation)
+                            calculatedDistance = Math.round(((totalStraightDistance / 1000) * 1.3) * 100) / 100;
+                            distanceCalculated = true;
+                            
+                            // Estimate duration (assuming 50 km/h average speed)
+                            const estimatedDuration = Math.round((calculatedDistance / 50) * 60); // minutes
+                            
+                            routeDetails = {
+                                distance: `${calculatedDistance} km`,
+                                duration: `~${estimatedDuration} min`,
+                                distanceKm: calculatedDistance,
+                                stops: extraStops.length,
+                                route: `${fromLocation}${extraStops.length > 0 ? ' → ' + extraStops.join(' → ') + ' ' : ''}→ ${toLocation}`
+                            };
+                            
+                            console.log(`✅ Route estimated via straight-line with ${extraStops.length} stops: ${calculatedDistance} km (~${estimatedDuration} min)`);
+                        }
+                        
+                        // Update route info display
+                        updateRouteDisplay();
+                        
+                        // Recalculate vehicle prices with distance
+                        recalculateVehiclePrices();
+                        
+                    } else {
+                        throw new Error('Could not get coordinates for addresses');
+                    }
+                    
+                } else {
+                    throw new Error('Google Maps not loaded');
+                }
+                
+            } catch (error) {
+                console.error('❌ Distance calculation failed:', error);
+                // Fallback to minimum prices
+                calculatedDistance = 0;
+                distanceCalculated = false;
+                hideDistanceLoading();
+                showDistanceError();
+            }
+        }
+
+        async function geocodeAddress(geocoder, address) {
+            return new Promise((resolve, reject) => {
+                geocoder.geocode({ address: address }, (results, status) => {
+                    if (status === google.maps.GeocoderStatus.OK && results[0]) {
+                        const location = results[0].geometry.location;
+                        resolve({
+                            lat: location.lat(),
+                            lng: location.lng()
+                        });
+                    } else {
+                        reject(new Error(`Geocoding failed for ${address}: ${status}`));
+                    }
+                });
+            });
+        }
+
+        function showDistanceLoading() {
+            // Route information hidden as requested
+            const routeInfo = document.getElementById('routeInfo');
+            if (routeInfo) {
+                routeInfo.style.display = 'none';
+            }
+        }
+
+        function hideDistanceLoading() {
+            // Route information hidden as requested
+            const routeInfo = document.getElementById('routeInfo');
+            if (routeInfo) {
+                routeInfo.style.display = 'none';
+            }
+        }
+
+        function showDistanceError() {
+            // Route information hidden as requested
+            const routeInfo = document.getElementById('routeInfo');
+            if (routeInfo) {
+                routeInfo.style.display = 'none';
+            }
+        }
+
+        function updateRouteDisplay() {
+            // Route information hidden as requested
+            const routeInfo = document.getElementById('routeInfo');
+            if (routeInfo) {
+                routeInfo.style.display = 'none';
+                return;
+            }
+            if (routeInfo && routeDetails) {
+                let stopsInfo = '';
+                if (routeDetails.stops > 0) {
+                    stopsInfo = `<div style="color: #666; font-size: 12px; margin-top: 8px;">
+                        Route: ${routeDetails.route}
+                    </div>`;
+                }
+                
+                // Route information hidden as requested
+                routeInfo.style.display = 'none';
+            }
+        }
+
+        function recalculateVehiclePrices() {
+            console.log('💰 Recalculating vehicle prices with distance...');
+            
+            // Update selected vehicle pricing data if a vehicle is already selected
+            if (selectedVehicleOutbound) {
+                const vehicleId = selectedVehicleOutbound.vehicle.id;
+                const basePricing = pricingData[vehicleId] || { minimumPrice: 50.00, pricePerKm: 2.00 };
+                const newPricing = calculateDistanceBasedPricing(basePricing);
+                
+                // Update the selected vehicle's pricing data
+                selectedVehicleOutbound.pricing = newPricing;
+                console.log(`💰 Updated selected vehicle (${selectedVehicleOutbound.vehicle.name}) pricing:`, newPricing);
+                
+                // Update the total price immediately
+                updateTotalPrice();
+            }
+            
+            if (selectedVehicleReturn) {
+                const vehicleId = selectedVehicleReturn.vehicle.id;
+                const basePricing = pricingData[vehicleId] || { minimumPrice: 50.00, pricePerKm: 2.00 };
+                const newPricing = calculateDistanceBasedPricing(basePricing);
+                
+                // Update the selected vehicle's pricing data
+                selectedVehicleReturn.pricing = newPricing;
+                console.log(`💰 Updated selected return vehicle (${selectedVehicleReturn.vehicle.name}) pricing:`, newPricing);
+            }
+            
+            // Trigger vehicle grid re-render with new distance-based prices
+            renderVehicles();
+        }
+
+        function calculateDistanceBasedPricing(basePricing) {
+            if (!distanceCalculated || calculatedDistance <= 0) {
+                // If distance is not calculated or invalid, use minimum price only
+                return {
+                    minimumPrice: basePricing.minimumPrice,
+                    pricePerKm: basePricing.pricePerKm,
+                    isDistanceBased: false
+                };
+            }
+            
+            // Calculate effective distance (double for return trips)
+            const effectiveDistance = hasReturnTrip ? calculatedDistance * 2 : calculatedDistance;
+            
+            // Calculate distance-based price: km × pricePerKm
+            const distancePrice = effectiveDistance * basePricing.pricePerKm;
+            
+            // Use the higher of: minimum price OR distance-based price
+            const calculatedPrice = Math.max(distancePrice, basePricing.minimumPrice);
+            
+            // Round up to next whole euro
+            const finalPrice = Math.ceil(calculatedPrice);
+            
+            // Determine if minimum or distance price was used (before rounding)
+            const usingMinimum = calculatedPrice === basePricing.minimumPrice;
+            
+            const tripText = hasReturnTrip ? ' (heen & terug)' : '';
+            console.log(`📊 Distance pricing: ${calculatedDistance}km${tripText} × €${basePricing.pricePerKm} = €${distancePrice.toFixed(2)} ${usingMinimum ? '< min €' + basePricing.minimumPrice + ' → using minimum' : '> min → using distance'} → rounded up to €${finalPrice}`);
+            
+            return {
+                minimumPrice: finalPrice,
+                pricePerKm: basePricing.pricePerKm,
+                isDistanceBased: true,
+                originalMinimum: basePricing.minimumPrice,
+                distanceKm: calculatedDistance,
+                effectiveDistanceKm: effectiveDistance,
+                distanceCharge: distancePrice,
+                usingMinimum: usingMinimum,
+                hasReturnTrip: hasReturnTrip
+            };
+        }
 
         function checkReturnTrip() {
             const returnActive = localStorage.getItem('returnActive');
             hasReturnTrip = returnActive === 'true';
             
-            if (hasReturnTrip) {
-                document.getElementById('tripTypeSelector').style.display = 'block';
-            } else {
-                document.getElementById('tripTypeSelector').style.display = 'none';
-            }
+            // Trip selector tabs hidden - not needed for user interface
+            // Both outbound and return use same vehicle
+            document.getElementById('tripTypeSelector').style.display = 'none';
         }
 
         function switchTripType(tripType) {
@@ -1131,16 +1591,37 @@
                 createDefaultVehicles();
             }
 
-            // Load pricing from Distance & Time Pricing (admin system)
-            const savedPricing = localStorage.getItem('vehiclePricing');
-            if (savedPricing) {
-                pricingData = JSON.parse(savedPricing);
+            // Load pricing from Distance & Time Pricing (admin system) - prioritize admin data
+            let adminPricing = localStorage.getItem('vehiclePricing');
+            let bookingPricing = localStorage.getItem('bookingSystemPricing');
+            
+            if (adminPricing) {
+                // Use admin panel pricing data (preferred)
+                pricingData = JSON.parse(adminPricing);
+                console.log('✅ Loading pricing from admin panel (Distance & Time Pricing)');
+                console.log('💰 Admin pricing data:', pricingData);
+            } else if (bookingPricing) {
+                // Fallback to booking system pricing data
+                const bookingData = JSON.parse(bookingPricing);
+                pricingData = {};
+                Object.keys(bookingData).forEach(vehicleId => {
+                    pricingData[vehicleId] = {
+                        minimumPrice: bookingData[vehicleId].minimumPrice,
+                        pricePerKm: bookingData[vehicleId].pricePerKm
+                    };
+                });
+                console.log('⚠️ Loading pricing from booking system fallback');
             } else {
+                // Last resort: create defaults
+                console.log('❌ No admin pricing found, creating defaults');
                 createDefaultPricing();
             }
 
             setTimeout(() => {
                 renderVehicles();
+                // Run vehicle filtering after vehicles are loaded and rendered
+                console.log('🔄 Running vehicle filtering after data load...');
+                filterAndRenderVehicles();
             }, 500);
         }
 
@@ -1196,6 +1677,45 @@
             updateStatus('✅ Default pricing aangemaakt', '#ffc107');
         }
 
+        // Auto-sync pricing updates from admin panel
+        function checkForPricingUpdates() {
+            const lastUpdateTime = localStorage.getItem('pricingLastUpdate');
+            const currentAdminPricing = localStorage.getItem('vehiclePricing');
+            
+            if (currentAdminPricing) {
+                const adminData = JSON.parse(currentAdminPricing);
+                
+                // Check if admin data differs from current data
+                const currentData = JSON.stringify(pricingData);
+                const adminDataString = JSON.stringify(adminData);
+                
+                if (currentData !== adminDataString) {
+                    console.log('🔄 Admin pricing data updated, refreshing...');
+                    pricingData = adminData;
+                    
+                    // Show update notification
+                    showPricingUpdateNotification();
+                    
+                    // Re-render vehicles with new pricing
+                    recalculateVehiclePrices();
+                }
+            }
+        }
+
+        function showPricingUpdateNotification() {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed; top: 20px; right: 20px; background: #28a745; color: white;
+                padding: 15px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                z-index: 1000; font-size: 14px; font-weight: 600; max-width: 300px;
+                animation: slideIn 0.3s ease-out;
+            `;
+            notification.innerHTML = '🔄 Prijzen bijgewerkt vanuit Admin Distance & Time Pricing';
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.remove(), 3000);
+        }
+
         function renderVehicles() {
             renderVehicleGrid('vehicleGridOutbound', 'outbound');
             if (hasReturnTrip) {
@@ -1232,11 +1752,15 @@
             }
 
             activeVehicles.forEach(vehicle => {
-                const pricing = pricingData[vehicle.id] || { minimumPrice: 50.00, pricePerKm: 2.00 };
+                const basePricing = pricingData[vehicle.id] || { minimumPrice: 50.00, pricePerKm: 2.00 };
+                const pricing = calculateDistanceBasedPricing(basePricing);
                 
                 const card = document.createElement('div');
                 card.className = 'vehicle-card';
-                card.onclick = () => selectVehicle(vehicle, pricing, tripType);
+                card.onclick = (event) => {
+                    console.log(`🔍 Vehicle card clicked: ${vehicle.name}`);
+                    selectVehicle(vehicle, pricing, tripType, event.currentTarget);
+                };
                 
                 // Check if this vehicle is selected for this trip type
                 const isSelected = (tripType === 'outbound' && selectedVehicleOutbound?.vehicle.id === vehicle.id) ||
@@ -1297,19 +1821,23 @@
                 const bagageInfo = getBagageInfo(vehicle.id);
                 
                 // Calculate price and label based on trip type
-                let displayPrice, displayLabel;
+                let displayPrice, displayLabel, priceDetails = '';
                 
                 if (hasReturnTrip) {
+                    const returnPrice = Math.ceil(pricing.minimumPrice * 2); // Round up double price
                     if (tripType === 'outbound') {
-                        displayPrice = (pricing.minimumPrice * 2).toFixed(0); // Double price for return trip
+                        displayPrice = returnPrice; // Already whole number
                         displayLabel = 'Heen & Terug';
                     } else {
-                        displayPrice = (pricing.minimumPrice * 2).toFixed(0); // Double price for return trip
+                        displayPrice = returnPrice; // Already whole number
                         displayLabel = 'Heen & Terug';
                     }
                 } else {
-                    displayPrice = pricing.minimumPrice.toFixed(0);
+                    displayPrice = pricing.minimumPrice; // Already rounded up to whole number
                     displayLabel = 'Enkele reis';
+                    
+                    // Price calculation details hidden from customers
+                    // Only show final price, not the breakdown
                 }
                 
                 card.innerHTML = `
@@ -1349,25 +1877,48 @@
 
         }
 
-        function selectVehicle(vehicle, pricing, tripType) {
+        function selectVehicle(vehicle, pricing, tripType, cardElement = null) {
+            console.log(`🚗 selectVehicle called: ${vehicle.name}, tripType: ${tripType}`);
+            
             // Remove previous selection from current trip type grid
             const currentGrid = tripType === 'outbound' ? 'vehicleGridOutbound' : 'vehicleGridReturn';
-            document.querySelectorAll(`#${currentGrid} .vehicle-card`).forEach(card => {
-                card.classList.remove('selected');
-            });
+            const grid = document.getElementById(currentGrid);
+            
+            if (grid) {
+                document.querySelectorAll(`#${currentGrid} .vehicle-card`).forEach(card => {
+                    card.classList.remove('selected');
+                });
 
-            // Select current vehicle
-            event.currentTarget.classList.add('selected');
+                // Select the clicked card directly if provided
+                if (cardElement) {
+                    cardElement.classList.add('selected');
+                    console.log(`🚗 Vehicle card selected via cardElement: ${vehicle.name}`);
+                } else {
+                    // Fallback: Find and select the vehicle card by name
+                    const vehicleCards = grid.querySelectorAll('.vehicle-card');
+                    vehicleCards.forEach(card => {
+                        const cardText = card.textContent || card.innerText;
+                        if (cardText.includes(vehicle.name)) {
+                            card.classList.add('selected');
+                            console.log(`🚗 Vehicle card selected via fallback: ${vehicle.name}`);
+                        }
+                    });
+                }
+            } else {
+                console.error(`🚗 Grid not found: ${currentGrid}`);
+            }
             
             // Store selection for the appropriate trip type
             if (tripType === 'outbound') {
                 selectedVehicleOutbound = { vehicle, pricing, tripType };
+                console.log(`🚗 Selected Outbound Vehicle: ${vehicle.name} - Base Price: €${pricing.minimumPrice.toFixed(2)}`);
             } else {
                 selectedVehicleReturn = { vehicle, pricing, tripType };
+                console.log(`🚗 Selected Return Vehicle: ${vehicle.name} - Base Price: €${pricing.minimumPrice.toFixed(2)}`);
             }
 
-            // Update passenger count based on vehicle selection
-            updatePassengerCountForVehicle(vehicle.id);
+            // Do NOT automatically update passenger count - user should control this
+            // updatePassengerCountForVehicle(vehicle.id); // Disabled - let user choose
 
             // Update selected info display
             updateSelectedInfo();
@@ -1381,20 +1932,27 @@
         }
 
         function updateSelectedInfo() {
+            console.log(`🔄 updateSelectedInfo called, currentTripType: ${currentTripType}`);
+            console.log(`🔄 selectedVehicleOutbound:`, selectedVehicleOutbound);
+            console.log(`🔄 selectedVehicleReturn:`, selectedVehicleReturn);
+            
             const selectedInfo = document.getElementById('selectedInfo');
             const selectedName = document.getElementById('selectedVehicleName');
             const selectedMinPrice = document.getElementById('selectedMinPrice');
             
             if (currentTripType === 'outbound' && selectedVehicleOutbound) {
                 selectedName.textContent = selectedVehicleOutbound.vehicle.name;
-                selectedMinPrice.textContent = `€${selectedVehicleOutbound.pricing.minimumPrice.toFixed(2)}`;
                 selectedInfo.style.display = 'block';
+                // Let updateTotalPrice handle the price calculation with surcharges
+                updateTotalPrice();
             } else if (currentTripType === 'return' && selectedVehicleReturn) {
                 selectedName.textContent = selectedVehicleReturn.vehicle.name;
-                selectedMinPrice.textContent = `€${selectedVehicleReturn.pricing.minimumPrice.toFixed(2)}`;
                 selectedInfo.style.display = 'block';
+                // Let updateTotalPrice handle the price calculation with surcharges
+                updateTotalPrice();
             } else {
                 selectedInfo.style.display = 'none';
+                selectedMinPrice.textContent = '';
             }
         }
 
@@ -1419,10 +1977,10 @@
             // Set counts based on vehicle type
             switch(vehicleId) {
                 case 'saloon':
-                    suggestedPassengers = 3;
+                    suggestedPassengers = 4; // Fixed: was 3, now 4 to match admin
                     suggestedKoffers = 2;
                     suggestedHandbagage = 2;
-                    recommendationText = 'Saloon: ideaal voor 1-3 passagiers';
+                    recommendationText = 'Saloon: ideaal voor 1-4 passagiers';
                     break;
                 case 'estate':
                     suggestedPassengers = 4;
@@ -1499,13 +2057,23 @@
             if (extraStopCount > 0) {
                 const stopoverItem = surchargeItems.fixed.find(item => item.id === 'stopover');
                 if (stopoverItem) {
+                    let stopoverTotal = stopoverItem.price * extraStopCount;
+                    let effectiveQuantity = extraStopCount;
+                    
+                    // For return trips, double the stopover charges
+                    if (hasReturnTrip) {
+                        stopoverTotal = stopoverTotal * 2;
+                        effectiveQuantity = extraStopCount * 2; // Show total stops for both directions
+                    }
+                    
                     automaticStopoverCharges = {
                         'stopover': {
                             name: stopoverItem.name,
                             price: stopoverItem.price,
-                            quantity: extraStopCount,
+                            quantity: effectiveQuantity,
                             type: 'automatic',
-                            total: stopoverItem.price * extraStopCount
+                            total: stopoverTotal,
+                            isReturnTrip: hasReturnTrip
                         }
                     };
                 }
@@ -1576,9 +2144,43 @@
             handbagage: 0
         };
 
+        // Initialize counters from localStorage or defaults
+        function initializeCounters() {
+            console.log('🔢 Initializing counters...');
+            
+            // Load from localStorage if available
+            const savedPassengers = localStorage.getItem('selectedPassengers');
+            const savedKoffers = localStorage.getItem('selectedKoffers');
+            const savedHandbagage = localStorage.getItem('selectedHandbagage');
+            
+            if (savedPassengers) {
+                counters.passengers = parseInt(savedPassengers) || 1;
+            }
+            if (savedKoffers) {
+                counters.koffers = parseInt(savedKoffers) || 0;
+            }
+            if (savedHandbagage) {
+                counters.handbagage = parseInt(savedHandbagage) || 0;
+            }
+            
+            console.log('🔢 Counters initialized:', counters);
+            
+            // Update display
+            document.getElementById('passengersCount').textContent = counters.passengers;
+            document.getElementById('koffersCount').textContent = counters.koffers;
+            document.getElementById('handbagageCount').textContent = counters.handbagage;
+            
+            console.log('🔢 Counter displays updated');
+        }
+
         function changeCount(type, delta) {
+            console.log(`🔢 changeCount called: ${type}, delta: ${delta}`);
+            console.log(`🔢 Current counters:`, counters);
+            
             const current = counters[type];
             let newValue = current + delta;
+            
+            console.log(`🔢 Current value: ${current}, New value before limits: ${newValue}`);
             
             // Set limits
             if (type === 'passengers') {
@@ -1587,15 +2189,29 @@
                 newValue = Math.max(0, Math.min(8, newValue));
             }
             
+            console.log(`🔢 Final new value: ${newValue}`);
+            
             counters[type] = newValue;
             
             // Update display
-            document.getElementById(`${type}Count`).textContent = newValue;
+            const element = document.getElementById(`${type}Count`);
+            if (element) {
+                element.textContent = newValue;
+                console.log(`🔢 Updated ${type}Count display to: ${newValue}`);
+            } else {
+                console.error(`🔢 Element ${type}Count not found!`);
+            }
             
             // Save to localStorage
             localStorage.setItem('selectedPassengers', counters.passengers);
             localStorage.setItem('selectedKoffers', counters.koffers);
             localStorage.setItem('selectedHandbagage', counters.handbagage);
+            
+            console.log(`🔢 Saved to localStorage:`, {
+                passengers: counters.passengers,
+                koffers: counters.koffers, 
+                handbagage: counters.handbagage
+            });
             
             // Trigger vehicle filtering for any counter change
             filterAndRenderVehicles();
@@ -1607,71 +2223,98 @@
             const koffers = counters.koffers;
             const handbagage = counters.handbagage;
             
+            console.log(`🔍 Filtering vehicles for: ${passengers} passengers, ${koffers} koffers, ${handbagage} handbagage`);
             
             // Dynamic vehicle selection based on actual vehicle capacities
             const recommendation = document.getElementById('passengerRecommendation');
             let recommendedVehicle = null;
-            const totalLuggage = koffers + handbagage;
 
-            // Get actual vehicle capacities from loaded vehicles (support both data structures)
+            // Get actual vehicle capacities from Vehicle-manager configuration
             const vehicleCapacities = {};
             vehicles.forEach(vehicle => {
+                const bagageInfo = getBagageInfo(vehicle.id); // Use existing function
                 vehicleCapacities[vehicle.id] = {
-                    passengers: vehicle.passengers || vehicle.capacity?.passengers || 4,
-                    luggage: (vehicle.luggage || 0) + (vehicle.handLuggage || 0) || vehicle.capacity?.luggage || 2
+                    passengers: bagageInfo.passengers,
+                    koffers: bagageInfo.luggages,
+                    handbagage: bagageInfo.bags
                 };
+                console.log(`🚗 Vehicle ${vehicle.id} (${vehicle.name}) capacity: ${bagageInfo.passengers} passengers, ${bagageInfo.luggages} koffers, ${bagageInfo.bags} handbagage`);
             });
 
-
-            // Find best vehicle based on actual capacities
+            // Find best vehicle based on actual capacities (koffers AND handbagage separately)
             let bestVehicle = null;
             let bestScore = -1;
 
-            vehicles.filter(v => v.active).forEach(vehicle => {
+            vehicles.filter(v => v.active !== false).forEach(vehicle => {
                 const capacity = vehicleCapacities[vehicle.id];
                 let score = 0;
 
-                // Check if vehicle can handle requirements
-                if (capacity.passengers >= passengers && capacity.luggage >= totalLuggage) {
+                // Check if vehicle can handle ALL requirements separately
+                const canHandlePassengers = capacity.passengers >= passengers;
+                const canHandleKoffers = capacity.koffers >= koffers;
+                const canHandleHandbagage = capacity.handbagage >= handbagage;
+                
+                console.log(`🚗 Testing ${vehicle.name}: passengers ${capacity.passengers}>=${passengers}=${canHandlePassengers}, koffers ${capacity.koffers}>=${koffers}=${canHandleKoffers}, handbagage ${capacity.handbagage}>=${handbagage}=${canHandleHandbagage}`);
+
+                if (canHandlePassengers && canHandleKoffers && canHandleHandbagage) {
                     // Give higher score to vehicles that fit better (not oversized)
-                    score = 100 - (capacity.passengers - passengers) - (capacity.luggage - totalLuggage);
+                    score = 1000 
+                        - Math.abs(capacity.passengers - passengers) * 10
+                        - Math.abs(capacity.koffers - koffers) * 5  
+                        - Math.abs(capacity.handbagage - handbagage) * 5;
+                    
+                    console.log(`✅ ${vehicle.name} can handle requirements, score: ${score}`);
                     
                     if (score > bestScore) {
                         bestScore = score;
                         bestVehicle = vehicle;
+                        console.log(`🏆 New best vehicle: ${vehicle.name} (score: ${score})`);
                     }
+                } else {
+                    console.log(`❌ ${vehicle.name} cannot handle requirements`);
                 }
             });
 
             if (bestVehicle) {
                 const capacity = vehicleCapacities[bestVehicle.id];
-                let reason = '';
+                let reasonParts = [];
                 
-                if (passengers > 4) {
-                    reason = `(${passengers} passagiers)`;
-                } else if (totalLuggage > 3) {
-                    reason = `(${totalLuggage} bagage)`;
+                if (passengers > 1) {
+                    reasonParts.push(`${passengers} passagiers`);
+                }
+                if (koffers > 0) {
+                    reasonParts.push(`${koffers} koffers`);
+                }
+                if (handbagage > 0) {
+                    reasonParts.push(`${handbagage} handbagage`);
                 }
                 
-                recommendation.textContent = `Aanbevolen: ${bestVehicle.name} ${reason}`;
+                const reason = reasonParts.length > 0 ? `(${reasonParts.join(', ')})` : '';
+                
+                recommendation.textContent = `✅ Aanbevolen: ${bestVehicle.name} ${reason}`;
                 recommendedVehicle = bestVehicle.id;
+                
+                console.log(`🎯 Recommended vehicle: ${bestVehicle.name} for ${reason}`);
                 
             } else {
                 // No vehicle can handle requirements - recommend largest vehicle
                 const largestVehicle = vehicles
-                    .filter(v => v.active)
+                    .filter(v => v.active !== false)
                     .sort((a, b) => {
                         const aCapacity = vehicleCapacities[a.id];
                         const bCapacity = vehicleCapacities[b.id];
-                        return (bCapacity.passengers + bCapacity.luggage) - (aCapacity.passengers + aCapacity.luggage);
+                        return (bCapacity.passengers + bCapacity.koffers + bCapacity.handbagage) - 
+                               (aCapacity.passengers + aCapacity.koffers + aCapacity.handbagage);
                     })[0];
                 
                 if (largestVehicle) {
-                    recommendation.textContent = `⚠️ ${largestVehicle.name} (grootste beschikbare)`;
+                    recommendation.textContent = `⚠️ ${largestVehicle.name} (grootste beschikbare - vereisten te hoog)`;
                     recommendedVehicle = largestVehicle.id;
+                    console.log(`⚠️ No vehicle can handle requirements, recommending largest: ${largestVehicle.name}`);
                 } else {
                     recommendation.textContent = '⚠️ Geen voertuigen beschikbaar';
                     recommendedVehicle = null;
+                    console.log(`❌ No vehicles available`);
                 }
             }
 
@@ -1681,10 +2324,13 @@
             // Auto-select recommended vehicle AND highlight it
             setTimeout(() => {
                 if (recommendedVehicle) {
+                    console.log(`🎯 Auto-selecting recommended vehicle: ${recommendedVehicle}`);
                     autoSelectRecommendedVehicle(recommendedVehicle);
                     highlightRecommendedVehicle(recommendedVehicle);
+                } else {
+                    console.log(`❌ No vehicle to auto-select`);
                 }
-            }, 200);
+            }, 300);
         }
 
         // Highlight recommended vehicle without auto-selecting
@@ -1717,19 +2363,28 @@
         }
 
         function autoSelectRecommendedVehicle(vehicleId) {
+            console.log(`🎯 autoSelectRecommendedVehicle called for: ${vehicleId}`);
             const targetVehicle = vehicles.find(v => v.id === vehicleId);
             
             if (targetVehicle) {
-                const pricing = pricingData[vehicleId] || { minimumPrice: 50.00, pricePerKm: 2.00 };
+                console.log(`✅ Found target vehicle: ${targetVehicle.name}`);
+                const basePricing = pricingData[vehicleId] || { minimumPrice: 50.00, pricePerKm: 2.00 };
+                const pricing = calculateDistanceBasedPricing(basePricing);
+                
+                console.log(`💰 Pricing calculated: €${pricing.minimumPrice}`);
                 
                 // Auto-select for outbound trip
+                console.log(`🚗 Auto-selecting for outbound trip`);
                 selectVehicleForTrip(targetVehicle, pricing, 'outbound');
                 
                 // If return trip exists, auto-select same vehicle for return trip
                 if (hasReturnTrip) {
+                    console.log(`🔄 Auto-selecting for return trip as well`);
                     selectVehicleForTrip(targetVehicle, pricing, 'return');
                 }
                 
+            } else {
+                console.error(`❌ Vehicle not found: ${vehicleId}`);
             }
         }
 
@@ -1806,9 +2461,34 @@
         }
 
         function getBagageInfo(vehicleId) {
-            // Define baggage capacity based on vehicle type (like in screenshot)
+            // Try to get capacity from admin vehicle configuration first
+            const savedVehicles = localStorage.getItem('taxiVehicles');
+            if (savedVehicles) {
+                try {
+                    const vehicles = JSON.parse(savedVehicles);
+                    const vehicle = vehicles.find(v => v.id === vehicleId);
+                    if (vehicle) {
+                        // Use admin configured values from capacity object, with fallbacks
+                        const passengers = vehicle.capacity?.passengers || vehicle.passengers || 4;
+                        const luggages = vehicle.capacity?.luggage || vehicle.luggage || 2;
+                        const bags = vehicle.capacity?.handLuggage || vehicle.handBags || 2;
+                        
+                        console.log(`📊 Using admin capacity for ${vehicleId}: ${passengers} passengers, ${luggages} luggage, ${bags} bags`);
+                        
+                        return {
+                            passengers: passengers,
+                            luggages: luggages,
+                            bags: bags
+                        };
+                    }
+                } catch (e) {
+                    console.warn('⚠️ Could not load vehicle capacity from admin config:', e);
+                }
+            }
+            
+            // Fallback to corrected values if admin config not available
             const bagageCapacity = {
-                'saloon': { passengers: 3, luggages: 2, bags: 2 },
+                'saloon': { passengers: 4, luggages: 2, bags: 2 }, // Fixed: was 3, now 4 to match admin
                 'estate': { passengers: 4, luggages: 3, bags: 3 },
                 'minivan': { passengers: 6, luggages: 6, bags: 6 },
                 'minivan_long': { passengers: 8, luggages: 8, bags: 8 }
@@ -1832,12 +2512,46 @@
             }
         }
 
+        function loadRouteInfoFromStep1() {
+            console.log('📍 Loading route info from STAP 1...');
+            
+            const fromLocation = localStorage.getItem('fromLocation');
+            const toLocation = localStorage.getItem('toLocation');
+            
+            console.log('📍 From localStorage - Van:', fromLocation);
+            console.log('📍 From localStorage - Naar:', toLocation);
+            
+            if (fromLocation && toLocation) {
+                // Update the display immediately
+                const fromElement = document.querySelector('#mapLoading div:nth-child(2)');
+                const toElement = document.querySelector('#mapLoading div:nth-child(3)');
+                
+                if (fromElement) fromElement.textContent = `Van: ${fromLocation}`;
+                if (toElement) toElement.textContent = `Naar: ${toLocation}`;
+                
+                console.log('✅ Route info updated in display');
+                
+                // Also trigger route calculation with the loaded locations
+                setTimeout(() => {
+                    console.log('🔄 Triggering route calculation...');
+                    calculateRouteWithFallback(fromLocation, toLocation);
+                }, 1000);
+                
+            } else {
+                console.error('❌ No route info found in localStorage');
+                console.log('📍 Available localStorage keys:', Object.keys(localStorage));
+            }
+        }
+
         function calculateRouteWithFallback(from, to) {
+            console.log('📍 calculateRouteWithFallback called with:', from, to);
+            
             // First try with Google Maps (if API key available)
             if (typeof google !== 'undefined' && google.maps) {
+                console.log('📍 Using Google Maps for route calculation');
                 initializeGoogleMapsRoute(from, to);
             } else {
-                // Fallback to simple distance calculation
+                console.log('📍 Google Maps not available, using fallback');
                 calculateSimpleRoute(from, to);
                 // Optionally load Google Maps API
                 loadGoogleMapsAPI();
@@ -1860,11 +2574,28 @@
                 document.getElementById('routeDistance').textContent = route.distance;
                 document.getElementById('routeDuration').textContent = route.duration;
                 document.getElementById('routeType').textContent = 'Geschatte route';
+                
+                // 🆕 Extract distance for pricing calculations
+                const distanceMatch = route.distance.match(/(\d+(?:\.\d+)?)/);
+                if (distanceMatch) {
+                    calculatedDistance = parseFloat(distanceMatch[1]);
+                    distanceCalculated = true;
+                    console.log(`📏 Fallback distance: ${calculatedDistance} km from known route`);
+                    console.log('💰 Triggering vehicle price recalculation with fallback distance...');
+                    recalculateVehiclePrices();
+                }
             } else {
-                // Default estimation
+                // Default estimation - use middle estimate
                 document.getElementById('routeDistance').textContent = '25-50 km (schatting)';
                 document.getElementById('routeDuration').textContent = '30-60 min (schatting)';
                 document.getElementById('routeType').textContent = 'Schatting - exacte route wordt berekend';
+                
+                // 🆕 Use conservative estimate for pricing
+                calculatedDistance = 35; // Middle of 25-50 km range
+                distanceCalculated = true;
+                console.log(`📏 Using default estimate: ${calculatedDistance} km`);
+                console.log('💰 Triggering vehicle price recalculation with estimated distance...');
+                recalculateVehiclePrices();
             }
             
             // Hide loading, show info message
@@ -1894,12 +2625,59 @@
         }
 
         function loadGoogleMapsAPI() {
-            // Only load if not already loaded and we have a potential API key
-            if (typeof google === 'undefined') {
-                console.log('📍 Google Maps API not loaded - using fallback route calculation');
-                // Could add dynamic API loading here if needed
-                // For now, we use the fallback system
+            // Check if Google Maps is already loaded
+            if (typeof google !== 'undefined') {
+                console.log('📍 Google Maps API already loaded');
+                return Promise.resolve();
             }
+            
+            // Get API key from admin panel settings
+            const googleSettings = JSON.parse(localStorage.getItem('googleSettings') || '{}');
+            const apiKey = googleSettings.googleMapsApiKey || 'AIzaSyBAitd_yXcPjG7VcDkiRrfc6IdgXAD5awk'; // fallback key
+            
+            if (!apiKey || apiKey === 'YOUR_API_KEY_HERE') {
+                console.log('⚠️ No valid Google Maps API key found in admin settings');
+                console.log('📍 Using fallback route calculation');
+                return Promise.reject('No API key');
+            }
+            
+            return new Promise((resolve, reject) => {
+                console.log('📍 Loading Google Maps API with admin panel key...');
+                
+                // Create script element with callback for proper async loading
+                window.initGoogleMaps = function() {
+                    console.log('🗺️ Google Maps callback triggered');
+                    
+                    // Wait a moment to ensure all APIs are ready
+                    setTimeout(() => {
+                        if (typeof google !== 'undefined' && google.maps && google.maps.Geocoder) {
+                            console.log('✅ All Google Maps APIs ready');
+                            resolve();
+                        } else {
+                            console.error('❌ Google Maps APIs not fully loaded in callback');
+                            reject(new Error('Google Maps APIs not ready'));
+                        }
+                    }, 100);
+                };
+                
+                const script = document.createElement('script');
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=geometry,places&callback=initGoogleMaps&loading=async`;
+                script.async = true;
+                script.defer = true;
+                
+                // Note: resolve() is now called by the callback function initGoogleMaps
+                // script.onload is not needed with callback method
+                
+                // Handle errors
+                script.onerror = (error) => {
+                    console.error('❌ Failed to load Google Maps API:', error);
+                    console.log('📍 Falling back to basic route calculation');
+                    reject(error);
+                };
+                
+                // Add to page
+                document.head.appendChild(script);
+            });
         }
 
         function initializeGoogleMapsRoute(from, to) {
@@ -1949,11 +2727,22 @@
                     document.getElementById('routeDuration').textContent = route.duration.text;
                     document.getElementById('routeType').textContent = 'Google Maps route';
                     
+                    // 🆕 CRITICAL: Store distance for pricing calculations
+                    calculatedDistance = route.distance.value / 1000; // Convert meters to kilometers
+                    distanceCalculated = true;
+                    
+                    console.log(`🗺️ Google Maps distance: ${route.distance.text} (${calculatedDistance.toFixed(2)} km)`);
+                    console.log('💰 Triggering vehicle price recalculation with real distance...');
+                    
+                    // Recalculate all vehicle prices with real distance
+                    recalculateVehiclePrices();
+                    
                     // Show map, hide loading
                     document.getElementById('mapLoading').style.display = 'none';
                     document.getElementById('map').style.display = 'block';
                     
                 } else {
+                    console.log('❌ Google Maps route failed, using fallback calculation');
                     calculateSimpleRoute(from, to);
                 }
             });
@@ -1982,7 +2771,131 @@
         let surchargeTotal = 0;
         let lastSurchargeUpdateTime = 0;
 
+        // Meet and Greet Location Management (same as admin)
+        let meetAndGreetLocations = {
+            airports: [
+                {
+                    id: 'brussels-airport',
+                    name: 'Brussels Airport (BRU)',
+                    fullName: 'Brussels Airport',
+                    code: 'BRU',
+                    address: 'A201, 1930 Zaventem, Belgium',
+                    enabled: true,
+                    meetGreetEnabled: true,
+                    pickupInstructions: 'Onze chauffeur wacht op u in de aankomsthal met een naambord. Locatie: bij de informatiebalie.'
+                },
+                {
+                    id: 'charleroi-airport',
+                    name: 'Brussels South Charleroi Airport (CRL)',
+                    fullName: 'Brussels South Charleroi Airport',
+                    code: 'CRL',
+                    address: 'Rue des Frères Wright 8, 6041 Charleroi, Belgium',
+                    enabled: true,
+                    meetGreetEnabled: true,
+                    pickupInstructions: 'Meet & Greet service beschikbaar in de aankomsthal. Onze chauffeur wacht bij de uitgang.'
+                }
+            ],
+            stations: [
+                {
+                    id: 'brussels-central',
+                    name: 'Brussels Central Station',
+                    fullName: 'Gare Centrale / Centraal Station',
+                    address: 'Carrefour de l\'Europe 2, 1000 Brussels, Belgium',
+                    enabled: true,
+                    meetGreetEnabled: true,
+                    pickupInstructions: 'Onze chauffeur wacht bij de hoofdingang van het station.'
+                }
+            ],
+            hotels: [
+                {
+                    id: 'hilton-brussels',
+                    name: 'Hilton Brussels City',
+                    fullName: 'Hilton Brussels City Hotel',
+                    address: 'Place Eugène Flagey 20, 1050 Brussels, Belgium',
+                    enabled: true,
+                    meetGreetEnabled: true,
+                    pickupInstructions: 'Onze chauffeur wacht in de lobby van het hotel.'
+                }
+            ]
+        };
+
+        // Function to check if a location requires Meet & Greet
+        function checkMeetAndGreetRequired(fromLocation) {
+            const allLocations = [
+                ...meetAndGreetLocations.airports,
+                ...meetAndGreetLocations.stations,
+                ...meetAndGreetLocations.hotels
+            ];
+            
+            console.log(`🔍 Checking "${fromLocation}" against ${allLocations.length} configured locations...`);
+            
+            // Check if the pickup location matches any registered Meet & Greet location
+            for (const location of allLocations) {
+                console.log(`🔍 Checking location: ${location.name} (enabled: ${location.enabled}, meetGreetEnabled: ${location.meetGreetEnabled})`);
+                if (!location.enabled || !location.meetGreetEnabled) {
+                    console.log(`   ❌ Skipped - not enabled or Meet & Greet disabled`);
+                    continue;
+                }
+                
+                // Enhanced text matching - support for partial matches and common variations
+                const locationNames = [
+                    location.name.toLowerCase(),
+                    location.fullName.toLowerCase(),
+                    location.code?.toLowerCase(),
+                    location.address?.toLowerCase()
+                ].filter(Boolean);
+                
+                const fromLoc = fromLocation.toLowerCase();
+                
+                for (const locName of locationNames) {
+                    // Direct contains match (both ways)
+                    if (fromLoc.includes(locName) || locName.includes(fromLoc)) {
+                        console.log(`✅ Meet & Greet match found: "${fromLocation}" matches "${location.name}"`);
+                        return {
+                            required: true,
+                            location: location,
+                            instructions: location.pickupInstructions
+                        };
+                    }
+                    
+                    // Special handling for common airport name variations
+                    if (location.code && (
+                        fromLoc.includes('brussels airport') && location.code.toLowerCase() === 'bru' ||
+                        fromLoc.includes('zaventem') && location.code.toLowerCase() === 'bru' ||
+                        fromLoc.includes('charleroi') && location.code.toLowerCase() === 'crl'
+                    )) {
+                        console.log(`✅ Meet & Greet airport match found: "${fromLocation}" matches airport code ${location.code}`);
+                        return {
+                            required: true,
+                            location: location,
+                            instructions: location.pickupInstructions
+                        };
+                    }
+                }
+            }
+            
+            return { required: false };
+        }
+
         function loadSurchargeItems() {
+            // Load selected surcharges first
+            const savedSurcharges = localStorage.getItem('selectedSurcharges');
+            if (savedSurcharges) {
+                selectedSurcharges = JSON.parse(savedSurcharges);
+            }
+            
+            // Load Meet & Greet locations from admin localStorage
+            const savedLocations = localStorage.getItem('meetAndGreetLocations');
+            if (savedLocations) {
+                meetAndGreetLocations = JSON.parse(savedLocations);
+                console.log('✅ Loaded Meet & Greet locations from localStorage:', meetAndGreetLocations);
+            } else {
+                console.log('⚠️ No Meet & Greet locations found in localStorage, using defaults');
+                // Save default locations to localStorage for first time use
+                localStorage.setItem('meetAndGreetLocations', JSON.stringify(meetAndGreetLocations));
+                console.log('💾 Saved default Meet & Greet locations to localStorage');
+            }
+            
             // First try to load from admin localStorage (primary source)
             let adminSaved = localStorage.getItem('surchargeItems');
             
@@ -1999,7 +2912,7 @@
                     console.log('📄 No surcharge items found, creating default ones...');
                     const defaultSurchargeItems = {
                         fixed: [
-                            { id: 'meet-greet', name: 'Meet and greet', price: 5, enabled: false },
+                            { id: 'meet-greet', name: 'Meet and greet', price: 5, enabled: true },
                             { id: 'child-seat', name: 'Child seat', price: 3, enabled: true, hasDropdown: true, dropdownOptions: [{ id: 'maxi_cosi', name: 'Maxi Cosi (baby can\'t sit)', price: 3 }, { id: 'baby_seat', name: 'Baby seat', price: 3 }, { id: 'verhoostoel', name: 'Verhoostoel', price: 3 }] },
                             { id: 'dog', name: 'Dog', price: 3, enabled: true, hasDropdown: true, dropdownOptions: [{ id: 'kleine_hond', name: 'Kleine hond', price: 3 }, { id: 'groten_hond', name: 'Groten hond', price: 5 }] },
                             { id: 'wheelchair', name: 'Wheelchair', price: 0, enabled: true },
@@ -2024,15 +2937,213 @@
             }
             
             console.log('📄 Loaded surcharge items:', surchargeItems);
+            
+            // 🆕 Check for automatic Meet & Greet based on pickup location BEFORE rendering
+            checkAndApplyMeetAndGreet();
+            
+            // Render after Meet & Greet check
             renderSurchargeItems();
             // Always show surcharge section immediately
             document.getElementById('surchargeSection').style.display = 'block';
+        }
+
+        // Enhanced function to check both pickup AND drop-off locations for Meet & Greet
+        function checkAndApplyMeetAndGreet() {
+            const fromLocation = localStorage.getItem('fromLocation') || '';
+            const toLocation = localStorage.getItem('toLocation') || '';
+            const hasReturnTrip = localStorage.getItem('returnActive') === 'true';
+            
+            console.log('🤝 checkAndApplyMeetAndGreet called:');
+            console.log('   - fromLocation:', fromLocation);
+            console.log('   - toLocation:', toLocation);
+            console.log('   - hasReturnTrip:', hasReturnTrip);
+            console.log('🤝 Available locations:', meetAndGreetLocations);
+            
+            let meetGreetRequired = false;
+            let meetGreetCount = 0;
+            let allMeetGreetLocations = [];
+            
+            // Check pickup location (fromLocation)
+            if (fromLocation) {
+                console.log('🤝 Checking Meet & Greet for pickup location:', fromLocation);
+                const pickupCheck = checkMeetAndGreetRequired(fromLocation);
+                
+                if (pickupCheck.required) {
+                    meetGreetRequired = true;
+                    meetGreetCount++;
+                    allMeetGreetLocations.push({
+                        type: 'pickup',
+                        location: pickupCheck.location,
+                        instructions: pickupCheck.instructions
+                    });
+                    console.log('✅ Meet & Greet required for pickup:', pickupCheck.location.name);
+                }
+            }
+            
+            // Check drop-off location for return trips
+            if (hasReturnTrip && toLocation) {
+                console.log('🤝 Checking Meet & Greet for return trip drop-off location:', toLocation);
+                const dropoffCheck = checkMeetAndGreetRequired(toLocation);
+                
+                if (dropoffCheck.required) {
+                    meetGreetRequired = true;
+                    meetGreetCount++;
+                    allMeetGreetLocations.push({
+                        type: 'dropoff',
+                        location: dropoffCheck.location,
+                        instructions: dropoffCheck.instructions
+                    });
+                    console.log('✅ Meet & Greet required for return drop-off:', dropoffCheck.location.name);
+                }
+            }
+            
+            console.log(`📊 Meet & Greet Summary: ${meetGreetCount} locations require service`);
+            
+            if (meetGreetRequired) {
+                // Auto-enable Meet & Greet surcharge
+                const meetGreetItem = surchargeItems.fixed.find(item => item.id === 'meet-greet');
+                const basePrice = meetGreetItem ? meetGreetItem.price : 5;
+                const totalPrice = basePrice * meetGreetCount; // Multiply by number of Meet & Greet locations
+                
+                selectedSurcharges['meet-greet'] = {
+                    name: `Meet and greet${meetGreetCount > 1 ? ` (${meetGreetCount}x)` : ''}`,
+                    price: totalPrice,
+                    quantity: 1,
+                    type: 'fixed',
+                    automatic: true, // Automatic = locked (cannot be unchecked)
+                    count: meetGreetCount,
+                    locations: allMeetGreetLocations
+                };
+                
+                console.log('💰 Added Meet & Greet to selectedSurcharges:', selectedSurcharges['meet-greet']);
+                
+                // Save to localStorage
+                localStorage.setItem('selectedSurcharges', JSON.stringify(selectedSurcharges));
+                
+                // 🆕 NOTE: Meet & Greet detected - will auto-check checkbox, instructions via email  
+                console.log('✅ Meet & Greet detected - checkbox will be auto-checked');
+                
+            } else {
+                console.log('ℹ️ No Meet & Greet required for any location');
+                
+                // Remove automatic Meet & Greet if previously set
+                if (selectedSurcharges['meet-greet'] && selectedSurcharges['meet-greet'].automatic) {
+                    console.log('🗑️ Removing automatic Meet & Greet');
+                    delete selectedSurcharges['meet-greet'];
+                    localStorage.setItem('selectedSurcharges', JSON.stringify(selectedSurcharges));
+                }
+            }
+        }
+
+        // 🚫 DISABLED: Enhanced function to show Meet & Greet notification for multiple locations
+        // NOTE: Meet & Greet instructions are now sent via email instead of shown in STAP 2
+        function showEnhancedMeetAndGreetNotification(allLocations, totalPrice) {
+            console.log('⚠️ showEnhancedMeetAndGreetNotification called but DISABLED - instructions sent via email');
+            return; // Exit early - no longer show notifications in STAP 2
+            // Find or create notification area
+            let notificationArea = document.getElementById('meetGreetNotification');
+            
+            if (!notificationArea) {
+                notificationArea = document.createElement('div');
+                notificationArea.id = 'meetGreetNotification';
+                notificationArea.style.cssText = `
+                    background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+                    border: 1px solid #c3e6cb;
+                    border-radius: 12px;
+                    padding: 20px;
+                    margin: 20px 0;
+                    border-left: 4px solid #28a745;
+                    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.1);
+                `;
+                
+                // Insert after vehicle selection but before surcharge section
+                const surchargeSection = document.getElementById('surchargeSection');
+                surchargeSection.parentNode.insertBefore(notificationArea, surchargeSection);
+            }
+            
+            const meetGreetItem = surchargeItems.fixed.find(item => item.id === 'meet-greet');
+            const basePrice = meetGreetItem ? meetGreetItem.price : 5;
+            
+            // Create location summary
+            const locationSummary = allLocations.map(loc => {
+                const typeText = loc.type === 'pickup' ? 'Ophalen' : 'Terugbrengen';
+                return `${typeText}: ${loc.location.name}`;
+            }).join(' + ');
+            
+            notificationArea.innerHTML = `
+                <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                    <div style="background: #28a745; color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 18px;">
+                        🤝
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; color: #155724; font-size: 18px; font-weight: 600;">
+                            Meet & Greet Service Automatisch Toegevoegd
+                        </h4>
+                        <p style="margin: 5px 0 0 0; color: #155724; font-size: 14px;">
+                            ${locationSummary} • +€${totalPrice.toFixed(2)} ${allLocations.length > 1 ? `(${allLocations.length} × €${basePrice})` : ''}
+                        </p>
+                    </div>
+                </div>
+                ${allLocations.map((loc, index) => `
+                    <div style="background: white; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                        <h5 style="margin: 0 0 10px 0; color: #155724; font-size: 16px;">
+                            📍 ${loc.type === 'pickup' ? 'Ophaal' : 'Afzet'}instructies - ${loc.location.name}:
+                        </h5>
+                        <p style="margin: 0; color: #155724; line-height: 1.5;">
+                            ${loc.instructions}
+                        </p>
+                    </div>
+                `).join('')}
+                <div style="text-align: center; margin-top: 15px;">
+                    <small style="color: #6c757d;">
+                        Deze service wordt automatisch toegepast voor ophaal- en afzetlocaties op luchthavens, stations en hotels.
+                        ${allLocations.length > 1 ? 'Voor retourritten wordt Meet & Greet twee keer berekend.' : ''}
+                    </small>
+                </div>
+            `;
+        }
+
+        // Legacy function for backward compatibility
+        function showMeetAndGreetNotification(location, instructions) {
+            showEnhancedMeetAndGreetNotification([{
+                type: 'pickup',
+                location: location,
+                instructions: instructions
+            }], 5);
         }
 
         function renderSurchargeItems() {
             renderFixedSurchargeItems();
             renderAdditionalSurchargeItems();
             updateSurchargeTotal();
+            
+            // Auto-check boxes for automatically detected surcharges
+            setTimeout(() => {
+                autoCheckSelectedSurcharges();
+            }, 100);
+        }
+
+        function autoCheckSelectedSurcharges() {
+            // Auto-check checkboxes for items in selectedSurcharges
+            for (const itemId in selectedSurcharges) {
+                const checkbox = document.getElementById(`surcharge_${itemId}`);
+                if (checkbox) {
+                    const item = selectedSurcharges[itemId];
+                    
+                    // Check the checkbox
+                    if (!checkbox.checked) {
+                        checkbox.checked = true;
+                        console.log(`✅ Auto-checked ${itemId} checkbox`);
+                    }
+                    
+                    // If it's automatic (like detected Meet & Greet), disable unchecking
+                    if (item.automatic) {
+                        checkbox.disabled = true;
+                        checkbox.style.opacity = '0.7';
+                        console.log(`🔒 Locked ${itemId} checkbox (automatic)`);
+                    }
+                }
+            }
         }
 
         function renderFixedSurchargeItems() {
@@ -2041,18 +3152,25 @@
 
             if (surchargeItems.fixed && surchargeItems.fixed.length > 0) {
                 surchargeItems.fixed.forEach(item => {
-                    // Hide stopover from customer view - it's automatically calculated
+                    // Show stopover if there are extra stops, but make it read-only
                     if (item.id === 'stopover') {
+                        const extraStopCount = parseInt(localStorage.getItem('extraStopCount') || '0');
+                        if (extraStopCount > 0) {
+                            // Show stopover as automatic charge
+                            createStopoverDisplay(item, extraStopCount);
+                        }
                         return;
                     }
                     
-                    // Hide Meet and greet from customer view
+                    // Handle Meet and greet - show as normal checkbox (auto-checked when detected)
                     if (item.id === 'meet-greet') {
-                        return;
+                        console.log('🤝 Meet & Greet rendering as normal checkbox');
+                        // Show as normal checkbox - will be auto-checked if detected
+                        // No special instruction texts - just normal checkbox
                     }
                     
-                    // Hide items with €0.00 price
-                    if (item.price === 0) {
+                    // Hide items with €0.00 price OR disabled items
+                    if (item.price === 0 || item.enabled === false) {
                         return;
                     }
                     
@@ -2124,8 +3242,8 @@
 
             if (surchargeItems.additional && surchargeItems.additional.length > 0) {
                 surchargeItems.additional.forEach(item => {
-                    // Hide items with €0.00 price
-                    if (item.price === 0) {
+                    // Hide disabled items or items with €0.00 price
+                    if (item.enabled === false || item.price === 0) {
                         return;
                     }
                     
@@ -2219,6 +3337,82 @@
                     container.appendChild(itemDiv);
                 });
             }
+        }
+
+        function createStopoverDisplay(item, extraStopCount) {
+            const container = document.getElementById('fixedSurchargeItems');
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'surcharge-item automatic-surcharge';
+            itemDiv.style.cssText = 'background: #e3f2fd; border: 2px solid #2196f3; opacity: 0.9;';
+            
+            let totalStopoverPrice = item.price * extraStopCount;
+            let calculationText = `${extraStopCount} × €${item.price.toFixed(2)}`;
+            let tripTypeText = extraStopCount === 1 ? 'stop' : 'stops';
+            
+            // For return trips, double the stopover charges
+            if (hasReturnTrip) {
+                totalStopoverPrice = totalStopoverPrice * 2;
+                calculationText = `${extraStopCount} × €${item.price.toFixed(2)} × 2 (heen & terug)`;
+                tripTypeText += ' (heen & terug)';
+            }
+            
+            itemDiv.innerHTML = `
+                <div class="surcharge-item-left">
+                    <input type="checkbox" id="surcharge_${item.id}" checked disabled>
+                    <label for="surcharge_${item.id}">${item.name} (${extraStopCount} ${tripTypeText})</label>
+                    <div style="font-size: 12px; color: #666; margin-top: 4px;">
+                        Automatisch berekend: ${calculationText}
+                    </div>
+                </div>
+                <div class="surcharge-item-right">
+                    <div class="surcharge-price">€${totalStopoverPrice.toFixed(2)}</div>
+                </div>
+            `;
+            
+            container.appendChild(itemDiv);
+        }
+
+        function createMeetGreetDisplay(item, meetGreetData) {
+            const container = document.getElementById('fixedSurchargeItems');
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'surcharge-item automatic-surcharge meet-greet-item';
+            itemDiv.style.cssText = 'background: #e8f5e8; border: 2px solid #28a745; opacity: 0.95;';
+            
+            // Handle both single location and multiple locations
+            let displayText = '';
+            let totalPrice = 0;
+            
+            if (meetGreetData.locations && meetGreetData.locations.length > 0) {
+                // Multiple locations
+                const locationNames = meetGreetData.locations.map(loc => loc.location.name).join(', ');
+                displayText = `Automatisch toegevoegd voor ${meetGreetData.locations.length} locaties: ${locationNames}`;
+                totalPrice = meetGreetData.price || (item.price * meetGreetData.count);
+            } else if (meetGreetData.location) {
+                // Single location (backward compatibility)
+                displayText = `Automatisch toegevoegd voor ${meetGreetData.location.name}`;
+                totalPrice = item.price;
+            } else {
+                displayText = 'Automatisch toegevoegd';
+                totalPrice = item.price;
+            }
+            
+            itemDiv.innerHTML = `
+                <div class="surcharge-item-left">
+                    <input type="checkbox" id="surcharge_${item.id}" checked disabled>
+                    <label for="surcharge_${item.id}">🤝 ${meetGreetData.name || item.name}</label>
+                    <div style="font-size: 12px; color: #155724; margin-top: 4px; font-weight: 500;">
+                        ${displayText}
+                    </div>
+                </div>
+                <div class="surcharge-item-right">
+                    <div class="surcharge-price">€${totalPrice.toFixed(2)}</div>
+                </div>
+            `;
+            
+            container.appendChild(itemDiv);
+            
+            // The selectedSurcharges should already be set by checkAndApplyMeetAndGreet
+            // This function just creates the visual display
         }
 
         function toggleSurcharge(itemId, price, type) {
@@ -2494,7 +3688,11 @@
             // Add selected surcharges
             for (const itemId in selectedSurcharges) {
                 const item = selectedSurcharges[itemId];
-                surchargeTotal += item.price * item.quantity;
+                const itemPrice = parseFloat(item.price) || 0;
+                const itemQuantity = parseInt(item.quantity) || 1;
+                surchargeTotal += itemPrice * itemQuantity;
+                
+                console.log(`💰 Adding surcharge: ${item.name} = €${itemPrice} × ${itemQuantity} = €${(itemPrice * itemQuantity).toFixed(2)}`);
             }
             
             // Automatically add stopover charges based on extra stops from STAP 1
@@ -2502,12 +3700,21 @@
             if (extraStopCount > 0) {
                 const stopoverItem = surchargeItems.fixed.find(item => item.id === 'stopover');
                 if (stopoverItem) {
-                    const stopoverTotal = stopoverItem.price * extraStopCount;
+                    let stopoverTotal = (parseFloat(stopoverItem.price) || 0) * extraStopCount;
+                    
+                    // For return trips, double the stopover charges (stops for both directions)
+                    if (hasReturnTrip) {
+                        stopoverTotal = stopoverTotal * 2;
+                        console.log(`📍 Auto-added stopover charges: ${extraStopCount} stops × €${stopoverItem.price} × 2 (return) = €${stopoverTotal}`);
+                    } else {
+                        console.log(`📍 Auto-added stopover charges: ${extraStopCount} stops × €${stopoverItem.price} = €${stopoverTotal}`);
+                    }
+                    
                     surchargeTotal += stopoverTotal;
-                    console.log(`📍 Auto-added stopover charges: ${extraStopCount} stops × €${stopoverItem.price} = €${stopoverTotal}`);
                 }
             }
             
+            console.log(`📊 Total surcharges: €${surchargeTotal.toFixed(2)}`);
             document.getElementById('surchargeTotalAmount').textContent = `€${surchargeTotal.toFixed(2)}`;
             
             // Update main price display if vehicle is selected
@@ -2517,11 +3724,60 @@
         }
 
         function updateTotalPrice() {
-            const basePrice = selectedVehicleOutbound.pricing.minimumPrice;
-            const totalPrice = basePrice + surchargeTotal;
+            if (!selectedVehicleOutbound) {
+                console.log('⚠️ updateTotalPrice: No selectedVehicleOutbound');
+                return;
+            }
+            
+            console.log('🔍 DEBUG updateTotalPrice:', {
+                selectedVehicleOutbound: selectedVehicleOutbound,
+                pricing: selectedVehicleOutbound.pricing,
+                minimumPrice: selectedVehicleOutbound.pricing.minimumPrice,
+                typeof: typeof selectedVehicleOutbound.pricing.minimumPrice
+            });
+            
+            // 🆕 SAFETY CHECK: Ensure we use the latest admin pricing data
+            const vehicleId = selectedVehicleOutbound.vehicle.id;
+            const latestBasePricing = pricingData[vehicleId];
+            
+            if (latestBasePricing) {
+                // Recalculate pricing with latest admin data
+                const latestPricing = calculateDistanceBasedPricing(latestBasePricing);
+                
+                // Only update if pricing actually changed
+                if (JSON.stringify(selectedVehicleOutbound.pricing) !== JSON.stringify(latestPricing)) {
+                    console.log(`🔄 Updating selected vehicle pricing with latest admin data:`, latestPricing);
+                    selectedVehicleOutbound.pricing = latestPricing;
+                }
+            }
+            
+            // Get base price from selected vehicle - ensure it's a number
+            let basePrice = parseFloat(selectedVehicleOutbound.pricing.minimumPrice) || 0;
+            
+            // For return trips, double the base price
+            if (hasReturnTrip) {
+                basePrice = basePrice * 2;
+                console.log(`🔄 Return trip detected: doubling base price to €${basePrice}`);
+            }
+            
+            // Ensure surchargeTotal is a number
+            const surcharges = isNaN(surchargeTotal) ? 0 : surchargeTotal;
+            
+            const calculatedTotal = basePrice + surcharges;
+            
+            // Round up the final total price
+            const finalTotalPrice = Math.ceil(calculatedTotal);
+            
+            console.log(`💰 Total Price Update: Base €${basePrice}${hasReturnTrip ? ' (return)' : ''} + Surcharges €${surcharges} = €${calculatedTotal.toFixed(2)} → €${finalTotalPrice}`);
             
             // Update the selected price display
-            document.getElementById('selectedMinPrice').textContent = `€${totalPrice.toFixed(2)}`;
+            const priceElement = document.getElementById('selectedMinPrice');
+            if (priceElement) {
+                priceElement.textContent = `€${finalTotalPrice}`;
+                console.log(`✅ Price display updated: €${finalTotalPrice}`);
+            } else {
+                console.error('❌ Element selectedMinPrice not found!');
+            }
         }
 
         // Load surcharge items when vehicle is selected
@@ -2542,8 +3798,103 @@
             console.log('- surchargeItems variable:', surchargeItems);
         }
 
-        // Call debug function after page load
+        // Initialize page when loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 Step 2 page loaded, initializing...');
+            
+            // Debug localStorage data
+            console.log('🔍 DEBUG localStorage data:');
+            console.log('   - fromLocation:', localStorage.getItem('fromLocation'));
+            console.log('   - toLocation:', localStorage.getItem('toLocation'));
+            console.log('   - returnActive:', localStorage.getItem('returnActive'));
+            console.log('   - meetAndGreetLocations:', localStorage.getItem('meetAndGreetLocations'));
+            console.log('   - surchargeItems:', localStorage.getItem('surchargeItems'));
+            
+            // Load surcharge items immediately on page load
+            setTimeout(() => {
+                console.log('🔄 Auto-loading surcharge items...');
+                loadSurchargeItems();
+                
+                // Force Meet & Greet check after a delay
+                setTimeout(() => {
+                    console.log('🔄 Force checking Meet & Greet...');
+                    checkAndApplyMeetAndGreet();
+                    updateSurchargeTotal();
+                }, 1000);
+                
+                // Call debug function
+                setTimeout(debugSurchargeSection, 2000);
+            }, 500);
+        });
+
+        // Also call debug function after page load (backup)
         setTimeout(debugSurchargeSection, 2000);
+
+        // Manual test function for debugging Meet & Greet
+        function testMeetAndGreet() {
+            console.log('🧪 MANUAL TEST: Testing Meet & Greet detection');
+            
+            // Set test data
+            localStorage.setItem('fromLocation', 'Brussels Airport');
+            localStorage.setItem('toLocation', 'Antwerp Central');
+            localStorage.setItem('returnActive', 'false');
+            
+            console.log('✅ Test data set:');
+            console.log('   - fromLocation: Brussels Airport');
+            console.log('   - toLocation: Antwerp Central');
+            console.log('   - returnActive: false');
+            
+            // Clear previous selections
+            selectedSurcharges = {};
+            localStorage.setItem('selectedSurcharges', JSON.stringify(selectedSurcharges));
+            
+            // Re-run Meet & Greet detection
+            checkAndApplyMeetAndGreet();
+            updateSurchargeTotal();
+            renderSurchargeItems();
+            
+            console.log('🔍 Results:');
+            console.log('   - selectedSurcharges:', selectedSurcharges);
+            console.log('   - surchargeTotal:', surchargeTotal);
+            
+            // Show a visible alert
+            alert(`Meet & Greet Test Results:
+- selectedSurcharges: ${Object.keys(selectedSurcharges).length} items
+- surchargeTotal: €${surchargeTotal}
+- Meet & Greet found: ${selectedSurcharges['meet-greet'] ? 'YES' : 'NO'}`);
+        }
+
+        // Manual test function for return trip
+        function testMeetAndGreetReturn() {
+            console.log('🧪 MANUAL TEST: Testing Meet & Greet detection for RETURN trip');
+            
+            // Set test data
+            localStorage.setItem('fromLocation', 'Brussels Central');
+            localStorage.setItem('toLocation', 'Brussels Airport');
+            localStorage.setItem('returnActive', 'true');
+            
+            console.log('✅ Test data set:');
+            console.log('   - fromLocation: Brussels Central');
+            console.log('   - toLocation: Brussels Airport (RETURN TRIP)');
+            console.log('   - returnActive: true');
+            
+            // Clear previous selections
+            selectedSurcharges = {};
+            localStorage.setItem('selectedSurcharges', JSON.stringify(selectedSurcharges));
+            
+            // Re-run Meet & Greet detection
+            checkAndApplyMeetAndGreet();
+            updateSurchargeTotal();
+            renderSurchargeItems();
+            
+            console.log('🔍 Results:');
+            console.log('   - selectedSurcharges:', selectedSurcharges);
+            console.log('   - surchargeTotal:', surchargeTotal);
+        }
+
+        // Make test functions globally available
+        window.testMeetAndGreet = testMeetAndGreet;
+        window.testMeetAndGreetReturn = testMeetAndGreetReturn;
     </script>
 </body>
 </html>

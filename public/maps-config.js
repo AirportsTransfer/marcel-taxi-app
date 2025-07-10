@@ -11,7 +11,7 @@
 
 const GOOGLE_MAPS_CONFIG = {
     // API Key (vervang met je echte key)
-    apiKey: 'YOUR_API_KEY_HERE',
+    apiKey: 'AIzaSyBAitd_yXcPjG7VcDkiRrfc6IdgXAD5awk',
     
     // Default instellingen
     center: { lat: 50.8798, lng: 4.7005 }, // België centrum
